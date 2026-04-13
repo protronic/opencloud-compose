@@ -1,7 +1,7 @@
 ---
 services:
   postgres:
-    image: postgres:17-alpine
+    image: postgres:17.9-alpine
     networks:
       opencloud-net:
     volumes:
@@ -15,7 +15,7 @@ services:
     restart: always
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3.3
+    image: quay.io/keycloak/keycloak:26.6.0
     networks:
       opencloud-net:
     command: [ "start", "--spi-connections-http-client-default-disable-trust-manager=${INSECURE:-false}", "--import-realm" ]
@@ -32,6 +32,7 @@ services:
       KC_DB_USERNAME: ${KC_DB_USERNAME:-keycloak}
       KC_DB_PASSWORD: ${KC_DB_PASSWORD:-keycloak}
       KC_FEATURES: impersonation
+      KC_LOG_LEVEL: ${KC_LOG_LEVEL:-INFO}
       KC_PROXY_HEADERS: xforwarded
       KC_HTTP_ENABLED: true
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-kcadmin}
