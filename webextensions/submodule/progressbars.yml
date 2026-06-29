@@ -1,5 +1,0 @@
----
-services:
-  opencloud:
-    volumes:
-      - ./web-extensions/packages/web-app-progress-bars/dist:/var/lib/opencloud/web/assets/apps/progress-bars:ro

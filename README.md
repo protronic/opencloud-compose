@@ -18,7 +18,6 @@ OpenCloud Compose offers a modular approach to deploying OpenCloud with several 
 - **Monitoring** with metrics endpoints for observability and performance monitoring
 - **Radicale** integration for Calendar and Contacts
 - **ClamAV** antivirus scanning with ClamAV
-- **Web Extensions** from the [protronic/web-extensions](https://github.com/protronic/web-extensions) submodule with selectable Docker Compose overlays
 
 ## Quick Start Guide
 
@@ -37,7 +36,6 @@ OpenCloud Compose offers a modular approach to deploying OpenCloud with several 
    ```bash
    git clone https://github.com/opencloud-eu/opencloud-compose.git
    cd opencloud-compose
-   git submodule update --init --recursive
    ```
 
 2. **Create environment file**:
@@ -313,69 +311,6 @@ COMPOSE_FILE=docker-compose.yml:antivirus/clamav.yml:traefik/opencloud.yml
 START_ADDITIONAL_SERVICES="antivirus"
 ```
 
-### With Web Extensions
-
-Enable optional OpenCloud Web extensions from the [protronic/web-extensions](https://github.com/protronic/web-extensions) submodule. Extensions are selected individually via compose overlay files in `webextensions/`.
-
-**Initialize the submodule** (if not done during clone):
-
-```bash
-git submodule update --init --recursive
-```
-
-#### Production: pre-built Docker images
-
-Add the shared apps volume and the extensions you want to `COMPOSE_FILE`:
-
-```bash
-docker compose \
-  -f docker-compose.yml \
-  -f traefik/opencloud.yml \
-  -f webextensions/extensions.yml \
-  -f webextensions/unzip.yml \
-  -f webextensions/maps.yml \
-  up -d
-```
-
-Or in `.env`:
-
-```
-WEB_EXTENSIONS=:webextensions/extensions.yml
-WEBEXT_UNZIP=:webextensions/unzip.yml
-WEBEXT_MAPS=:webextensions/maps.yml
-COMPOSE_FILE=docker-compose.yml:traefik/opencloud.yml${WEB_EXTENSIONS}${WEBEXT_UNZIP}${WEBEXT_MAPS}
-```
-
-Available Docker image overlays: `arcade`, `calculator`, `cast`, `drawio`, `externalsites`, `importer`, `jsonviewer`, `maps`, `pastebin`, `progressbars`, `unzip`.
-
-For `externalsites` and `importer`, copy and customize the configuration first:
-
-```bash
-cp config/opencloud/apps.yaml.dist config/opencloud/apps.yaml
-```
-
-The `importer` extension also starts a Uppy Companion service. Set `COMPANION_DOMAIN` in `.env` and add a DNS or `/etc/hosts` entry.
-
-> **Note**: When removing an extension, delete the `opencloud-apps` Docker volume so it is recreated without the removed app.
-
-#### Development: build from submodule source
-
-Build the desired extensions locally:
-
-```bash
-./scripts/build-web-extensions.sh maps unzip
-```
-
-Then use the submodule overlay files instead of the Docker image overlays:
-
-```
-WEBEXT_MAPS=:webextensions/submodule/maps.yml
-WEBEXT_UNZIP=:webextensions/submodule/unzip.yml
-COMPOSE_FILE=docker-compose.yml:traefik/opencloud.yml${WEBEXT_MAPS}${WEBEXT_UNZIP}
-```
-
-Extensions without published Docker images (`comments`, `notes`) are available via submodule overlays only.
-
 
 ## SSL Certificate Support
 
@@ -531,8 +466,6 @@ This repository uses a modular approach with multiple compose files:
 - `traefik/` - Traefik reverse proxy configurations
 - `external-proxy/` - Configuration for external reverse proxies
 - `radicale/` - Radicale configuration
-- `webextensions/` - Selectable OpenCloud Web extension deployments
-- `web-extensions/` - Git submodule with extension source (protronic/web-extensions)
 - `config/` - Configuration files for OpenCloud, Keycloak, and LDAP
 
 ## Advanced Usage

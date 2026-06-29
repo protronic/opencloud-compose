@@ -1,5 +1,0 @@
----
-services:
-  opencloud:
-    volumes:
-      - ./web-extensions/packages/web-app-maps/dist:/var/lib/opencloud/web/assets/apps/maps:ro

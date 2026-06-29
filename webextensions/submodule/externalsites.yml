@@ -1,5 +1,0 @@
----
-services:
-  opencloud:
-    volumes:
-      - ./web-extensions/packages/web-app-external-sites/dist:/var/lib/opencloud/web/assets/apps/external-sites:ro
