@@ -1,0 +1,3 @@
+[submodule "web-extensions"]
+	path = web-extensions
+	url = https://github.com/protronic/web-extensions.git

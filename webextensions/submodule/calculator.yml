@@ -1,0 +1,5 @@
+---
+services:
+  opencloud:
+    volumes:
+      - ./web-extensions/packages/web-app-calculator/dist:/var/lib/opencloud/web/assets/apps/calculator:ro

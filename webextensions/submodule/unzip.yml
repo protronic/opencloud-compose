@@ -1,0 +1,5 @@
+---
+services:
+  opencloud:
+    volumes:
+      - ./web-extensions/packages/web-app-unzip/dist:/var/lib/opencloud/web/assets/apps/unzip:ro

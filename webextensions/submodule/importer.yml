@@ -1,0 +1,5 @@
+---
+services:
+  opencloud:
+    volumes:
+      - ./web-extensions/packages/web-app-importer/dist:/var/lib/opencloud/web/assets/apps/importer:ro

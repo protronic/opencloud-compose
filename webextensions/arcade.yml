@@ -1,0 +1,15 @@
+---
+services:
+  opencloud:
+    depends_on:
+      arcade-init:
+        condition: service_completed_successfully
+
+  arcade-init:
+    image: ${WEB_EXTENSIONS_IMAGE:-opencloudeu/web-extensions}:${WEB_EXTENSION_ARCADE_TAG:-arcade-latest}
+    user: root
+    volumes:
+      - opencloud-apps:/apps
+    entrypoint:
+      - /bin/sh
+    command: ["-c", "cp -R /web/apps/arcade /apps"]

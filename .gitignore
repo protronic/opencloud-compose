@@ -7,6 +7,9 @@
 !/config/opencloud/apps/.gitkeep
 !/config/opencloud/apps/maps
 
+# user-specific web extension configuration
+/config/opencloud/apps.yaml
+
 # exclude custom compose files
 /custom
 

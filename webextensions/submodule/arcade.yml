@@ -1,0 +1,5 @@
+---
+services:
+  opencloud:
+    volumes:
+      - ./web-extensions/packages/web-app-arcade/dist:/var/lib/opencloud/web/assets/apps/arcade:ro

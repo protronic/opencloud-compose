@@ -1,0 +1,5 @@
+---
+services:
+  opencloud:
+    volumes:
+      - ./web-extensions/packages/web-app-json-viewer/dist:/var/lib/opencloud/web/assets/apps/json-viewer:ro
