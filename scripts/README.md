@@ -2,16 +2,17 @@
 
 ## Web Extensions
 
-Build OpenCloud Web extensions from the `web-app-submodules/web-extensions` submodule and deploy them for OpenCloud.
+Build OpenCloud Web extensions from the `web-app-submodules/web-extensions` submodule and deploy them for OpenCloud. The `comments` extension is built from its own submodule at `web-app-submodules/web-app-comments`.
 
 ### How it works
 
 ```
 web-app-submodules/web-extensions/packages/web-app-*/dist   →   OC_APPS_DIR/<app>/   →   OpenCloud container
+web-app-submodules/web-app-comments/dist                    →   OC_APPS_DIR/comments/ →   OpenCloud container
         (build output)                         (deployment)              (/var/lib/opencloud/web/assets/apps)
 ```
 
-- **Build output** stays in the submodule: `web-app-submodules/web-extensions/packages/web-app-<name>/dist`
+- **Build output** stays in the submodule: `web-app-submodules/web-extensions/packages/web-app-<name>/dist` (or `web-app-submodules/web-app-comments/dist` for comments)
 - **`OC_APPS_DIR`** is the directory OpenCloud reads extensions from (default: `./config/opencloud/apps`)
 - The build script symlinks each built app from `dist/` into `OC_APPS_DIR`
 - `docker-compose.yml` bind-mounts `OC_APPS_DIR` into the container

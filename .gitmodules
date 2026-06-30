@@ -1,3 +1,6 @@
 [submodule "web-extensions"]
 	path = web-app-submodules/web-extensions
 	url = https://github.com/protronic/web-extensions.git
+[submodule "web-app-submodules/web-app-comments"]
+	path = web-app-submodules/web-app-comments
+	url = git@github.com:protronic/web-app-comments.git
