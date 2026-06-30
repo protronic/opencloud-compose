@@ -8,7 +8,7 @@ importer:
 external-sites:
   config:
     sites:
-      # For settings see: https://github.com/protronic/web-extensions/tree/main/packages/web-app-external-sites
+      # For settings see: https://github.com/opencloud-eu/web-extensions/tree/main/packages/web-app-external-sites
       - name: Documentation
         url: "https://docs.opencloud.eu"
         target: embedded
