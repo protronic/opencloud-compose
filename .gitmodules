@@ -4,3 +4,12 @@
 [submodule "web-app-submodules/web-app-comments"]
 	path = web-app-submodules/web-app-comments
 	url = git@github.com:protronic/web-app-comments.git
+[submodule "web-app-submodules/opencloud-3dviewer"]
+	path = web-app-submodules/opencloud-3dviewer
+	url = https://github.com/LetsDrinkSomeTea/opencloud-3dviewer
+[submodule "web-app-submodules/opencloud-web-calendar"]
+	path = web-app-submodules/opencloud-web-calendar
+	url = https://github.com/mschneider82/opencloud-web-calendar
+[submodule "web-app-submodules/web-app-presentation-viewer"]
+	path = web-app-submodules/web-app-presentation-viewer
+	url = https://github.com/JankariTech/web-app-presentation-viewer
