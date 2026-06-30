@@ -47,6 +47,24 @@ run_pnpm_build() {
     bash -c "pnpm runtime set node ${NODE_VERSION} -g && pnpm install ${install_flags} && pnpm build"
 }
 
+# Standalone MF apps must match the OpenCloud host Module Federation runtime (7.2.x ≈ extension-sdk 7.1.2).
+verify_mf_remote_entry() {
+  local deploy_name="$1"
+  local dist_dir="$2"
+  local remote_entry
+
+  remote_entry="$(find "${dist_dir}" -name 'remoteEntry*.mjs' -print -quit)"
+  if [[ -z "${remote_entry}" ]]; then
+    return 0
+  fi
+
+  if grep -q '__mf_module_cache__' "${remote_entry}"; then
+    echo "Incompatible Module Federation build for ${deploy_name}: ${remote_entry} uses runtime 2.4.x." >&2
+    echo "Pin @opencloud-eu/extension-sdk to 7.1.2 (same as web-extensions) and rebuild." >&2
+    exit 1
+  fi
+}
+
 deploy_dist() {
   local deploy_name="$1"
   local dist_dir="$2"
@@ -140,6 +158,7 @@ for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
 
   echo "Building standalone extension ${deploy_name} in ${PNPM_IMAGE} container..."
   run_pnpm_build "${source_dir}"
+  verify_mf_remote_entry "${deploy_name}" "${source_dir}/dist"
 done
 
 PRESENTATION_VIEWER_DIR="${SUBMODULES_DIR}/web-app-presentation-viewer"
@@ -171,7 +190,7 @@ if [[ -d "${PRESENTATION_VIEWER_DIR}" ]]; then
       corepack enable
       corepack prepare pnpm@8.15.1 --activate
       jq -s '.[0] * .[1]' package-common.json package-opencloud.json \
-        | jq '.devDependencies.vite = \"^8.0.0\" | .devDependencies.vitest = \"^4.0.0\"' \
+        | jq '.devDependencies.vite = \"^8.0.0\" | .devDependencies.vitest = \"^4.0.0\" | .devDependencies[\"@opencloud-eu/extension-sdk\"] = \"7.1.2\"' \
         > package.json
       jq '.id = \"mdpresentation-viewer\"' public/manifest.json > public/manifest.json.tmp \
         && mv public/manifest.json.tmp public/manifest.json
@@ -181,6 +200,7 @@ if [[ -d "${PRESENTATION_VIEWER_DIR}" ]]; then
     "
 
   PRESENTATION_VIEWER_DIST="${presentation_build_dir}/dist/${PRESENTATION_VIEWER_APP}"
+  verify_mf_remote_entry "${PRESENTATION_VIEWER_APP}" "${PRESENTATION_VIEWER_DIST}"
 else
   echo "Standalone submodule not found: web-app-presentation-viewer. Run: git submodule update --init --recursive" >&2
   exit 1

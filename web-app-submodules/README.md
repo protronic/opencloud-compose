@@ -64,6 +64,16 @@ Standalone submodules are built on every run, even when `OC_WEB_APPS` is empty.
 
 After building, restart the OpenCloud container to load new extensions.
 
+## Module Federation compatibility (OpenCloud 7.2.x)
+
+External apps built with `@opencloud-eu/extension-sdk` 7.0.x can pull in Module Federation runtime **2.4.x**, which breaks other apps on OpenCloud **7.2.0** (host runtime **2.3.1**) with errors like:
+
+`Shared module '@opencloud-eu/web-client' must be provided by host`
+
+Pin standalone submodules to **extension-sdk 7.1.2** (same as the `web-extensions` lockfile). The build script rejects `remoteEntry*.mjs` files that use the 2.4.x `__mf_module_cache__` pattern.
+
+Also note: `3dviewer` and `web-calendar` still build legacy `.js` apps (extension-sdk v4/v5) and cannot load on OpenCloud 7.x until upgraded to ESM/MF builds.
+
 ## web-extensions apps
 
 `arcade`, `calculator`, `cast`, `draw-io`, `external-sites`, `importer`, `json-viewer`, `maps`, `notes`, `pastebin`, `progress-bars`, `unzip`
