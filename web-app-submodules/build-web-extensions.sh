@@ -58,9 +58,19 @@ deploy_dist() {
   fi
 
   echo "Deploying ${deploy_name} to ${target}..."
-  rm -rf "${target}"
   mkdir -p "${target}"
   cp -a "${dist_dir}/." "${target}/"
+}
+
+clean_apps_dir() {
+  if [[ ! -d "${APPS_DIR}" ]]; then
+    mkdir -p "${APPS_DIR}"
+    return
+  fi
+
+  echo "Cleaning ${APPS_DIR}..."
+  find "${APPS_DIR}" -mindepth 1 -maxdepth 1 ! -name '.gitkeep' -exec rm -rf {} +
+  mkdir -p "${APPS_DIR}"
 }
 
 MONOREPO_APPS=()
@@ -174,7 +184,7 @@ else
   exit 1
 fi
 
-mkdir -p "${APPS_DIR}"
+clean_apps_dir
 
 for app in "${MONOREPO_APPS[@]}"; do
   deploy_name="${app}"

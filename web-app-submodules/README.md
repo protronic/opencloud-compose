@@ -19,7 +19,7 @@ web-app-presentation-viewer/dist/...     →   OC_APPS_DIR/com.github.jankaritec
 - **Standalone submodules** are always built: comments, 3dviewer, web-calendar, presentation-viewer
 - **Build output** stays in each submodule's `dist/` directory
 - **`OC_APPS_DIR`** is the directory OpenCloud reads extensions from (default: `./config/opencloud/apps`)
-- The build script **copies** each built app into `OC_APPS_DIR` (no symlinks)
+- The build script **cleans** `OC_APPS_DIR` (except `.gitkeep`) and **copies** each built app into it (no symlinks)
 - `docker-compose.yml` bind-mounts `OC_APPS_DIR` into the container
 
 `OC_APPS_DIR` should **not** point into a submodule. Keep it under the repo root (e.g. `config/opencloud/apps`) or any other host path you mount into OpenCloud.
