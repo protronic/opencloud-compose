@@ -9,7 +9,7 @@ web-extensions/packages/web-app-*/dist   →   OC_APPS_DIR/<app>/
 web-app-comments/dist                    →   OC_APPS_DIR/comments/
 opencloud-3dviewer/dist                  →   OC_APPS_DIR/3dviewer/
 opencloud-web-calendar/dist              →   OC_APPS_DIR/web-calendar/
-web-app-presentation-viewer/dist/...     →   OC_APPS_DIR/com.github.jankaritech.mdpresentation-viewer/
+web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpresentation-viewer/
                                                               ↓
                                                    OpenCloud container
                                         (/var/lib/opencloud/web/assets/apps)
@@ -70,7 +70,7 @@ After building, restart the OpenCloud container to load new extensions.
 
 ## Always-built standalone submodules
 
-`comments`, `3dviewer`, `web-calendar`, `com.github.jankaritech.mdpresentation-viewer`
+`comments`, `3dviewer`, `web-calendar`, `mdpresentation-viewer`
 
 For `external-sites` and `importer`, copy and customize the configuration first:
 

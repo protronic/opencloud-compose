@@ -7,7 +7,7 @@ WEB_EXTENSIONS_DIR="${SUBMODULES_DIR}/web-extensions"
 PNPM_IMAGE="${PNPM_IMAGE:-ghcr.io/pnpm/pnpm:11.9.0}"
 PRESENTATION_IMAGE="${PRESENTATION_IMAGE:-node:20-bookworm}"
 NODE_VERSION="${NODE_VERSION:-24}"
-PRESENTATION_VIEWER_ID="com.github.jankaritech.mdpresentation-viewer"
+PRESENTATION_VIEWER_APP="mdpresentation-viewer"
 
 if [[ -f "${ROOT_DIR}/.env" ]]; then
   set -a
@@ -158,7 +158,7 @@ if [[ -d "${PRESENTATION_VIEWER_DIR}" ]]; then
 
   rsync -a --exclude=.git "${PRESENTATION_VIEWER_DIR}/" "${presentation_build_dir}/"
 
-  echo "Building standalone extension ${PRESENTATION_VIEWER_ID} in ${PRESENTATION_IMAGE} container..."
+  echo "Building standalone extension ${PRESENTATION_VIEWER_APP} in ${PRESENTATION_IMAGE} container..."
   docker run --rm \
     -e HOME=/work \
     -v "${presentation_build_dir}:/work" \
@@ -173,12 +173,14 @@ if [[ -d "${PRESENTATION_VIEWER_DIR}" ]]; then
       jq -s '.[0] * .[1]' package-common.json package-opencloud.json \
         | jq '.devDependencies.vite = \"^8.0.0\" | .devDependencies.vitest = \"^4.0.0\"' \
         > package.json
+      jq '.id = \"mdpresentation-viewer\"' public/manifest.json > public/manifest.json.tmp \
+        && mv public/manifest.json.tmp public/manifest.json
       find . -type f \\( -name '*.ts' -o -name '*.vue' -o -name '*.prettierrc' \\) -not \\( -path './node_modules/*' -o -path './dist/*' \\) -print0 | xargs -0 sed -i 's/ownclouders/opencloud-eu/g'
       pnpm install
       pnpm build
     "
 
-  PRESENTATION_VIEWER_DIST="${presentation_build_dir}/dist/${PRESENTATION_VIEWER_ID}"
+  PRESENTATION_VIEWER_DIST="${presentation_build_dir}/dist/${PRESENTATION_VIEWER_APP}"
 else
   echo "Standalone submodule not found: web-app-presentation-viewer. Run: git submodule update --init --recursive" >&2
   exit 1
@@ -199,6 +201,6 @@ for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
   deploy_dist "${deploy_name}" "${dist_dir}"
 done
 
-deploy_dist "${PRESENTATION_VIEWER_ID}" "${PRESENTATION_VIEWER_DIST}"
+deploy_dist "${PRESENTATION_VIEWER_APP}" "${PRESENTATION_VIEWER_DIST}"
 
 echo "Done. Built extensions are available under ${APPS_DIR} (OC_APPS_DIR)."
