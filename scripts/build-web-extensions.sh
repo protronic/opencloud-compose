@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SUBMODULE_DIR="${ROOT_DIR}/web-extensions"
+SUBMODULE_DIR="${ROOT_DIR}/web-app-submodules/web-extensions"
 PNPM_IMAGE="${PNPM_IMAGE:-ghcr.io/pnpm/pnpm:11.9.0}"
 NODE_VERSION="${NODE_VERSION:-24}"
 
@@ -16,7 +16,7 @@ fi
 APPS_DIR="${OC_APPS_DIR:-${ROOT_DIR}/config/opencloud/apps}"
 
 if [[ ! -d "${SUBMODULE_DIR}/packages" ]]; then
-  echo "web-extensions submodule not found. Run: git submodule update --init --recursive" >&2
+  echo "web-app-submodules/web-extensions submodule not found. Run: git submodule update --init --recursive" >&2
   exit 1
 fi
 
