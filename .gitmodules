@@ -12,4 +12,4 @@
 	url = https://github.com/mschneider82/opencloud-web-calendar
 [submodule "web-app-submodules/web-app-presentation-viewer"]
 	path = web-app-submodules/web-app-presentation-viewer
-	url = https://github.com/JankariTech/web-app-presentation-viewer
+	url = git@github.com:protronic/web-app-presentation-viewer.git
