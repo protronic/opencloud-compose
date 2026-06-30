@@ -3,6 +3,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SUBMODULE_DIR="${ROOT_DIR}/web-extensions"
+PNPM_IMAGE="${PNPM_IMAGE:-ghcr.io/pnpm/pnpm:11.9.0}"
+NODE_VERSION="${NODE_VERSION:-24}"
 
 if [[ -f "${ROOT_DIR}/.env" ]]; then
   set -a
@@ -18,8 +20,8 @@ if [[ ! -d "${SUBMODULE_DIR}/packages" ]]; then
   exit 1
 fi
 
-if ! command -v pnpm >/dev/null 2>&1; then
-  echo "pnpm is required to build web extensions from source." >&2
+if ! command -v docker >/dev/null 2>&1; then
+  echo "Docker is required to build web extensions in a pnpm container." >&2
   exit 1
 fi
 
@@ -53,17 +55,33 @@ for app in "${APPS[@]}"; do
   fi
 done
 
-cd "${SUBMODULE_DIR}"
-pnpm install --frozen-lockfile
+build_commands=(
+  "pnpm runtime set node ${NODE_VERSION} -g"
+  "pnpm install --frozen-lockfile"
+)
+for app in "${APPS[@]}"; do
+  build_commands+=("pnpm --filter ${app} build")
+done
+
+build_script="${build_commands[0]}"
+for ((i = 1; i < ${#build_commands[@]}; i++)); do
+  build_script+=" && ${build_commands[i]}"
+done
+
+echo "Building extensions in ${PNPM_IMAGE} container..."
+docker run --rm \
+  -u "$(id -u):$(id -g)" \
+  -e HOME=/tmp \
+  -v "${SUBMODULE_DIR}:/work" \
+  -w /work \
+  "${PNPM_IMAGE}" \
+  bash -c "${build_script}"
 
 mkdir -p "${APPS_DIR}"
 
 for app in "${APPS[@]}"; do
   app_name="${app#web-app-}"
   dist_dir="${SUBMODULE_DIR}/packages/${app}/dist"
-
-  echo "Building ${app}..."
-  pnpm --filter "${app}" build
 
   echo "Deploying ${app_name} to ${APPS_DIR}/${app_name}..."
   rm -rf "${APPS_DIR:?}/${app_name}"

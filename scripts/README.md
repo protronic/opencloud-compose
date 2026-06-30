@@ -24,6 +24,8 @@ web-extensions/packages/web-app-*/dist   →   OC_APPS_DIR/<app>/   →   OpenCl
 git submodule update --init --recursive
 ```
 
+Docker is required on the host. The build script runs `pnpm install` and `pnpm build` inside a temporary [pnpm](https://pnpm.io/docker) container (`ghcr.io/pnpm/pnpm:11.9.0` by default, override with `PNPM_IMAGE`) and removes the container when finished. Node.js is installed in the container via `pnpm runtime set` (default: Node 24, override with `NODE_VERSION`).
+
 Configure extensions in `.env`:
 
 ```
