@@ -72,7 +72,7 @@ External apps built with `@opencloud-eu/extension-sdk` 7.0.x can pull in Module 
 
 Pin standalone submodules to **extension-sdk 7.1.2** (same as the `web-extensions` lockfile). The build script rejects `remoteEntry*.mjs` files that use the 2.4.x `__mf_module_cache__` pattern.
 
-Also note: `3dviewer` and `web-calendar` still build legacy `.js` apps (extension-sdk v4/v5) and cannot load on OpenCloud 7.x until upgraded to ESM/MF builds.
+Also note: `web-calendar` still builds a legacy `.js` app (extension-sdk v4/v5) and cannot load on OpenCloud 7.x until upgraded to ESM/MF builds.
 
 ## web-extensions apps
 

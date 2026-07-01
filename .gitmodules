@@ -6,7 +6,7 @@
 	url = git@github.com:protronic/web-app-comments.git
 [submodule "web-app-submodules/opencloud-3dviewer"]
 	path = web-app-submodules/opencloud-3dviewer
-	url = https://github.com/LetsDrinkSomeTea/opencloud-3dviewer
+	url = git@github.com:protronic/opencloud-3dviewer.git
 [submodule "web-app-submodules/opencloud-web-calendar"]
 	path = web-app-submodules/opencloud-web-calendar
 	url = https://github.com/mschneider82/opencloud-web-calendar
