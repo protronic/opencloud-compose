@@ -41,6 +41,7 @@ run_pnpm_build() {
 
   docker run --rm \
     -u "$(id -u):$(id -g)" \
+    -e CI=true \
     -e HOME=/tmp \
     -v "${source_dir}:/work" \
     -w /work \
@@ -77,20 +78,21 @@ deploy_dist() {
   fi
 
   echo "Deploying ${deploy_name} to ${target}..."
-  rm -rf "${target}"
   mkdir -p "${target}"
   cp -a "${dist_dir}/." "${target}/"
 }
 
-clean_apps_dir() {
-  if [[ ! -d "${APPS_DIR}" ]]; then
-    mkdir -p "${APPS_DIR}"
-    return
-  fi
+clean_app_targets() {
+  local deploy_name
 
-  echo "Cleaning ${APPS_DIR}..."
-  find "${APPS_DIR}" -mindepth 1 -maxdepth 1 ! -name '.gitkeep' -exec rm -rf {} +
   mkdir -p "${APPS_DIR}"
+  for deploy_name in "$@"; do
+    local target="${APPS_DIR}/${deploy_name}"
+    if [[ -e "${target}" ]]; then
+      echo "Cleaning ${target}..."
+      rm -rf "${target}"
+    fi
+  done
 }
 
 MONOREPO_APPS=()
@@ -106,6 +108,26 @@ elif [[ -n "${OC_WEB_APPS:-}" ]]; then
   done
 fi
 
+STANDALONE_PNPM_SUBMODULES=(
+  "comments|web-app-comments"
+  "3dviewer|opencloud-3dviewer"
+  "web-calendar|opencloud-web-calendar"
+)
+
+for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
+  relative_dir="${entry#*|}"
+  if [[ ! -d "${SUBMODULES_DIR}/${relative_dir}" ]]; then
+    echo "Standalone submodule not found: ${relative_dir}. Run: git submodule update --init --recursive" >&2
+    exit 1
+  fi
+done
+
+PRESENTATION_VIEWER_DIR="${SUBMODULES_DIR}/web-app-presentation-viewer"
+if [[ ! -d "${PRESENTATION_VIEWER_DIR}" ]]; then
+  echo "Standalone submodule not found: web-app-presentation-viewer. Run: git submodule update --init --recursive" >&2
+  exit 1
+fi
+
 if [[ ${#MONOREPO_APPS[@]} -gt 0 ]]; then
   if [[ ! -d "${WEB_EXTENSIONS_DIR}/packages" ]]; then
     echo "web-extensions submodule not found. Run: git submodule update --init --recursive" >&2
@@ -118,7 +140,18 @@ if [[ ${#MONOREPO_APPS[@]} -gt 0 ]]; then
       exit 1
     fi
   done
+fi
 
+DEPLOY_APPS=("${MONOREPO_APPS[@]}")
+for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
+  DEPLOY_APPS+=("${entry%%|*}")
+done
+DEPLOY_APPS+=("${PRESENTATION_VIEWER_APP}")
+
+echo "Deploy target: ${APPS_DIR} (OC_APPS_DIR)"
+clean_app_targets "${DEPLOY_APPS[@]}"
+
+if [[ ${#MONOREPO_APPS[@]} -gt 0 ]]; then
   build_commands=(
     "pnpm runtime set node ${NODE_VERSION} -g"
     "pnpm install --frozen-lockfile"
@@ -135,6 +168,7 @@ if [[ ${#MONOREPO_APPS[@]} -gt 0 ]]; then
   echo "Building web-extensions apps (${#MONOREPO_APPS[@]}) in ${PNPM_IMAGE} container..."
   docker run --rm \
     -u "$(id -u):$(id -g)" \
+    -e CI=true \
     -e HOME=/tmp \
     -v "${WEB_EXTENSIONS_DIR}:/work" \
     -w /work \
@@ -142,28 +176,16 @@ if [[ ${#MONOREPO_APPS[@]} -gt 0 ]]; then
     bash -c "${build_script}"
 fi
 
-STANDALONE_PNPM_SUBMODULES=(
-  "comments|web-app-comments"
-  "3dviewer|opencloud-3dviewer"
-  "web-calendar|opencloud-web-calendar"
-)
-
 for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
   deploy_name="${entry%%|*}"
   relative_dir="${entry#*|}"
   source_dir="${SUBMODULES_DIR}/${relative_dir}"
-
-  if [[ ! -d "${source_dir}" ]]; then
-    echo "Standalone submodule not found: ${relative_dir}. Run: git submodule update --init --recursive" >&2
-    exit 1
-  fi
 
   echo "Building standalone extension ${deploy_name} in ${PNPM_IMAGE} container..."
   run_pnpm_build "${source_dir}"
   verify_mf_remote_entry "${deploy_name}" "${source_dir}/dist"
 done
 
-PRESENTATION_VIEWER_DIR="${SUBMODULES_DIR}/web-app-presentation-viewer"
 PRESENTATION_VIEWER_DIST=""
 presentation_build_dir=""
 
@@ -173,42 +195,36 @@ cleanup_presentation_build_dir() {
   rmdir "${presentation_build_dir}" 2>/dev/null || true
 }
 
-if [[ -d "${PRESENTATION_VIEWER_DIR}" ]]; then
-  presentation_build_dir="$(mktemp -d "${TMPDIR:-/tmp}/presentation-viewer-build.XXXXXX")"
-  trap cleanup_presentation_build_dir EXIT
+presentation_build_dir="$(mktemp -d "${TMPDIR:-/tmp}/presentation-viewer-build.XXXXXX")"
+trap cleanup_presentation_build_dir EXIT
 
-  rsync -a --exclude=.git "${PRESENTATION_VIEWER_DIR}/" "${presentation_build_dir}/"
+rsync -a --exclude=.git "${PRESENTATION_VIEWER_DIR}/" "${presentation_build_dir}/"
 
-  echo "Building standalone extension ${PRESENTATION_VIEWER_APP} in ${PRESENTATION_IMAGE} container..."
-  docker run --rm \
-    -e HOME=/work \
-    -v "${presentation_build_dir}:/work" \
-    -w /work \
-    "${PRESENTATION_IMAGE}" \
-    bash -c "
-      set -euo pipefail
-      apt-get update -qq
-      DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git jq
-      corepack enable
-      corepack prepare pnpm@8.15.1 --activate
-      jq -s '.[0] * .[1]' package-common.json package-opencloud.json \
-        | jq '.devDependencies.vite = \"^8.0.0\" | .devDependencies.vitest = \"^4.0.0\" | .devDependencies[\"@opencloud-eu/extension-sdk\"] = \"7.1.2\"' \
-        > package.json
-      jq '.id = \"mdpresentation-viewer\"' public/manifest.json > public/manifest.json.tmp \
-        && mv public/manifest.json.tmp public/manifest.json
-      find . -type f \\( -name '*.ts' -o -name '*.vue' -o -name '*.prettierrc' \\) -not \\( -path './node_modules/*' -o -path './dist/*' \\) -print0 | xargs -0 sed -i 's/ownclouders/opencloud-eu/g'
-      pnpm install
-      pnpm build
-    "
+echo "Building standalone extension ${PRESENTATION_VIEWER_APP} in ${PRESENTATION_IMAGE} container..."
+docker run --rm \
+  -e CI=true \
+  -e HOME=/work \
+  -v "${presentation_build_dir}:/work" \
+  -w /work \
+  "${PRESENTATION_IMAGE}" \
+  bash -c "
+    set -euo pipefail
+    apt-get update -qq
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git jq
+    corepack enable
+    corepack prepare pnpm@8.15.1 --activate
+    jq -s '.[0] * .[1]' package-common.json package-opencloud.json \
+      | jq '.devDependencies.vite = \"^8.0.0\" | .devDependencies.vitest = \"^4.0.0\" | .devDependencies[\"@opencloud-eu/extension-sdk\"] = \"7.1.2\"' \
+      > package.json
+    jq '.id = \"mdpresentation-viewer\"' public/manifest.json > public/manifest.json.tmp \
+      && mv public/manifest.json.tmp public/manifest.json
+    find . -type f \\( -name '*.ts' -o -name '*.vue' -o -name '*.prettierrc' \\) -not \\( -path './node_modules/*' -o -path './dist/*' \\) -print0 | xargs -0 sed -i 's/ownclouders/opencloud-eu/g'
+    pnpm install
+    pnpm build
+  "
 
-  PRESENTATION_VIEWER_DIST="${presentation_build_dir}/dist/${PRESENTATION_VIEWER_APP}"
-  verify_mf_remote_entry "${PRESENTATION_VIEWER_APP}" "${PRESENTATION_VIEWER_DIST}"
-else
-  echo "Standalone submodule not found: web-app-presentation-viewer. Run: git submodule update --init --recursive" >&2
-  exit 1
-fi
-
-clean_apps_dir
+PRESENTATION_VIEWER_DIST="${presentation_build_dir}/dist/${PRESENTATION_VIEWER_APP}"
+verify_mf_remote_entry "${PRESENTATION_VIEWER_APP}" "${PRESENTATION_VIEWER_DIST}"
 
 for app in "${MONOREPO_APPS[@]}"; do
   deploy_name="${app}"
