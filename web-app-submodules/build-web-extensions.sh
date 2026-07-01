@@ -17,6 +17,7 @@ if [[ -f "${ROOT_DIR}/.env" ]]; then
 fi
 
 APPS_DIR="${OC_APPS_DIR:-${ROOT_DIR}/config/opencloud/apps}"
+APPS_DIR="${APPS_DIR/#\~/$HOME}"
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "Docker is required to build web extensions in a pnpm container." >&2
@@ -76,6 +77,7 @@ deploy_dist() {
   fi
 
   echo "Deploying ${deploy_name} to ${target}..."
+  rm -rf "${target}"
   mkdir -p "${target}"
   cp -a "${dist_dir}/." "${target}/"
 }
