@@ -13,3 +13,7 @@
 [submodule "web-app-submodules/web-app-presentation-viewer"]
 	path = web-app-submodules/web-app-presentation-viewer
 	url = git@github.com:protronic/web-app-presentation-viewer.git
+[submodule "web-app-submodules/blockberry-editor"]
+	path = web-app-submodules/blockberry-editor
+	url = git@github.com:protronic/blockberry-editor.git
+	branch = cursor/opencloud-editor-integration-98a3

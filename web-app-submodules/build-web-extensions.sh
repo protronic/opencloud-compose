@@ -24,10 +24,13 @@ MONOREPO_APP_NAMES=(
   unzip
 )
 
+# deploy_name|relative_dir[|dist_subdir]
+# dist_subdir defaults to "dist" when omitted
 STANDALONE_PNPM_SUBMODULES=(
   "comments|web-app-comments"
   "3dviewer|opencloud-3dviewer"
   "web-calendar|opencloud-web-calendar"
+  "blockberry-editor|blockberry-editor|dist/web"
 )
 
 if [[ -f "${ROOT_DIR}/.env" ]]; then
@@ -47,7 +50,8 @@ Usage: $(basename "$0") [OPTIONS] [APP ...]
 Build OpenCloud web extensions and deploy them to OC_APPS_DIR (default: config/opencloud/apps).
 
 With no APP arguments, apps from web-extensions are taken from OC_WEB_APPS in .env and all
-standalone submodule extensions are built (comments, 3dviewer, web-calendar, presentation-viewer).
+standalone submodule extensions are built (comments, 3dviewer, web-calendar, blockberry-editor,
+presentation-viewer).
 
 With APP arguments, only the listed extensions are built and deployed.
 
@@ -58,6 +62,7 @@ Standalone submodule repos (aliases in parentheses):
   comments (web-app-comments)
   3dviewer (opencloud-3dviewer)
   web-calendar (opencloud-web-calendar, calendar)
+  blockberry-editor (blockberry)
   mdpresentation-viewer (presentation-viewer, web-app-presentation-viewer)
 
 Options:
@@ -114,7 +119,8 @@ resolve_app_name() {
 
   for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
     deploy_name="${entry%%|*}"
-    relative_dir="${entry#*|}"
+    rest="${entry#*|}"
+    relative_dir="${rest%%|*}"
 
     if [[ "${input}" == "${deploy_name}" || "${input}" == "${relative_dir}" ]]; then
       echo "${deploy_name}"
@@ -122,6 +128,11 @@ resolve_app_name() {
     fi
 
     if [[ "${deploy_name}" == "web-calendar" && "${input}" == "calendar" ]]; then
+      echo "${deploy_name}"
+      return 0
+    fi
+
+    if [[ "${deploy_name}" == "blockberry-editor" && "${input}" == "blockberry" ]]; then
       echo "${deploy_name}"
       return 0
     fi
@@ -143,18 +154,40 @@ list_available_apps() {
   echo
   echo "Standalone submodules:"
   for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
-    printf '  %s (%s)\n' "${entry%%|*}" "${entry#*|}"
+    printf '  %s (%s)\n' "${entry%%|*}" "$(standalone_relative_dir "${entry%%|*}")"
   done
   echo "  ${PRESENTATION_VIEWER_APP} (web-app-presentation-viewer)"
 }
 
 standalone_relative_dir() {
   local deploy_name="$1"
-  local entry
+  local entry rest
 
   for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
     if [[ "${entry%%|*}" == "${deploy_name}" ]]; then
-      echo "${entry#*|}"
+      rest="${entry#*|}"
+      echo "${rest%%|*}"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+standalone_dist_dir() {
+  local deploy_name="$1"
+  local entry rest relative_dir dist_subdir
+
+  for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
+    if [[ "${entry%%|*}" == "${deploy_name}" ]]; then
+      rest="${entry#*|}"
+      relative_dir="${rest%%|*}"
+      if [[ "${rest}" == *"|"* ]]; then
+        dist_subdir="${rest#*|}"
+      else
+        dist_subdir="dist"
+      fi
+      echo "${SUBMODULES_DIR}/${relative_dir}/${dist_subdir}"
       return 0
     fi
   done
@@ -255,14 +288,15 @@ build_monorepo_apps() {
 
 build_standalone_pnpm_app() {
   local deploy_name="$1"
-  local relative_dir source_dir
+  local relative_dir source_dir dist_dir
 
   relative_dir="$(standalone_relative_dir "${deploy_name}")"
   source_dir="${SUBMODULES_DIR}/${relative_dir}"
+  dist_dir="$(standalone_dist_dir "${deploy_name}")"
 
   echo "Building standalone extension ${deploy_name} in ${PNPM_IMAGE} container..."
   run_pnpm_build "${source_dir}"
-  verify_mf_remote_entry "${deploy_name}" "${source_dir}/dist"
+  verify_mf_remote_entry "${deploy_name}" "${dist_dir}"
 }
 
 build_presentation_viewer() {
@@ -454,8 +488,7 @@ for app in "${MONOREPO_APPS[@]}"; do
 done
 
 for deploy_name in "${STANDALONE_PNPM_APPS[@]}"; do
-  relative_dir="$(standalone_relative_dir "${deploy_name}")"
-  deploy_dist "${deploy_name}" "${SUBMODULES_DIR}/${relative_dir}/dist"
+  deploy_dist "${deploy_name}" "$(standalone_dist_dir "${deploy_name}")"
 done
 
 if [[ "${BUILD_PRESENTATION}" == true ]]; then

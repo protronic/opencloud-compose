@@ -18,6 +18,14 @@ declare -A STANDALONE_APPS=(
   [comments]="web-app-comments"
   [3dviewer]="opencloud-3dviewer"
   [web-calendar]="opencloud-web-calendar"
+  [blockberry-editor]="blockberry-editor"
+)
+
+declare -A STANDALONE_DIST_DIRS=(
+  [comments]="dist"
+  [3dviewer]="dist"
+  [web-calendar]="dist"
+  [blockberry-editor]="dist/web"
 )
 
 usage() {
@@ -28,7 +36,7 @@ Usage:
   $(basename "$0") [app...]
   $(basename "$0") all
 
-Apps: comments, 3dviewer, web-calendar, all
+Apps: comments, 3dviewer, web-calendar, blockberry-editor, all
 
 Local deploy target:
   OC_APPS_DIR=${APPS_DIR}
@@ -38,7 +46,7 @@ Optional remote deploy (rsync over SSH):
   OC_DEPLOY_APPS_DIR=/path/on/server/to/opencloud/apps
 
 Examples:
-  $(basename "$0") 3dviewer web-calendar
+  $(basename "$0") 3dviewer web-calendar blockberry-editor
   OC_DEPLOY_HOST=admin@10.19.28.1 OC_DEPLOY_APPS_DIR=/opt/opencloud-compose/config/opencloud/apps \\
     $(basename "$0") 3dviewer web-calendar
 EOF
@@ -67,6 +75,8 @@ build_app() {
   local app_name="$1"
   local submodule="${STANDALONE_APPS[${app_name}]}"
   local source_dir="${SUBMODULES_DIR}/${submodule}"
+  local dist_rel="${STANDALONE_DIST_DIRS[${app_name}]:-dist}"
+  local dist_dir="${source_dir}/${dist_rel}"
 
   echo "Building ${app_name} in ${source_dir}..."
   (
@@ -76,9 +86,9 @@ build_app() {
   )
 
   local remote_entry
-  remote_entry="$(find "${source_dir}/dist" -name 'remoteEntry*.mjs' -print -quit)"
+  remote_entry="$(find "${dist_dir}" -name 'remoteEntry*.mjs' -print -quit)"
   if [[ -z "${remote_entry}" ]]; then
-    echo "No remoteEntry*.mjs found for ${app_name}. Rebuild with extension-sdk 7.1.2." >&2
+    echo "No remoteEntry*.mjs found for ${app_name} in ${dist_dir}. Rebuild with extension-sdk 7.1.2." >&2
     exit 1
   fi
 
@@ -89,7 +99,7 @@ build_app() {
 
   echo "Deploying ${app_name} -> ${APPS_DIR}/${app_name}/"
   mkdir -p "${APPS_DIR}/${app_name}"
-  rsync -a --delete "${source_dir}/dist/" "${APPS_DIR}/${app_name}/"
+  rsync -a --delete "${dist_dir}/" "${APPS_DIR}/${app_name}/"
   verify_manifest "${app_name}"
 }
 
@@ -108,9 +118,9 @@ fi
 for arg in "$@"; do
   case "${arg}" in
     all)
-      selected_apps=(comments 3dviewer web-calendar)
+      selected_apps=(comments 3dviewer web-calendar blockberry-editor)
       ;;
-    comments|3dviewer|web-calendar)
+    comments|3dviewer|web-calendar|blockberry-editor)
       selected_apps+=("${arg}")
       ;;
     -h|--help|help)

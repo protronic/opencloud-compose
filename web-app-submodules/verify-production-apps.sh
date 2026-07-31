@@ -2,7 +2,7 @@
 set -euo pipefail
 
 BASE_URL="${OC_VERIFY_URL:-https://oc.protronic-gmbh.de}"
-APPS=(comments 3dviewer web-calendar)
+APPS=(comments 3dviewer web-calendar blockberry-editor)
 
 echo "Checking Module Federation manifests at ${BASE_URL}"
 echo

@@ -9,6 +9,7 @@ web-extensions/packages/web-app-*/dist   →   OC_APPS_DIR/<app>/
 web-app-comments/dist                    →   OC_APPS_DIR/comments/
 opencloud-3dviewer/dist                  →   OC_APPS_DIR/3dviewer/
 opencloud-web-calendar/dist              →   OC_APPS_DIR/web-calendar/
+blockberry-editor/dist/web               →   OC_APPS_DIR/blockberry-editor/
 web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpresentation-viewer/
                                                               ↓
                                                    OpenCloud container
@@ -17,7 +18,7 @@ web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpr
 
 - **`OC_WEB_APPS`** selects apps from `web-extensions` when building without app arguments
 - **Standalone submodules** are built on every default run; pass app names to build only selected extensions
-- **Build output** stays in each submodule's `dist/` directory
+- **Build output** stays in each submodule's `dist/` directory (`dist/web` for blockberry-editor)
 - **`OC_APPS_DIR`** is the directory OpenCloud reads extensions from (default: `./config/opencloud/apps`)
 - The build script **cleans** `OC_APPS_DIR` (except `.gitkeep`) and **copies** each built app into it (no symlinks)
 - `docker-compose.yml` bind-mounts `OC_APPS_DIR` into the container
@@ -65,7 +66,7 @@ Build only selected extensions (monorepo apps or standalone repos):
 ./web-app-submodules/build-web-extensions.sh --list
 ```
 
-App names from web-extensions can use the short name (`calculator`) or `web-app-calculator`. Standalone repos accept deploy names or directory names (`comments`, `web-app-comments`, `calendar` for web-calendar).
+App names from web-extensions can use the short name (`calculator`) or `web-app-calculator`. Standalone repos accept deploy names or directory names (`comments`, `web-app-comments`, `calendar` for web-calendar, `blockberry` for blockberry-editor).
 
 After building, restart the OpenCloud container to load new extensions.
 
@@ -83,7 +84,7 @@ Pin standalone submodules to **extension-sdk 7.1.2** (same as the `web-extension
 
 ## Default build (no arguments)
 
-`comments`, `3dviewer`, `web-calendar`, `mdpresentation-viewer`, plus apps listed in `OC_WEB_APPS`
+`comments`, `3dviewer`, `web-calendar`, `blockberry-editor`, `mdpresentation-viewer`, plus apps listed in `OC_WEB_APPS`
 
 Use `--all` to build every web-extensions app as well.
 
