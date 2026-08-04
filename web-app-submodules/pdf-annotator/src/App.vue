@@ -168,7 +168,7 @@
       </template>
     </header>
 
-    <main class="viewer-region">
+    <main ref="regionElement" class="viewer-region">
       <div ref="containerElement" class="viewer-scroll">
         <div ref="viewerElement" class="pdfViewer" />
       </div>
@@ -190,6 +190,7 @@ import PdfWorker from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?worker&inline'
 import 'pdfjs-dist/legacy/web/pdf_viewer.css';
 import type {Resource} from '@opencloud-eu/web-client';
 import {computed, onBeforeUnmount, onMounted, ref, shallowRef, watch} from 'vue';
+import {PdfCommentManager} from './commentManager';
 
 type ContentValue = ArrayBuffer | Uint8Array | string;
 
@@ -228,6 +229,7 @@ const zoomPresets = [
   {value: '4', label: '400 %'},
 ];
 
+const regionElement = ref<HTMLElement>();
 const containerElement = ref<HTMLDivElement>();
 const viewerElement = ref<HTMLDivElement>();
 const editorMode = ref<number>(modes.NONE);
@@ -250,6 +252,7 @@ let linkService: PDFLinkService | undefined;
 let loadingTask: PDFDocumentLoadingTask | undefined;
 let pdfDocument: PDFDocumentProxy | undefined;
 let resizeObserver: ResizeObserver | undefined;
+let commentManager: PdfCommentManager | undefined;
 let commitTimer = 0;
 let commitInFlight = false;
 let commitQueued = false;
@@ -432,11 +435,20 @@ onMounted(() => {
 
   eventBus = new EventBus();
   linkService = new PDFLinkService({eventBus});
+  commentManager = new PdfCommentManager({
+    container: regionElement.value!,
+    // Comment edits do not touch the annotation storage's modified flag,
+    // so schedule the OpenCloud commit explicitly.
+    onChanged: () => scheduleCommit(),
+  });
   viewer.value = new PDFViewer({
     container: containerElement.value!,
     viewer: viewerElement.value!,
     eventBus,
     linkService,
+    // Supported by the runtime (threaded through to the annotation editors
+    // and layers); the shipped PDFViewerOptions typings lag behind.
+    ...({commentManager} as object),
     // Without a language GenericL10n uses its baked-in fallback bundle and
     // performs no locale fetches.
     l10n: new (GenericL10n as unknown as new (lang?: string) => InstanceType<typeof GenericL10n>)(),
@@ -487,6 +499,8 @@ onBeforeUnmount(() => {
   window.clearTimeout(commitTimer);
   loadToken++;
   resizeObserver?.disconnect();
+  commentManager?.destroy();
+  commentManager = undefined;
   if (loadingTask) {
     void loadingTask.destroy();
   }
@@ -680,5 +694,108 @@ onBeforeUnmount(() => {
   border: 1px solid #f2b8b5;
   color: #8c1d18;
   font-size: 13px;
+}
+</style>
+
+<!-- Unscoped: the comment dialog/popup are created programmatically by the
+     comment manager, so scoped attributes would not reach them. -->
+<style>
+.pdf-annotator .pdfa-comment-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.pdf-annotator .pdfa-comment-backdrop.hidden,
+.pdf-annotator .pdfa-comment-popup.hidden {
+  display: none;
+}
+
+.pdf-annotator .pdfa-comment-dialog {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(320px, 90%);
+  padding: 12px;
+  border: 1px solid var(--toolbar-border);
+  border-radius: 8px;
+  background: var(--toolbar-bg);
+  color: var(--toolbar-text);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+}
+
+.pdf-annotator .pdfa-comment-text {
+  resize: vertical;
+  min-height: 64px;
+  padding: 6px 8px;
+  border: 1px solid var(--field-border);
+  border-radius: 4px;
+  background: var(--field-bg);
+  color: var(--toolbar-text);
+  font: inherit;
+}
+
+.pdf-annotator .pdfa-comment-text:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.pdf-annotator .pdfa-comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pdf-annotator .pdfa-comment-spacer {
+  flex: 1;
+}
+
+.pdf-annotator .pdfa-comment-actions button {
+  padding: 4px 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 4px;
+  background: var(--field-bg);
+  color: var(--toolbar-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pdf-annotator .pdfa-comment-actions button:hover {
+  background: var(--button-hover);
+}
+
+.pdf-annotator .pdfa-comment-actions .pdfa-comment-save {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.pdf-annotator .pdfa-comment-actions .pdfa-comment-delete {
+  color: #c50042;
+}
+
+.pdf-annotator .pdfa-comment-actions .pdfa-comment-delete.hidden {
+  display: none;
+}
+
+.pdf-annotator .pdfa-comment-popup {
+  position: absolute;
+  z-index: 15;
+  max-width: 280px;
+  padding: 8px 10px;
+  border: 1px solid var(--toolbar-border);
+  border-radius: 6px;
+  background: var(--toolbar-bg);
+  color: var(--toolbar-text);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 </style>

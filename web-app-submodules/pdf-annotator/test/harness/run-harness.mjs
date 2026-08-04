@@ -70,7 +70,45 @@ try {
     `emitted PDF should contain a FreeText annotation, got [${verification.annotationSubtypes.join(', ')}]`,
   );
 
-  // 5. The pdf.js-style zoom select drives the viewer scale.
+  // 5. Draw an ink stroke and attach a comment via the editor toolbar
+  // (free text carries its content itself; comments exist for highlight,
+  // ink and stamp annotations, matching the pdf.js viewer).
+  await page.click('button[title="Freihand zeichnen"]');
+  await page.waitForTimeout(300);
+  const inkBox = await page.locator('.pdfViewer .page').first().boundingBox();
+  await page.mouse.move(inkBox.x + 200, inkBox.y + 420);
+  await page.mouse.down();
+  for (let step = 1; step <= 8; step++) {
+    await page.mouse.move(inkBox.x + 200 + step * 14, inkBox.y + 420 + (step % 2 ? 12 : -12));
+  }
+  await page.mouse.up();
+  await page.waitForTimeout(300);
+  // Leaving the mode commits the stroke; re-entering makes editors selectable.
+  await page.click('button[title="Auswahlwerkzeug"]');
+  await page.waitForTimeout(400);
+  await page.click('button[title="Freihand zeichnen"]');
+  await page.waitForTimeout(400);
+  await page.locator('.inkEditor').first().click();
+  await page.waitForSelector('.editToolbar button.comment', {timeout: 5000});
+  await page.click('.editToolbar button.comment');
+  await page.waitForSelector('.pdfa-comment-dialog', {timeout: 5000});
+  await page.fill('.pdfa-comment-text', 'Bitte bis Freitag prüfen');
+  await page.click('.pdfa-comment-save');
+  await page.click('button[title="Auswahlwerkzeug"]');
+  const emittedBefore = await page.evaluate(() => window.__harness.emitted.length);
+  await page.waitForFunction(
+    (count) => window.__harness.emitted.length > count,
+    emittedBefore - 1,
+    {timeout: 15000},
+  );
+  await page.waitForTimeout(2000);
+  const commented = await page.evaluate(() => window.__verifyEmitted());
+  check(
+    commented.annotationContents.some((entry) => entry.includes('Bitte bis Freitag prüfen')),
+    `emitted PDF should carry the comment text, got [${commented.annotationContents.join(' | ')}]`,
+  );
+
+  // 6. The pdf.js-style zoom select drives the viewer scale.
   await page.selectOption('.zoom-select', '1');
   await page.waitForTimeout(400);
   const zoomValue = await page.inputValue('.zoom-select');
@@ -86,7 +124,7 @@ if (problems.length) {
   console.error(`✗ pdf-annotator harness\n  ${problems.join('\n  ')}`);
   console.error(consoleLines.join('\n'));
 } else {
-  console.log('✓ pdf-annotator harness: render, annotate, emit, verify, zoom');
+  console.log('✓ pdf-annotator harness: render, annotate, comment, emit, verify, zoom');
 }
 
 await browser.close();

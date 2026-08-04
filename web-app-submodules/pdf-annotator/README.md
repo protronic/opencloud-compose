@@ -14,6 +14,11 @@ Konfliktprüfung und Versionierung) zurück nach OpenCloud.
 
 - Registriert sich für `.pdf`-Dateien (`hasPriority`, wird also Standard-App)
 - Werkzeuge: Auswahl, Markieren, Textnotiz, Freihandzeichnung, Stempel/Bild
+- Kommentare an Markierungen, Zeichnungen und Stempeln wie im pdf.js-Viewer
+  (Kommentar-Button in der Anmerkungs-Toolbar, Sprechblase am Dokument); die
+  Dialog-/Popup-UI stellt `src/commentManager.ts`, da das npm-Paket von pdf.js
+  nur die Editor-Seite mitliefert
+- Toolbar im Stil des pdf.js-Viewers (Seitennavigation, Zoom-Presets), hell/dunkel
 - Zoom, Seitenanzeige, Schreibschutz-Modus
 - Verwendet den pdf.js-**Legacy-Build** (breite Browser-Unterstützung), der
   Worker ist inline gebündelt (kein Asset-Pfad-Problem unter Module Federation)

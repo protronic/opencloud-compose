@@ -91,6 +91,9 @@ window.__verifyEmitted = async () => {
   const result = {
     numPages: doc.numPages,
     annotationSubtypes: annotations.map((entry: {subtype?: string}) => entry.subtype ?? '?'),
+    annotationContents: annotations.map(
+      (entry: {contentsObj?: {str?: string}}) => entry.contentsObj?.str ?? '',
+    ),
   };
   await doc.destroy();
   return result;
