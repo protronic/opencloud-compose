@@ -16,4 +16,4 @@
 [submodule "web-app-submodules/blockberry-editor"]
 	path = web-app-submodules/blockberry-editor
 	url = git@github.com:protronic/blockberry-editor.git
-	branch = claude/block-editor-submodul-dateien-u4tbzr
+	branch = main
