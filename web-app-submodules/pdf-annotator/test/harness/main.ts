@@ -80,11 +80,12 @@ function makeSamplePdf(): Uint8Array {
 }
 
 const samplePdf = makeSamplePdf();
-let lastEmitted: Uint8Array | undefined;
+let lastEmitted: ArrayBuffer | undefined;
 
 window.__verifyEmitted = async () => {
   if (!lastEmitted) throw new Error('no emitted content to verify');
-  const doc = await getDocument({data: lastEmitted.slice()}).promise;
+  // Parse a copy: getDocument transfers the buffer to the worker.
+  const doc = await getDocument({data: new Uint8Array(lastEmitted).slice()}).promise;
   const page = await doc.getPage(1);
   const annotations = await page.getAnnotations();
   const result = {
@@ -115,11 +116,20 @@ const Host = defineComponent({
         currentContent: currentContent.value,
         isReadOnly: false,
         resource,
-        'onUpdate:currentContent': (value: Uint8Array) => {
+        'onUpdate:currentContent': (value: ArrayBuffer) => {
+          // The real transport (axios) sends `view.buffer` for typed-array
+          // bodies, which corrupts the file when the view is narrower than
+          // its buffer. The app must therefore emit an exact ArrayBuffer.
+          if (!(value instanceof ArrayBuffer)) {
+            window.__harness.errors.push(
+              `emitted content must be an ArrayBuffer, got ${Object.prototype.toString.call(value)}`,
+            );
+          }
           lastEmitted = value;
+          const bytes = new Uint8Array(value);
           window.__harness.emitted.push({
-            length: value.length,
-            head: Array.from(value.slice(0, 5)),
+            length: bytes.length,
+            head: Array.from(bytes.slice(0, 5)),
           });
           currentContent.value = value;
         },

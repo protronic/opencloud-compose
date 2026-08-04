@@ -104,7 +104,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  (event: 'update:currentContent', value: Uint8Array): void;
+  (event: 'update:currentContent', value: ArrayBuffer): void;
   (event: 'save'): void;
 }>();
 
@@ -140,7 +140,7 @@ let commitTimer = 0;
 let commitInFlight = false;
 let commitQueued = false;
 let loadToken = 0;
-let lastEmitted: Uint8Array | undefined;
+let lastEmitted: ArrayBuffer | undefined;
 let lastAppliedContent: ContentValue | undefined;
 
 const zoomLabel = computed(() => `${Math.round(scale.value * 100)} %`);
@@ -238,10 +238,17 @@ async function commitAnnotations(): Promise<void> {
   try {
     const bytes = await pdfDocument.saveDocument();
     pdfDocument.annotationStorage.resetModified();
-    lastEmitted = bytes;
-    lastAppliedContent = bytes;
+    // Emit an exact-size ArrayBuffer, never a Uint8Array view: axios sends
+    // `view.buffer` for typed-array bodies, so a view over a larger buffer
+    // would upload surrounding garbage bytes and corrupt the stored PDF.
+    const payload =
+      bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
+        ? (bytes.buffer as ArrayBuffer)
+        : (bytes.slice().buffer as ArrayBuffer);
+    lastEmitted = payload;
+    lastAppliedContent = payload;
     pendingCommit.value = false;
-    emit('update:currentContent', bytes);
+    emit('update:currentContent', payload);
   } catch (saveError) {
     error.value = `Anmerkungen konnten nicht übernommen werden: ${
       saveError instanceof Error ? saveError.message : String(saveError)
