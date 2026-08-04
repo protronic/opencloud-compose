@@ -1,5 +1,5 @@
 <template>
-  <div class="pdf-annotator">
+  <div class="pdf-annotator" :style="iconVars">
     <header class="toolbar">
       <div class="toolbar-group" aria-label="Seitennavigation">
         <button
@@ -10,9 +10,7 @@
           :disabled="!pdfLoaded || currentPage <= 1"
           @click="goPage(-1)"
         >
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M8 5.2 13.4 10.6l-1.1 1.1L8 7.4l-4.3 4.3-1.1-1.1z" />
-          </svg>
+          <span class="tb-icon icon-page-up" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -22,9 +20,7 @@
           :disabled="!pdfLoaded || currentPage >= pageCount"
           @click="goPage(1)"
         >
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M8 10.8 2.6 5.4l1.1-1.1L8 8.6l4.3-4.3 1.1 1.1z" />
-          </svg>
+          <span class="tb-icon icon-page-down" aria-hidden="true" />
         </button>
         <input
           v-model="pageInputValue"
@@ -51,9 +47,7 @@
           :disabled="!pdfLoaded"
           @click="zoomOut"
         >
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M3 7.25h10v1.5H3z" />
-          </svg>
+          <span class="tb-icon icon-zoom-out" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -63,9 +57,7 @@
           :disabled="!pdfLoaded"
           @click="zoomIn"
         >
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <path d="M7.25 3h1.5v4.25H13v1.5H8.75V13h-1.5V8.75H3v-1.5h4.25z" />
-          </svg>
+          <span class="tb-icon icon-zoom-in" aria-hidden="true" />
         </button>
         <select
           v-model="zoomSelect"
@@ -98,9 +90,7 @@
             :disabled="!pdfLoaded"
             @click="setMode(modes.NONE)"
           >
-            <svg viewBox="0 0 16 16" aria-hidden="true">
-              <path d="M4.5 1.7 12.9 9l-3.9.6 2.2 4.3-1.7.9-2.2-4.4-2.8 2.8z" />
-            </svg>
+            <span class="tb-icon icon-select" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -111,10 +101,7 @@
             :disabled="!pdfLoaded"
             @click="setMode(modes.HIGHLIGHT)"
           >
-            <svg viewBox="0 0 16 16" aria-hidden="true">
-              <path d="M1.5 13.4h13v1.6h-13z" />
-              <path d="m9.7 2 3.8 3.8-5.6 5.6-4.6.8.8-4.6zm-5 6.9-.4 2.3 2.3-.4 4.7-4.7-1.9-1.9z" />
-            </svg>
+            <span class="tb-icon icon-highlight" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -125,9 +112,7 @@
             :disabled="!pdfLoaded"
             @click="setMode(modes.FREETEXT)"
           >
-            <svg viewBox="0 0 16 16" aria-hidden="true">
-              <path d="M7.1 2h1.8l4.4 12h-1.9l-1-2.9H5.6l-1 2.9H2.7zm.9 2.7L6.2 9.4h3.6z" />
-            </svg>
+            <span class="tb-icon icon-freetext" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -138,11 +123,7 @@
             :disabled="!pdfLoaded"
             @click="setMode(modes.INK)"
           >
-            <svg viewBox="0 0 16 16" aria-hidden="true">
-              <path
-                d="M11.2 1.7a1.4 1.4 0 0 1 2 0l1.1 1.1a1.4 1.4 0 0 1 0 2L6 13.1l-4.4 1.3L2.9 10zm-6.9 9.1-.6 2 2-.6 7.5-7.5-1.4-1.4z"
-              />
-            </svg>
+            <span class="tb-icon icon-ink" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -153,12 +134,7 @@
             :disabled="!pdfLoaded"
             @click="setMode(modes.STAMP)"
           >
-            <svg viewBox="0 0 16 16" aria-hidden="true">
-              <path
-                d="M2.5 3h11a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm.5 8.5h10L9.8 7l-2.6 3-1.6-1.6z"
-              />
-              <circle cx="5.4" cy="6" r="1.1" />
-            </svg>
+            <span class="tb-icon icon-stamp" aria-hidden="true" />
           </button>
         </div>
       </template>
@@ -191,6 +167,33 @@ import 'pdfjs-dist/legacy/web/pdf_viewer.css';
 import type {Resource} from '@opencloud-eu/web-client';
 import {computed, onBeforeUnmount, onMounted, ref, shallowRef, watch} from 'vue';
 import {PdfCommentManager} from './commentManager';
+import iconCommentEdit from 'pdfjs-dist/legacy/web/images/comment-editButton.svg?url';
+import iconSelect from 'pdfjs-dist/legacy/web/images/secondaryToolbarButton-selectTool.svg?url';
+import iconFreeText from 'pdfjs-dist/legacy/web/images/toolbarButton-editorFreeText.svg?url';
+import iconHighlight from 'pdfjs-dist/legacy/web/images/toolbarButton-editorHighlight.svg?url';
+import iconInk from 'pdfjs-dist/legacy/web/images/toolbarButton-editorInk.svg?url';
+import iconStamp from 'pdfjs-dist/legacy/web/images/toolbarButton-editorStamp.svg?url';
+import iconPageDown from 'pdfjs-dist/legacy/web/images/toolbarButton-pageDown.svg?url';
+import iconPageUp from 'pdfjs-dist/legacy/web/images/toolbarButton-pageUp.svg?url';
+import iconZoomIn from 'pdfjs-dist/legacy/web/images/toolbarButton-zoomIn.svg?url';
+import iconZoomOut from 'pdfjs-dist/legacy/web/images/toolbarButton-zoomOut.svg?url';
+
+// The original pdf.js icon set ships with pdfjs-dist; the files are small
+// enough for Vite to inline them as data URIs (Module-Federation-safe).
+// `--comment-edit-button-icon` is referenced by the components stylesheet
+// for the annotation comment buttons but never defined there.
+const iconVars = {
+  '--tbi-select': `url("${iconSelect}")`,
+  '--tbi-freetext': `url("${iconFreeText}")`,
+  '--tbi-highlight': `url("${iconHighlight}")`,
+  '--tbi-ink': `url("${iconInk}")`,
+  '--tbi-stamp': `url("${iconStamp}")`,
+  '--tbi-page-up': `url("${iconPageUp}")`,
+  '--tbi-page-down': `url("${iconPageDown}")`,
+  '--tbi-zoom-in': `url("${iconZoomIn}")`,
+  '--tbi-zoom-out': `url("${iconZoomOut}")`,
+  '--comment-edit-button-icon': `url("${iconCommentEdit}")`,
+};
 
 type ContentValue = ArrayBuffer | Uint8Array | string;
 
@@ -586,10 +589,41 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
-.tb-btn svg {
+.tb-icon {
+  display: block;
   width: 16px;
   height: 16px;
-  fill: currentColor;
+  background-color: currentColor;
+  -webkit-mask: var(--tb-icon) center / contain no-repeat;
+  mask: var(--tb-icon) center / contain no-repeat;
+}
+
+.icon-select {
+  --tb-icon: var(--tbi-select);
+}
+.icon-freetext {
+  --tb-icon: var(--tbi-freetext);
+}
+.icon-highlight {
+  --tb-icon: var(--tbi-highlight);
+}
+.icon-ink {
+  --tb-icon: var(--tbi-ink);
+}
+.icon-stamp {
+  --tb-icon: var(--tbi-stamp);
+}
+.icon-page-up {
+  --tb-icon: var(--tbi-page-up);
+}
+.icon-page-down {
+  --tb-icon: var(--tbi-page-down);
+}
+.icon-zoom-in {
+  --tb-icon: var(--tbi-zoom-in);
+}
+.icon-zoom-out {
+  --tb-icon: var(--tbi-zoom-out);
 }
 
 .tb-btn:hover:enabled {
