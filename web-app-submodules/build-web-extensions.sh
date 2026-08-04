@@ -31,6 +31,7 @@ STANDALONE_PNPM_SUBMODULES=(
   "3dviewer|opencloud-3dviewer"
   "web-calendar|opencloud-web-calendar"
   "blockberry-editor|blockberry-editor|dist/web"
+  "pdf-annotator|pdf-annotator|dist/web"
 )
 
 if [[ -f "${ROOT_DIR}/.env" ]]; then
@@ -51,7 +52,7 @@ Build OpenCloud web extensions and deploy them to OC_APPS_DIR (default: config/o
 
 With no APP arguments, apps from web-extensions are taken from OC_WEB_APPS in .env and all
 standalone submodule extensions are built (comments, 3dviewer, web-calendar, blockberry-editor,
-presentation-viewer).
+pdf-annotator, presentation-viewer).
 
 With APP arguments, only the listed extensions are built and deployed.
 
@@ -63,6 +64,7 @@ Standalone submodule repos (aliases in parentheses):
   3dviewer (opencloud-3dviewer)
   web-calendar (opencloud-web-calendar, calendar)
   blockberry-editor (blockberry)
+  pdf-annotator (in-tree, no submodule)
   mdpresentation-viewer (presentation-viewer, web-app-presentation-viewer)
 
 Options:
