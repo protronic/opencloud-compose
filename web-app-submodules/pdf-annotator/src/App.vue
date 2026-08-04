@@ -1,72 +1,171 @@
 <template>
   <div class="pdf-annotator">
     <header class="toolbar">
-      <div v-if="!isReadOnly" class="tool-group" role="toolbar" aria-label="Anmerkungswerkzeuge">
+      <div class="toolbar-group" aria-label="Seitennavigation">
         <button
           type="button"
-          :class="{active: editorMode === modes.NONE}"
-          title="Auswählen und Navigieren"
-          @click="setMode(modes.NONE)"
+          class="tb-btn"
+          title="Vorherige Seite"
+          aria-label="Vorherige Seite"
+          :disabled="!pdfLoaded || currentPage <= 1"
+          @click="goPage(-1)"
         >
-          Auswahl
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 5.2 13.4 10.6l-1.1 1.1L8 7.4l-4.3 4.3-1.1-1.1z" />
+          </svg>
         </button>
         <button
           type="button"
-          :class="{active: editorMode === modes.HIGHLIGHT}"
-          title="Text markieren"
-          @click="setMode(modes.HIGHLIGHT)"
+          class="tb-btn"
+          title="Nächste Seite"
+          aria-label="Nächste Seite"
+          :disabled="!pdfLoaded || currentPage >= pageCount"
+          @click="goPage(1)"
         >
-          Markieren
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 10.8 2.6 5.4l1.1-1.1L8 8.6l4.3-4.3 1.1 1.1z" />
+          </svg>
         </button>
-        <button
-          type="button"
-          :class="{active: editorMode === modes.FREETEXT}"
-          title="Textnotiz einfügen"
-          @click="setMode(modes.FREETEXT)"
-        >
-          Notiz
-        </button>
-        <button
-          type="button"
-          :class="{active: editorMode === modes.INK}"
-          title="Freihand zeichnen"
-          @click="setMode(modes.INK)"
-        >
-          Zeichnen
-        </button>
-        <button
-          type="button"
-          :class="{active: editorMode === modes.STAMP}"
-          title="Bild oder Stempel einfügen"
-          @click="setMode(modes.STAMP)"
-        >
-          Stempel
-        </button>
-      </div>
-      <span v-else class="readonly-hint">Schreibgeschützt</span>
-
-      <div class="tool-group zoom" aria-label="Zoom">
-        <button type="button" title="Verkleinern" @click="zoomOut">−</button>
-        <span class="zoom-label">{{ zoomLabel }}</span>
-        <button type="button" title="Vergrößern" @click="zoomIn">+</button>
-        <button type="button" title="An Seitenbreite anpassen" @click="fitWidth">Breite</button>
+        <input
+          v-model="pageInputValue"
+          class="page-input"
+          type="text"
+          inputmode="numeric"
+          title="Seite"
+          aria-label="Seite"
+          :disabled="!pdfLoaded"
+          @change="onPageSubmit"
+          @keydown.enter="onPageSubmit"
+        />
+        <span class="page-count">von {{ pageCount }}</span>
       </div>
 
-      <span class="page-indicator">Seite {{ currentPage }} / {{ pageCount }}</span>
+      <span class="separator" aria-hidden="true" />
+
+      <div class="toolbar-group" aria-label="Zoom">
+        <button
+          type="button"
+          class="tb-btn"
+          title="Verkleinern"
+          aria-label="Verkleinern"
+          :disabled="!pdfLoaded"
+          @click="zoomOut"
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M3 7.25h10v1.5H3z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="tb-btn"
+          title="Vergrößern"
+          aria-label="Vergrößern"
+          :disabled="!pdfLoaded"
+          @click="zoomIn"
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M7.25 3h1.5v4.25H13v1.5H8.75V13h-1.5V8.75H3v-1.5h4.25z" />
+          </svg>
+        </button>
+        <select
+          v-model="zoomSelect"
+          class="zoom-select"
+          title="Zoom"
+          aria-label="Zoom"
+          :disabled="!pdfLoaded"
+          @change="onZoomSelect"
+        >
+          <option v-if="zoomSelect === 'custom'" value="custom">{{ customZoomLabel }}</option>
+          <option v-for="preset in zoomPresets" :key="preset.value" :value="preset.value">
+            {{ preset.label }}
+          </option>
+        </select>
+      </div>
 
       <span class="spacer" />
 
-      <span v-if="statusText" class="status">{{ statusText }}</span>
-      <button
-        v-if="!isReadOnly"
-        type="button"
-        class="save-button"
-        :disabled="!pdfLoaded || saving"
-        title="Anmerkungen in OpenCloud speichern"
-        @click="saveNow"
-      >
-        Speichern
-      </button>
+      <span v-if="statusText" class="status-hint">{{ statusText }}</span>
+
+      <template v-if="!isReadOnly">
+        <span class="separator" aria-hidden="true" />
+        <div class="toolbar-group" role="toolbar" aria-label="Anmerkungswerkzeuge">
+          <button
+            type="button"
+            class="tb-btn"
+            :class="{toggled: editorMode === modes.NONE}"
+            title="Auswahlwerkzeug"
+            aria-label="Auswahlwerkzeug"
+            :disabled="!pdfLoaded"
+            @click="setMode(modes.NONE)"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M4.5 1.7 12.9 9l-3.9.6 2.2 4.3-1.7.9-2.2-4.4-2.8 2.8z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="tb-btn"
+            :class="{toggled: editorMode === modes.HIGHLIGHT}"
+            title="Text markieren"
+            aria-label="Text markieren"
+            :disabled="!pdfLoaded"
+            @click="setMode(modes.HIGHLIGHT)"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M1.5 13.4h13v1.6h-13z" />
+              <path d="m9.7 2 3.8 3.8-5.6 5.6-4.6.8.8-4.6zm-5 6.9-.4 2.3 2.3-.4 4.7-4.7-1.9-1.9z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="tb-btn"
+            :class="{toggled: editorMode === modes.FREETEXT}"
+            title="Textnotiz einfügen"
+            aria-label="Textnotiz einfügen"
+            :disabled="!pdfLoaded"
+            @click="setMode(modes.FREETEXT)"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M7.1 2h1.8l4.4 12h-1.9l-1-2.9H5.6l-1 2.9H2.7zm.9 2.7L6.2 9.4h3.6z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="tb-btn"
+            :class="{toggled: editorMode === modes.INK}"
+            title="Freihand zeichnen"
+            aria-label="Freihand zeichnen"
+            :disabled="!pdfLoaded"
+            @click="setMode(modes.INK)"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M11.2 1.7a1.4 1.4 0 0 1 2 0l1.1 1.1a1.4 1.4 0 0 1 0 2L6 13.1l-4.4 1.3L2.9 10zm-6.9 9.1-.6 2 2-.6 7.5-7.5-1.4-1.4z"
+              />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="tb-btn"
+            :class="{toggled: editorMode === modes.STAMP}"
+            title="Bild einfügen"
+            aria-label="Bild einfügen"
+            :disabled="!pdfLoaded"
+            @click="setMode(modes.STAMP)"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M2.5 3h11a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm.5 8.5h10L9.8 7l-2.6 3-1.6-1.6z"
+              />
+              <circle cx="5.4" cy="6" r="1.1" />
+            </svg>
+          </button>
+        </div>
+      </template>
+      <template v-else>
+        <span class="separator" aria-hidden="true" />
+        <span class="status-hint">Schreibgeschützt</span>
+      </template>
     </header>
 
     <main class="viewer-region">
@@ -105,7 +204,6 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (event: 'update:currentContent', value: ArrayBuffer): void;
-  (event: 'save'): void;
 }>();
 
 const modes = {
@@ -116,12 +214,28 @@ const modes = {
   STAMP: AnnotationEditorType.STAMP,
 } as const;
 
+const zoomPresets = [
+  {value: 'auto', label: 'Automatisch'},
+  {value: 'page-fit', label: 'Seitengröße'},
+  {value: 'page-width', label: 'Seitenbreite'},
+  {value: '0.5', label: '50 %'},
+  {value: '0.75', label: '75 %'},
+  {value: '1', label: '100 %'},
+  {value: '1.25', label: '125 %'},
+  {value: '1.5', label: '150 %'},
+  {value: '2', label: '200 %'},
+  {value: '3', label: '300 %'},
+  {value: '4', label: '400 %'},
+];
+
 const containerElement = ref<HTMLDivElement>();
 const viewerElement = ref<HTMLDivElement>();
 const editorMode = ref<number>(modes.NONE);
 const currentPage = ref(1);
+const pageInputValue = ref('1');
 const pageCount = ref(0);
 const scale = ref(1);
+const zoomSelect = ref('page-width');
 const pdfLoaded = ref(false);
 const saving = ref(false);
 const pendingCommit = ref(false);
@@ -143,11 +257,15 @@ let loadToken = 0;
 let lastEmitted: ArrayBuffer | undefined;
 let lastAppliedContent: ContentValue | undefined;
 
-const zoomLabel = computed(() => `${Math.round(scale.value * 100)} %`);
+const customZoomLabel = computed(() => `${Math.round(scale.value * 100)} %`);
 const statusText = computed(() => {
   if (saving.value) return 'Anmerkungen werden übernommen …';
-  if (pendingCommit.value) return 'Ungespeicherte Anmerkungen';
+  if (pendingCommit.value) return 'Anmerkung ausstehend';
   return '';
+});
+
+watch(currentPage, (page) => {
+  pageInputValue.value = String(page);
 });
 
 function toBytes(value: ContentValue | undefined): Uint8Array {
@@ -263,12 +381,20 @@ async function commitAnnotations(): Promise<void> {
   }
 }
 
-async function saveNow(): Promise<void> {
-  // Leaving the editor mode commits any annotation that is still open.
-  setMode(modes.NONE);
-  window.clearTimeout(commitTimer);
-  await commitAnnotations();
-  emit('save');
+function goPage(delta: number): void {
+  if (!viewer.value || !pdfLoaded.value) return;
+  const target = Math.min(Math.max(currentPage.value + delta, 1), pageCount.value || 1);
+  viewer.value.currentPageNumber = target;
+}
+
+function onPageSubmit(): void {
+  if (!viewer.value || !pdfLoaded.value) return;
+  const parsed = Number.parseInt(pageInputValue.value, 10);
+  const target = Number.isFinite(parsed)
+    ? Math.min(Math.max(parsed, 1), pageCount.value || 1)
+    : currentPage.value;
+  pageInputValue.value = String(target);
+  viewer.value.currentPageNumber = target;
 }
 
 function zoomIn(): void {
@@ -281,9 +407,14 @@ function zoomOut(): void {
   viewer.value.currentScale = Math.max(0.25, viewer.value.currentScale / 1.1);
 }
 
-function fitWidth(): void {
-  if (!viewer.value || !pdfLoaded.value) return;
-  viewer.value.currentScaleValue = 'page-width';
+function onZoomSelect(): void {
+  if (!viewer.value || !pdfLoaded.value || zoomSelect.value === 'custom') return;
+  const value = zoomSelect.value;
+  if (value === 'auto' || value === 'page-fit' || value === 'page-width') {
+    viewer.value.currentScaleValue = value;
+  } else {
+    viewer.value.currentScale = Number.parseFloat(value);
+  }
 }
 
 watch(
@@ -320,13 +451,25 @@ onMounted(() => {
   eventBus.on('pagesinit', () => {
     if (!viewer.value) return;
     viewer.value.currentScaleValue = 'page-width';
+    zoomSelect.value = 'page-width';
   });
   eventBus.on('pagechanging', ({pageNumber}: {pageNumber: number}) => {
     currentPage.value = pageNumber;
   });
-  eventBus.on('scalechanging', ({scale: newScale}: {scale: number}) => {
-    scale.value = newScale;
-  });
+  eventBus.on(
+    'scalechanging',
+    ({scale: newScale, presetValue}: {scale: number; presetValue?: string}) => {
+      scale.value = newScale;
+      if (presetValue) {
+        zoomSelect.value = String(presetValue);
+        return;
+      }
+      const preset = zoomPresets.find(
+        (entry) => Math.abs(Number.parseFloat(entry.value) - newScale) < 0.001,
+      );
+      zoomSelect.value = preset ? preset.value : 'custom';
+    },
+  );
   resizeObserver = new ResizeObserver(() => {
     if (!viewer.value || !pdfLoaded.value) return;
     const scaleValue = viewer.value.currentScaleValue;
@@ -354,72 +497,157 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .pdf-annotator {
+  --toolbar-bg: #f9f9fa;
+  --toolbar-border: #b6b6b8;
+  --toolbar-text: #2a2a2e;
+  --toolbar-icon: #5b5b66;
+  --toolbar-muted: #6f6f77;
+  --button-hover: #dddedf;
+  --toggled-bg: #cfcfd4;
+  --toggled-hover: #c2c2c9;
+  --separator: #b6b6b8;
+  --field-bg: #ffffff;
+  --field-border: #8f8f9d;
+  --accent: #0060df;
+  --body-bg: #d4d4d7;
+
+  color-scheme: light;
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
   min-height: 0;
-  background: #f0f2f4;
+  background: var(--body-bg);
   font-family: system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pdf-annotator {
+    --toolbar-bg: #38383d;
+    --toolbar-border: #0c0c0d;
+    --toolbar-text: #f9f9fa;
+    --toolbar-icon: #fbfbfe;
+    --toolbar-muted: #b1b1b9;
+    --button-hover: #4a4a4f;
+    --toggled-bg: #5b5b66;
+    --toggled-hover: #67676f;
+    --separator: #5b5b66;
+    --field-bg: #2a2a2e;
+    --field-border: #8f8f9d;
+    --accent: #4db2ff;
+    --body-bg: #2a2a2e;
+    color-scheme: dark;
+  }
 }
 
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 2px;
   flex-wrap: wrap;
-  padding: 8px 12px;
-  background: #ffffff;
-  border-bottom: 1px solid #d8dde2;
+  min-height: 40px;
+  padding: 4px 8px;
+  background: var(--toolbar-bg);
+  border-bottom: 1px solid var(--toolbar-border);
+  color: var(--toolbar-text);
+  font-size: 13px;
 }
 
-.tool-group {
+.toolbar-group {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
-.toolbar button {
-  padding: 5px 10px;
-  border: 1px solid #c6ccd2;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #1f2428;
-  font-size: 13px;
+.tb-btn {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--toolbar-icon);
   cursor: pointer;
 }
 
-.toolbar button:hover:not(:disabled) {
-  background: #eef1f4;
+.tb-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
 }
 
-.toolbar button.active {
-  background: #1f2428;
-  border-color: #1f2428;
-  color: #ffffff;
+.tb-btn:hover:enabled {
+  background: var(--button-hover);
 }
 
-.toolbar button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
+.tb-btn.toggled {
+  background: var(--toggled-bg);
+  color: var(--toolbar-text);
 }
 
-.save-button {
-  font-weight: 600;
+.tb-btn.toggled:hover:enabled {
+  background: var(--toggled-hover);
 }
 
-.zoom-label {
-  min-width: 48px;
+.tb-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.tb-btn:focus-visible,
+.page-input:focus-visible,
+.zoom-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.separator {
+  width: 1px;
+  height: 20px;
+  margin: 0 6px;
+  background: var(--separator);
+}
+
+.page-input {
+  width: 40px;
+  height: 24px;
+  margin-left: 4px;
+  border: 1px solid var(--field-border);
+  border-radius: 4px;
+  background: var(--field-bg);
+  color: var(--toolbar-text);
+  font-size: 13px;
   text-align: center;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
 }
 
-.page-indicator,
-.readonly-hint,
-.status {
-  font-size: 13px;
-  color: #4a5560;
+.page-count {
+  margin-left: 6px;
+  color: var(--toolbar-muted);
+  white-space: nowrap;
+}
+
+.zoom-select {
+  height: 24px;
+  min-width: 120px;
+  margin-left: 4px;
+  padding: 0 22px 0 8px;
+  border: 1px solid var(--field-border);
+  border-radius: 4px;
+  appearance: none;
+  background-color: var(--field-bg);
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%238f8f9d' d='M8 10.8 2.6 5.4l1.1-1.1L8 8.6l4.3-4.3 1.1 1.1z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 12px;
+  color: var(--toolbar-text);
+  font-size: 12px;
+}
+
+.status-hint {
+  color: var(--toolbar-muted);
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -437,7 +665,7 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   overflow: auto;
-  background: #f0f2f4;
+  background: var(--body-bg);
 }
 
 .error-banner {

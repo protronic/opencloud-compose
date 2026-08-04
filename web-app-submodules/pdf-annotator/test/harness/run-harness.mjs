@@ -27,20 +27,24 @@ try {
 
   // 1. The sample PDF renders through the AppWrapper-style props.
   await page.waitForSelector('.pdfViewer .page canvas', {timeout: 20000});
-  const pageIndicator = await page.textContent('.page-indicator');
+  const pageCount = await page.textContent('.page-count');
   check(
-    pageIndicator?.includes('/ 2'),
-    `page indicator should show 2 pages, got "${pageIndicator}"`,
+    pageCount?.includes('von 2'),
+    `page count should show "von 2", got "${pageCount}"`,
+  );
+  check(
+    (await page.locator('.save-button').count()) === 0,
+    'toolbar must not contain a save button (OpenCloud top bar saves)',
   );
 
   // 2. Add a FreeText note via toolbar + click + keyboard.
-  await page.click('button:has-text("Notiz")');
+  await page.click('button[title="Textnotiz einfügen"]');
   await page.waitForTimeout(300);
   const pdfPage = page.locator('.pdfViewer .page').first();
   await pdfPage.click({position: {x: 320, y: 240}});
   await page.keyboard.type('Prüfvermerk Protronic');
   // Blur commits the free text editor.
-  await page.click('button:has-text("Auswahl")');
+  await page.click('button[title="Auswahlwerkzeug"]');
 
   // 3. Wait for the debounced commit to emit the annotated PDF.
   await page.waitForFunction(() => window.__harness.emitted.length > 0, null, {
@@ -66,11 +70,11 @@ try {
     `emitted PDF should contain a FreeText annotation, got [${verification.annotationSubtypes.join(', ')}]`,
   );
 
-  // 5. The save button triggers the AppWrapper save event.
-  await page.click('.save-button');
-  await page.waitForTimeout(500);
-  const saves = await page.evaluate(() => window.__harness.saves);
-  check(saves > 0, 'save button did not emit the save event');
+  // 5. The pdf.js-style zoom select drives the viewer scale.
+  await page.selectOption('.zoom-select', '1');
+  await page.waitForTimeout(400);
+  const zoomValue = await page.inputValue('.zoom-select');
+  check(zoomValue === '1', `zoom select should hold "1" (100 %), got "${zoomValue}"`);
 
   const errors = await page.evaluate(() => window.__harness.errors);
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
@@ -82,7 +86,7 @@ if (problems.length) {
   console.error(`✗ pdf-annotator harness\n  ${problems.join('\n  ')}`);
   console.error(consoleLines.join('\n'));
 } else {
-  console.log('✓ pdf-annotator harness: render, annotate, emit, verify, save');
+  console.log('✓ pdf-annotator harness: render, annotate, emit, verify, zoom');
 }
 
 await browser.close();

@@ -133,9 +133,6 @@ const Host = defineComponent({
           });
           currentContent.value = value;
         },
-        onSave: () => {
-          window.__harness.saves += 1;
-        },
       });
   },
 });
