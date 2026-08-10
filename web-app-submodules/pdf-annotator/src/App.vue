@@ -232,6 +232,19 @@ const aboutIconSvg =
   "<path d='M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1zm0 1.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM8 3.9a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2zM7.1 7h1.8v5.2H7.1z'/>" +
   '</svg>';
 
+// Firefox paints mask-image icons on the annotation-UI pseudo elements at a
+// displaced position (production diagnostics: DOM geometry correct, icons
+// visibly astray), so those icons are rendered as pre-tinted background
+// images instead. The pdf.js sources use fill='black' / fill='%23000'.
+function tintIcon(dataUri: string, color: string): string {
+  return dataUri
+    .replaceAll("fill='black'", `fill='${color}'`)
+    .replaceAll("fill='%23000'", `fill='${color}'`);
+}
+
+const ICON_GRAY = '%235B5B66';
+const ICON_LIGHT = '%23FBFBFE';
+
 const iconVars = {
   '--tbi-select': `url("${iconSelect}")`,
   '--tbi-about': `url("data:image/svg+xml,${encodeURIComponent(aboutIconSvg)}")`,
@@ -244,10 +257,14 @@ const iconVars = {
   '--tbi-zoom-in': `url("${iconZoomIn}")`,
   '--tbi-zoom-out': `url("${iconZoomOut}")`,
   '--comment-edit-button-icon': `url("${iconCommentEdit}")`,
-  // Fallback for the delete icon in case the pdfjs-dist components
-  // stylesheet (which defines --editor-toolbar-delete-image on .editToolbar)
-  // is overridden by host styles.
-  '--pdfa-delete-icon': `url("${iconEditorDelete}")`,
+  // Pre-tinted icons for the mask-free background-image rendering of the
+  // annotation UI buttons (see the hardening styles below).
+  '--pdfa-icon-comment': `url("${tintIcon(iconCommentEdit, ICON_GRAY)}")`,
+  '--pdfa-icon-comment-invert': `url("${tintIcon(iconCommentEdit, ICON_LIGHT)}")`,
+  '--pdfa-icon-delete': `url("${tintIcon(iconEditorDelete, ICON_GRAY)}")`,
+  '--pdfa-icon-delete-invert': `url("${tintIcon(iconEditorDelete, ICON_LIGHT)}")`,
+  '--pdfa-icon-highlight': `url("${tintIcon(iconHighlight, ICON_GRAY)}")`,
+  '--pdfa-icon-highlight-invert': `url("${tintIcon(iconHighlight, ICON_LIGHT)}")`,
   // pdf.js positions the edit toolbar and the standalone comment button via
   // inline `calc(...% + var(...))` styles whose variables live in a :root
   // rule of pdf_viewer.css - i.e. on the shared <html> of the whole
@@ -1224,6 +1241,10 @@ onBeforeUnmount(() => {
   background-color: var(--editor-toolbar-hover-bg-color, #e0e0e6);
 }
 
+/* Mask-free icon rendering: Firefox paints mask-image pseudo-element icons
+   of this UI at a displaced position (production diagnostics showed correct
+   DOM geometry while the icons visibly rendered far below their buttons),
+   so the icons are pre-tinted SVGs drawn as plain background images. */
 .pdf-annotator
   .editToolbar
   .buttons
@@ -1235,38 +1256,38 @@ onBeforeUnmount(() => {
   height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
-  /* The app's own theme variables instead of the pdf.js ones: the pdf.js
-     colors run through a light-dark() polyfill keyed on :root state that
-     the host page controls, which can paint the icons white-on-white. */
-  background-color: var(--toolbar-icon) !important;
-  -webkit-mask-repeat: no-repeat !important;
-  mask-repeat: no-repeat !important;
-  -webkit-mask-position: center !important;
-  mask-position: center !important;
-  -webkit-mask-size: auto !important;
-  mask-size: auto !important;
-}
-
-.pdf-annotator
-  .editToolbar
-  .buttons
-  > :is(.basic, .comment, .commentButton, .deleteButton, .highlightButton):hover::before {
-  background-color: var(--toolbar-text) !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  background-color: transparent !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 16px 16px !important;
 }
 
 .pdf-annotator .editToolbar .buttons > :is(.comment, .commentButton)::before {
-  -webkit-mask-image: var(--comment-edit-button-icon) !important;
-  mask-image: var(--comment-edit-button-icon) !important;
+  background-image: var(--pdfa-icon-comment) !important;
 }
 
 .pdf-annotator .editToolbar .buttons > .deleteButton::before {
-  -webkit-mask-image: var(--editor-toolbar-delete-image, var(--pdfa-delete-icon)) !important;
-  mask-image: var(--editor-toolbar-delete-image, var(--pdfa-delete-icon)) !important;
+  background-image: var(--pdfa-icon-delete) !important;
 }
 
 .pdf-annotator .editToolbar .buttons > .highlightButton::before {
-  -webkit-mask-image: var(--editor-toolbar-highlight-image, var(--tbi-highlight)) !important;
-  mask-image: var(--editor-toolbar-highlight-image, var(--tbi-highlight)) !important;
+  background-image: var(--pdfa-icon-highlight) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  .pdf-annotator .editToolbar .buttons > :is(.comment, .commentButton)::before {
+    background-image: var(--pdfa-icon-comment-invert) !important;
+  }
+
+  .pdf-annotator .editToolbar .buttons > .deleteButton::before {
+    background-image: var(--pdfa-icon-delete-invert) !important;
+  }
+
+  .pdf-annotator .editToolbar .buttons > .highlightButton::before {
+    background-image: var(--pdfa-icon-highlight-invert) !important;
+  }
 }
 
 /* Standalone comment bubble on annotations that carry a comment. */
@@ -1290,15 +1311,15 @@ onBeforeUnmount(() => {
   height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
-  -webkit-mask-image: var(--comment-edit-button-icon) !important;
-  mask-image: var(--comment-edit-button-icon) !important;
-  -webkit-mask-repeat: no-repeat !important;
-  mask-repeat: no-repeat !important;
-  -webkit-mask-size: cover !important;
-  mask-size: cover !important;
-  /* Literal color: the bubble background is always a light pastel mixed
+  -webkit-mask: none !important;
+  mask: none !important;
+  background-color: transparent !important;
+  /* Always the gray tint: the bubble background is a light pastel mixed
      from the annotation color, independent of the host color scheme. */
-  background-color: #5b5b66 !important;
+  background-image: var(--pdfa-icon-comment) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: contain !important;
 }
 
 .pdf-annotator .annotationLayer.disabled .annotationCommentButton {
