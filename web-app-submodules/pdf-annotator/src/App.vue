@@ -236,6 +236,18 @@ const iconVars = {
   // stylesheet (which defines --editor-toolbar-delete-image on .editToolbar)
   // is overridden by host styles.
   '--pdfa-delete-icon': `url("${iconEditorDelete}")`,
+  // pdf.js positions the edit toolbar and the standalone comment button via
+  // inline `calc(...% + var(...))` styles whose variables live in a :root
+  // rule of pdf_viewer.css - i.e. on the shared <html> of the whole
+  // OpenCloud page, where any other extension (e.g. another pdf.js copy)
+  // can clobber them. A missing variable turns the whole calc() invalid,
+  // `top` collapses to auto and the element falls to the bottom of the
+  // page while its inline-end offset keeps working - annotations icons
+  // then render detached near the page bottom. Defining the variables
+  // inline on the app root makes our subtree independent of :root.
+  '--editor-toolbar-vert-offset': '6px',
+  '--comment-button-dim': '24px',
+  '--dir-factor': '1',
 };
 
 type ContentValue = ArrayBuffer | Uint8Array | string;
@@ -984,6 +996,10 @@ onBeforeUnmount(() => {
    !important rules so host stylesheets cannot displace them. */
 .pdf-annotator :is(.annotationEditorLayer, .textLayer, .annotationLayer) .editToolbar {
   position: absolute !important;
+  background: var(--toolbar-bg) !important;
+  border: 1px solid var(--toolbar-border) !important;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px 0 rgba(58, 57, 68, 0.2);
 }
 
 .pdf-annotator .editToolbar.hidden {
@@ -1033,6 +1049,23 @@ onBeforeUnmount(() => {
   position: static !important;
   display: inline-block !important;
   width: 1px !important;
+  background-color: var(--separator) !important;
+}
+
+/* The color-picker button needs position:relative as anchor for its
+   dropdown; the plain ink color swatch is a regular flow child. */
+.pdf-annotator .editToolbar .buttons > .colorPicker {
+  position: relative !important;
+  inset: auto !important;
+  margin: 0 !important;
+  float: none !important;
+}
+
+.pdf-annotator .editToolbar .buttons > .basicColorPicker {
+  position: static !important;
+  inset: auto !important;
+  margin: 0 !important;
+  float: none !important;
 }
 
 .pdf-annotator .editToolbar .buttons > :not(.divider):hover {
@@ -1051,7 +1084,10 @@ onBeforeUnmount(() => {
   height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
-  background-color: var(--editor-toolbar-fg-color, #2e2e56) !important;
+  /* The app's own theme variables instead of the pdf.js ones: the pdf.js
+     colors run through a light-dark() polyfill keyed on :root state that
+     the host page controls, which can paint the icons white-on-white. */
+  background-color: var(--toolbar-icon) !important;
   -webkit-mask-repeat: no-repeat !important;
   mask-repeat: no-repeat !important;
   -webkit-mask-position: center !important;
@@ -1064,7 +1100,7 @@ onBeforeUnmount(() => {
   .editToolbar
   .buttons
   > :is(.basic, .comment, .commentButton, .deleteButton, .highlightButton):hover::before {
-  background-color: var(--editor-toolbar-hover-fg-color, #28282e) !important;
+  background-color: var(--toolbar-text) !important;
 }
 
 .pdf-annotator .editToolbar .buttons > :is(.comment, .commentButton)::before {
@@ -1096,6 +1132,9 @@ onBeforeUnmount(() => {
   .annotationCommentButton::before {
   content: '' !important;
   display: inline-block !important;
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
   width: 100% !important;
   height: 100% !important;
   margin: 0 !important;
@@ -1106,7 +1145,9 @@ onBeforeUnmount(() => {
   mask-repeat: no-repeat !important;
   -webkit-mask-size: cover !important;
   mask-size: cover !important;
-  background-color: var(--comment-button-fg, #5b5b66) !important;
+  /* Literal color: the bubble background is always a light pastel mixed
+     from the annotation color, independent of the host color scheme. */
+  background-color: #5b5b66 !important;
 }
 
 .pdf-annotator .annotationLayer.disabled .annotationCommentButton {
