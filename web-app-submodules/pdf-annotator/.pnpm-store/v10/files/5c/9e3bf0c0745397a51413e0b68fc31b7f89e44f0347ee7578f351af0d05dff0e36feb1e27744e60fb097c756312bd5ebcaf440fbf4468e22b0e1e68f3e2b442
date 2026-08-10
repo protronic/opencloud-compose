@@ -1,4 +1,0 @@
-import { RouteLocation } from 'vue-router';
-import { BreadcrumbItem } from '@opencloud-eu/design-system/helpers';
-export declare const breadcrumbsFromPath: (currentRoute: RouteLocation, resourcePath: string) => BreadcrumbItem[];
-export declare const concatBreadcrumbs: (...items: BreadcrumbItem[]) => BreadcrumbItem[];

@@ -1,4 +1,0 @@
-import type { Resource } from '@opencloud-eu/web-client';
-export declare function useInterceptModifierClick(): {
-    interceptModifierClick: (event: MouseEvent | KeyboardEvent | undefined, resource: Resource) => boolean;
-};

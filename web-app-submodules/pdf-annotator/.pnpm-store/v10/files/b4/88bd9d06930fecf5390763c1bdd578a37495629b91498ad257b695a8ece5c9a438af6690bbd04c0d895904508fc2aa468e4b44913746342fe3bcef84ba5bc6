@@ -1,4 +1,0 @@
-import { ComputedRef, Ref } from 'vue';
-export declare function useViewMode(options: ComputedRef<string>): ComputedRef<string>;
-export declare function useViewSize(options: ComputedRef<string>): ComputedRef<number>;
-export declare function useViewSizeMax(): Ref<number>;

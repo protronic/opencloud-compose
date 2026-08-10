@@ -1,4 +1,0 @@
-import { SpaceResource } from '@opencloud-eu/web-client';
-export declare const useSpaceHelpers: () => {
-    getDefaultMetaFolder: (space: SpaceResource) => Promise<import("@opencloud-eu/web-client").Resource>;
-};

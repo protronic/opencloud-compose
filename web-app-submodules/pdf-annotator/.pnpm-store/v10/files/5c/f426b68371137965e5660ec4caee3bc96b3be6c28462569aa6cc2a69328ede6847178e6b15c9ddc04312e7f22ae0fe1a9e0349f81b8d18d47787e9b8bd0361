@@ -1,7 +1,0 @@
-import { Headers } from 'webdav';
-import { WebDAV } from './types';
-export * from './constants';
-export * from './types';
-export type { ListFilesOptions, ListFilesResult } from './listFiles';
-export type { GetFileContentsResponse } from './getFileContents';
-export declare const webdav: (baseURI: string, headers?: () => Headers) => WebDAV;

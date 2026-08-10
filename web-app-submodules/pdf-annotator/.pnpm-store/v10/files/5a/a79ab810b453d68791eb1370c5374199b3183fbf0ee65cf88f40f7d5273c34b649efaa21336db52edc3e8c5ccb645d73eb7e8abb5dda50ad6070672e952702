@@ -1,9 +1,0 @@
-import { RouteComponents } from './router';
-import { RouteLocationNamedRaw, RouteRecordRaw } from 'vue-router';
-type trashTypes = 'files-trash-generic' | 'files-trash-overview';
-export declare const createLocationTrash: (name: trashTypes, location?: {}) => RouteLocationNamedRaw;
-export declare const locationTrashGeneric: RouteLocationNamedRaw;
-export declare const locationTrashOverview: RouteLocationNamedRaw;
-export declare const isLocationTrashActive: import("./utils").ActiveRouteDirectorFunc<trashTypes>;
-export declare const buildRoutes: (components: RouteComponents) => RouteRecordRaw[];
-export {};

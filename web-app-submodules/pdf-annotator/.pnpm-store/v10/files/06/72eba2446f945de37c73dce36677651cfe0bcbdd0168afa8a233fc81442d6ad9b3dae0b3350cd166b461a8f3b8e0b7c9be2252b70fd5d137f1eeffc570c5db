@@ -1,7 +1,0 @@
-import { FileAction } from '../types';
-import { Ref } from 'vue';
-export declare const useFileActionsSaveAs: ({ content }: {
-    content: Ref<unknown>;
-}) => {
-    actions: import("vue").ComputedRef<FileAction[]>;
-};

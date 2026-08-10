@@ -1,2 +1,0 @@
-export declare function buildWebDavPublicPath(publicLinkToken: string, path?: string): string;
-export declare function buildWebDavOcmPath(publicLinkToken: string, path?: string): string;

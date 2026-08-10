@@ -1,3 +1,0 @@
-import type { GraphFactoryOptions } from './../types';
-import type { GraphGroups } from './types';
-export declare const GroupsFactory: ({ axiosClient, config }: GraphFactoryOptions) => GraphGroups;

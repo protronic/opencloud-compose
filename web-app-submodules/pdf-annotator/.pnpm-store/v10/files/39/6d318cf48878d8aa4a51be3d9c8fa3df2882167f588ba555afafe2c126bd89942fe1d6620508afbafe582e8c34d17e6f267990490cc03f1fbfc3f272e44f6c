@@ -1,8 +1,0 @@
-export declare class EventBus {
-    private topics;
-    constructor();
-    subscribe<T = unknown>(topic: string, callback: (data?: T) => void): string;
-    publish(topic: string, data?: unknown): void;
-    unsubscribe(topic: string, token: string): void;
-}
-export declare const eventBus: EventBus;

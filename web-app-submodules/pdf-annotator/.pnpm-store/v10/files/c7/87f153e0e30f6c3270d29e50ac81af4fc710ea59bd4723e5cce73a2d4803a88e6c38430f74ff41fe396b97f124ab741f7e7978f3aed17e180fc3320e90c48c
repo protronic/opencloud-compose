@@ -1,2 +1,0 @@
-import { Resource } from '@opencloud-eu/web-client';
-export declare const isSameResource: (r1: Resource, r2: Resource) => boolean;

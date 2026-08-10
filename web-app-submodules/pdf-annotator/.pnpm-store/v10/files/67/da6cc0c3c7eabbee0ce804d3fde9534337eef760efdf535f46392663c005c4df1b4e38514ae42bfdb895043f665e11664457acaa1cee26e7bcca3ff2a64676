@@ -1,7 +1,0 @@
-import { SpaceAction } from '../types';
-import { SpaceResource } from '@opencloud-eu/web-client';
-export declare const useSpaceActionsCreate: ({ onSpaceCreated }?: {
-    onSpaceCreated?: (space: SpaceResource) => void;
-}) => {
-    actions: import("vue").ComputedRef<SpaceAction[]>;
-};

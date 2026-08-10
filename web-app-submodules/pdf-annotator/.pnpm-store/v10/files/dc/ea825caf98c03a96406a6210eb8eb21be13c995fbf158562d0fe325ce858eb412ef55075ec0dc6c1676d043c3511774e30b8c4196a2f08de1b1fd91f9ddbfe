@@ -1,2 +1,0 @@
-import { Router } from 'vue-router';
-export declare const buildUrl: (router: Router, pathname: string) => string;

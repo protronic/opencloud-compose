@@ -1,3 +1,0 @@
-import { Ref } from 'vue';
-import { RouteLocationNormalizedLoaded } from 'vue-router';
-export declare const useRoute: () => Ref<RouteLocationNormalizedLoaded>;

@@ -1,5 +1,0 @@
-import type { AnyAbility, MongoAbility } from '@casl/ability';
-import { InjectionKey } from 'vue';
-export declare const ABILITY_TOKEN: InjectionKey<AnyAbility>;
-export declare function useAbility<T extends AnyAbility = MongoAbility>(): T;
-export declare function provideAbility(ability: AnyAbility): void;

@@ -1,4 +1,0 @@
-import { FileAction } from '../types';
-export declare const useFileActionsDelete: () => {
-    actions: import("vue").ComputedRef<FileAction[]>;
-};

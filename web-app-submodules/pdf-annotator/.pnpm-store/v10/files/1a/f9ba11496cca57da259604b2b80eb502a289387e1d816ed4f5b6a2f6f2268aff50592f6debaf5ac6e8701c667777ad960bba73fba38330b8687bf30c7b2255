@@ -1,2 +1,0 @@
-import { a as e, t } from "../ocs-BX4C1k3k.js";
-export { e as GetCapabilitiesFactory, t as ocs };

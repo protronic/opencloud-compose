@@ -1,2 +1,0 @@
-import { ArchiverService } from '../../services';
-export declare const useArchiverService: () => ArchiverService;

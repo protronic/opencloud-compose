@@ -17,3 +17,6 @@
 	path = web-app-submodules/blockberry-editor
 	url = git@github.com:protronic/blockberry-editor.git
 	branch = main
+[submodule "web-app-submodules/pdf-annotator"]
+	path = web-app-submodules/pdf-annotator
+	url = git@github.com:protronic/pdf-annotator.git

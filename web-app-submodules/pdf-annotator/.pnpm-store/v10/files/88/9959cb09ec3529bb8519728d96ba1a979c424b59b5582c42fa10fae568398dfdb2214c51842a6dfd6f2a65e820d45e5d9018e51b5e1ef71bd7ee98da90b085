@@ -1,4 +1,0 @@
-import { Resource } from '@opencloud-eu/web-client';
-export declare const useCanBeOpenedWithSecureView: () => {
-    canBeOpenedWithSecureView: (resource: Resource) => boolean;
-};

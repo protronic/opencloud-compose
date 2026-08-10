@@ -1,5 +1,0 @@
-import type { ContentType, TextEditorState } from '../types';
-import { ContentTypeStrategy } from './strategies';
-export declare const useContentStrategy: () => {
-    resolveStrategy: (contentType: ContentType, editorState: TextEditorState) => ContentTypeStrategy;
-};

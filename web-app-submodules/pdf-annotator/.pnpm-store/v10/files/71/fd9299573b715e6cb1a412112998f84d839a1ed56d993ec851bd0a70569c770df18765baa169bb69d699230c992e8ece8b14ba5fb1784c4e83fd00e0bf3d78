@@ -1,3 +1,0 @@
-export declare const useRequestHeaders: () => {
-    headers: import("vue").ComputedRef<Record<string, string>>;
-};

@@ -1,5 +1,0 @@
-import { Resource, SpaceResource } from '@opencloud-eu/web-client';
-export declare const useFileActionsDeleteResources: () => {
-    displayDialog: (space: SpaceResource, resources: Resource[]) => void;
-    filesList_delete: (resources: Resource[]) => void[];
-};

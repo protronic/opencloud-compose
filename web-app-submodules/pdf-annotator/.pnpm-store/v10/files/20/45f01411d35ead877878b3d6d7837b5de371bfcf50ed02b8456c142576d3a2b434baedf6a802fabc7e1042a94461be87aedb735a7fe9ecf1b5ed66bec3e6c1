@@ -1,2 +1,0 @@
-import { Ability } from '@opencloud-eu/web-client';
-export declare const useAbility: () => Ability;

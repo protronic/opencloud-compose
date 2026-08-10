@@ -1,3 +1,0 @@
-import { CustomComponentExtension, ExtensionPoint } from './composables';
-export declare const fileSideBarSpaceDetailsTableExtensionPoint: ExtensionPoint<CustomComponentExtension>;
-export declare const extensionPoints: () => import("vue").ComputedRef<ExtensionPoint<any>[]>;

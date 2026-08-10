@@ -1,5 +1,0 @@
-export declare abstract class PaginationConstants {
-    static readonly perPageDefault: string;
-    static readonly perPageQueryName: string;
-    static readonly options: string[];
-}

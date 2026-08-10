@@ -1,6 +1,0 @@
-import { UppyService } from '../../services/uppy/uppyService';
-interface UploadOptions {
-    uppyService: UppyService;
-}
-export declare function useUpload(options: UploadOptions): void;
-export {};

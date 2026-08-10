@@ -1,3 +1,0 @@
-export declare const useWindowOpen: () => {
-    openUrl: (url: string, target?: string, shouldFocus?: boolean) => void;
-};

@@ -1,8 +1,0 @@
-import { WebDavResponseResource, WebDavResponseTusSupport } from '../../helpers';
-import { DavErrorCode } from '../constants';
-export declare const parseTusHeaders: (headers: Headers) => WebDavResponseTusSupport;
-export declare const parseMultiStatus: (xmlBody: string) => Promise<WebDavResponseResource[]>;
-export declare const parseError: (xmlBody: string) => {
-    message: string;
-    errorCode: DavErrorCode;
-};

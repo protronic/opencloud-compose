@@ -1,3 +1,0 @@
-import type { GraphFactoryOptions } from './../types';
-import type { GraphActivities } from './types';
-export declare const ActivitiesFactory: ({ axiosClient, config }: GraphFactoryOptions) => GraphActivities;

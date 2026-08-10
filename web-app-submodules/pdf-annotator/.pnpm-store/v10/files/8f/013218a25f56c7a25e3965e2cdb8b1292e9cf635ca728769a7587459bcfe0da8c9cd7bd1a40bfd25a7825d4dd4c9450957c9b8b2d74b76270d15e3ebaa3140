@@ -1,8 +1,0 @@
-/** @deprecated */
-export declare abstract class SharePermissionBit {
-    static readonly Read: number;
-    static readonly Update: number;
-    static readonly Create: number;
-    static readonly Delete: number;
-    static readonly Share: number;
-}

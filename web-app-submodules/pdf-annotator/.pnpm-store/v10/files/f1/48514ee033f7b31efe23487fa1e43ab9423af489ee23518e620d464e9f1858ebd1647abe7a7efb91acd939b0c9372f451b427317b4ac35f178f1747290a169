@@ -1,3 +1,0 @@
-import type { GraphFactoryOptions } from './../types';
-import type { GraphPermissions } from './types';
-export declare const PermissionsFactory: ({ axiosClient, config }: GraphFactoryOptions) => GraphPermissions;

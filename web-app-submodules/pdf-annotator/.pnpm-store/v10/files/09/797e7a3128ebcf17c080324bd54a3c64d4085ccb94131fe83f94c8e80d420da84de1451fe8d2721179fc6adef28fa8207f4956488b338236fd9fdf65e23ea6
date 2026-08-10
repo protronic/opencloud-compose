@@ -1,7 +1,0 @@
-import { Resource, SpaceResource } from '@opencloud-eu/web-client';
-export declare const useCanListVersions: () => {
-    canListVersions: ({ space, resource }: {
-        space: SpaceResource;
-        resource: Resource;
-    }) => boolean;
-};

@@ -1,3 +1,0 @@
-import { Resource } from '@opencloud-eu/web-client';
-import { SortField } from '../../composables/sort';
-export declare const determineResourceTableSortFields: (firstResource: Resource) => SortField[];

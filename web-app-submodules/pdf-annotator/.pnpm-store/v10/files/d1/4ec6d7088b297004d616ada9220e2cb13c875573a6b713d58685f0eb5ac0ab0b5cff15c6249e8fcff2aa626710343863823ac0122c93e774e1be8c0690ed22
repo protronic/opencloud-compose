@@ -1,5 +1,0 @@
-import { CapabilityStore } from '../composables/piniaStores';
-export declare const getWebVersion: () => string;
-export declare const getBackendVersion: ({ capabilityStore }: {
-    capabilityStore: CapabilityStore;
-}) => string;

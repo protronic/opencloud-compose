@@ -1,9 +1,0 @@
-import { Ref } from 'vue';
-export declare const useIsVisible: ({ target, mode, rootMargin, onVisibleCallback }: {
-    target: Ref<Element>;
-    mode?: string;
-    rootMargin?: string;
-    onVisibleCallback?: () => void;
-}) => {
-    isVisible: Ref<boolean, boolean>;
-};

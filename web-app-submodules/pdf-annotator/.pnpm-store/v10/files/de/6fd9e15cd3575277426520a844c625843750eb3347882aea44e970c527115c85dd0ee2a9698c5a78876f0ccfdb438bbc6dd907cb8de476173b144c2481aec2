@@ -1,3 +1,0 @@
-import { ContentTypeStrategy } from './types';
-import { TextEditorState } from '../../types';
-export declare const useStrategyTiptapJson: (editorState: TextEditorState) => ContentTypeStrategy;

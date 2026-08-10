@@ -1,8 +1,0 @@
-import { Capabilities } from './capabilities';
-import { AxiosInstance } from 'axios';
-export * from './capabilities';
-export interface OCS {
-    getCapabilities: () => Promise<Capabilities>;
-    signUrl: (url: string, username: string) => Promise<string>;
-}
-export declare const ocs: (baseURI: string, axiosClient: AxiosInstance) => OCS;

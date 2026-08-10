@@ -1,3 +1,0 @@
-import type { GraphFactoryOptions } from './../types';
-import type { GraphApplications } from './types';
-export declare const ApplicationsFactory: ({ axiosClient, config }: GraphFactoryOptions) => GraphApplications;

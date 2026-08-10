@@ -47,9 +47,10 @@ APPS_DIR="${APPS_DIR/#\~/$HOME}"
 # Resolved on the host and handed into the containerised builds: the pnpm
 # container only mounts the app directory, so git metadata is unavailable
 # there (consumed by pdf-annotator's build-info.ts for its about dialog).
-PDFA_GIT_COMMIT="${PDFA_GIT_COMMIT:-$(git -C "${ROOT_DIR}" rev-parse --short=10 HEAD 2>/dev/null || true)}"
+PDFA_DIR="${SUBMODULES_DIR}/pdf-annotator"
+PDFA_GIT_COMMIT="${PDFA_GIT_COMMIT:-$(git -C "${PDFA_DIR}" rev-parse --short=10 HEAD 2>/dev/null || true)}"
 if [[ -n "${PDFA_GIT_COMMIT}" && "${PDFA_GIT_COMMIT}" != *-dirty ]] \
-  && [[ -n "$(git -C "${ROOT_DIR}" status --porcelain -- web-app-submodules/pdf-annotator 2>/dev/null)" ]]; then
+  && [[ -n "$(git -C "${PDFA_DIR}" status --porcelain 2>/dev/null)" ]]; then
   PDFA_GIT_COMMIT="${PDFA_GIT_COMMIT}-dirty"
 fi
 
@@ -73,7 +74,7 @@ Standalone submodule repos (aliases in parentheses):
   3dviewer (opencloud-3dviewer)
   web-calendar (opencloud-web-calendar, calendar)
   blockberry-editor (blockberry)
-  pdf-annotator (in-tree, no submodule)
+  pdf-annotator
   mdpresentation-viewer (presentation-viewer, web-app-presentation-viewer)
 
 Options:

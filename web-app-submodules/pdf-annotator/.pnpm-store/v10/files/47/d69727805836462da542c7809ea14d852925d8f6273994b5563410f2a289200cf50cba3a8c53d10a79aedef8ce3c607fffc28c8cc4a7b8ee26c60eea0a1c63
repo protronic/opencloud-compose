@@ -1,4 +1,0 @@
-import { FileAction } from '../types';
-export declare const useFileActionsDownloadFile: () => {
-    actions: import("vue").ComputedRef<FileAction[]>;
-};

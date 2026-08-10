@@ -1,1 +1,0 @@
-export declare const objectKeys: (obj: Record<string, unknown>) => string[];

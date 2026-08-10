@@ -1,7 +1,0 @@
-import { Resource, SpaceResource } from '@opencloud-eu/web-client';
-export declare function useOpenWithDefaultApp(): {
-    openWithDefaultApp: ({ space, resource }: {
-        space: SpaceResource;
-        resource: Resource;
-    }) => void;
-};

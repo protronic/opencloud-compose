@@ -1,1 +1,0 @@
-export declare const call: <T>(p: Promise<T>) => Generator<Promise<T>, T, T>;

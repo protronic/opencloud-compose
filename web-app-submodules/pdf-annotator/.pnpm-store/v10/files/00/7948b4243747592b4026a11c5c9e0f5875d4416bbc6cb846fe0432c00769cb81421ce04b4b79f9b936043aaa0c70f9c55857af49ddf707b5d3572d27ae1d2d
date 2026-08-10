@@ -1,3 +1,0 @@
-import { Ref } from 'vue';
-import { QueryValue } from './types';
-export declare const useRouteQuery: (name: string, defaultValue?: QueryValue) => Ref<QueryValue>;

@@ -1,8 +1,0 @@
-import { DirectiveBinding } from 'vue';
-declare const _default: {
-    name: string;
-    beforeMount: (el: HTMLElement, { value }: DirectiveBinding) => void;
-    updated: (el: HTMLElement, { value }: DirectiveBinding) => void;
-    unmounted: (el: HTMLElement) => void;
-};
-export default _default;

@@ -1,7 +1,0 @@
-import { SpaceResource } from '@opencloud-eu/web-client';
-import { RouteLocationNamedRaw } from 'vue-router';
-import { AncestorMetaDataValue } from '../../types';
-export declare const getSharedAncestorRoute: ({ sharedAncestor, matchingSpace }: {
-    sharedAncestor: AncestorMetaDataValue;
-    matchingSpace: SpaceResource;
-}) => RouteLocationNamedRaw;

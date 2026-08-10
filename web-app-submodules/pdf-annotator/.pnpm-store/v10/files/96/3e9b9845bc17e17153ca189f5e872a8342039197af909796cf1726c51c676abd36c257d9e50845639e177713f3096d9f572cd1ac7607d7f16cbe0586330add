@@ -1,5 +1,0 @@
-import { ResourcesStore } from '../../composables';
-export declare const isItemInCurrentFolder: ({ resourcesStore, parentFolderId }: {
-    resourcesStore: ResourcesStore;
-    parentFolderId: string;
-}) => boolean;

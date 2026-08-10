@@ -1,5 +1,0 @@
-import { Ref } from 'vue';
-import type { CropperSelection, CropperImage } from 'cropperjs';
-export declare const useCropperKeyboardActions: () => {
-    setCropperInstance: (cropper: Ref<CropperSelection>, image?: Ref<CropperImage | null>) => void;
-};

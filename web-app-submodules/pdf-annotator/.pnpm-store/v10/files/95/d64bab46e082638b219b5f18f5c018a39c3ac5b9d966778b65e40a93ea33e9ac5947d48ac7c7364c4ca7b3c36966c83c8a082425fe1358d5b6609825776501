@@ -1,6 +1,0 @@
-import { SpaceResource } from '@opencloud-eu/web-client';
-export declare const useCreateSpace: () => {
-    createSpace: (name: string) => Promise<SpaceResource>;
-    createDefaultMetaFolder: (space: SpaceResource) => Promise<import("@opencloud-eu/web-client").FolderResource>;
-    addNewSpace: (name: string) => Promise<SpaceResource>;
-};

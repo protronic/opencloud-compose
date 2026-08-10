@@ -1,4 +1,0 @@
-export declare abstract class SearchLocationFilterConstants {
-    static readonly allFiles: string;
-    static readonly currentFolder: string;
-}

@@ -1,1 +1,0 @@
-export declare const getDroppedFiles: (dataTransfer: DataTransfer, logDropError?: (error?: Error) => void) => Promise<File[]>;

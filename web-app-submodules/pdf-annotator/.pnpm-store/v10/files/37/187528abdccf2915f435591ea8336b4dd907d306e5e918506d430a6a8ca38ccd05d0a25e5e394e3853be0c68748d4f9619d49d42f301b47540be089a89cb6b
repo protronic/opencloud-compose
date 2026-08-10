@@ -1,8 +1,0 @@
-import { ClientService } from '../../services';
-import { Resource, SpaceResource } from '@opencloud-eu/web-client';
-export interface DownloadFileOptions {
-    clientService?: ClientService;
-}
-export declare const useDownloadFile: (options?: DownloadFileOptions) => {
-    downloadFile: (space: SpaceResource, file: Resource, version?: string) => Promise<void>;
-};

@@ -1,1 +1,0 @@
-export declare const useIsFilesAppActive: () => import("vue").ComputedRef<boolean>;

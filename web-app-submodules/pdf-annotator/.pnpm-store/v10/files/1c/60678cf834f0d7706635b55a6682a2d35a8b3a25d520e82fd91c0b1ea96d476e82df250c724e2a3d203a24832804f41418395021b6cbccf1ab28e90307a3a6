@@ -1,4 +1,0 @@
-import { ComputedRef } from 'vue';
-import { RouteLocationNormalizedLoaded } from 'vue-router';
-export declare const activeApp: (route: RouteLocationNormalizedLoaded) => string;
-export declare const useActiveApp: () => ComputedRef<string>;

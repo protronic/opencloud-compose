@@ -1,8 +1,0 @@
-{
-  "extends": "@opencloud-eu/tsconfig",
-  "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "types": ["vite/client"]
-  },
-  "include": ["src/**/*.ts", "src/**/*.vue"]
-}

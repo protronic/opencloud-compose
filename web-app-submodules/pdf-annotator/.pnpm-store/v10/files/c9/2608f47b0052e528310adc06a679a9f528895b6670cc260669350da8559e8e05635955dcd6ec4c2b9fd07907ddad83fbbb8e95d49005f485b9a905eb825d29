@@ -1,5 +1,0 @@
-import { Ref } from 'vue';
-export declare const useFileListHeaderPosition: (selector?: string) => {
-    y: Ref;
-    refresh: () => void;
-};

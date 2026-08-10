@@ -1,2 +1,0 @@
-import { Ref } from 'vue';
-export declare const useLocalStorage: <T>(key: string, defaultValue?: T) => [T] extends [Ref<any, any>] ? import("@vue/shared").IfAny<T, Ref<T, T>, T> : Ref<import("vue").UnwrapRef<T>, T | import("vue").UnwrapRef<T>>;

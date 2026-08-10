@@ -1,9 +1,0 @@
-import { Resource } from '@opencloud-eu/web-client';
-export interface ScrollToResult {
-    scrollToResource(resourceId: Resource['id'], options?: {
-        forceScroll?: boolean;
-        topbarElement: string;
-    }): void;
-    scrollToResourceFromRoute(resources: Resource[], topbarElement: string): void;
-}
-export declare const useScrollTo: () => ScrollToResult;
