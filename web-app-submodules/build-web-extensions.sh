@@ -44,6 +44,15 @@ fi
 APPS_DIR="${OC_APPS_DIR:-${ROOT_DIR}/config/opencloud/apps}"
 APPS_DIR="${APPS_DIR/#\~/$HOME}"
 
+# Resolved on the host and handed into the containerised builds: the pnpm
+# container only mounts the app directory, so git metadata is unavailable
+# there (consumed by pdf-annotator's build-info.ts for its about dialog).
+PDFA_GIT_COMMIT="${PDFA_GIT_COMMIT:-$(git -C "${ROOT_DIR}" rev-parse --short=10 HEAD 2>/dev/null || true)}"
+if [[ -n "${PDFA_GIT_COMMIT}" && "${PDFA_GIT_COMMIT}" != *-dirty ]] \
+  && [[ -n "$(git -C "${ROOT_DIR}" status --porcelain -- web-app-submodules/pdf-annotator 2>/dev/null)" ]]; then
+  PDFA_GIT_COMMIT="${PDFA_GIT_COMMIT}-dirty"
+fi
+
 usage() {
   cat <<EOF
 Usage: $(basename "$0") [OPTIONS] [APP ...]
@@ -210,6 +219,7 @@ run_pnpm_build() {
     -u "$(id -u):$(id -g)" \
     -e CI=true \
     -e HOME=/tmp \
+    -e PDFA_GIT_COMMIT="${PDFA_GIT_COMMIT}" \
     -v "${source_dir}:/work" \
     -w /work \
     "${PNPM_IMAGE}" \

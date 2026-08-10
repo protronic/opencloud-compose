@@ -114,6 +114,21 @@ try {
   const zoomValue = await page.inputValue('.zoom-select');
   check(zoomValue === '1', `zoom select should hold "1" (100 %), got "${zoomValue}"`);
 
+  // 7. The about dialog surfaces the injected build metadata.
+  await page.click('button[title="Über PDF Annotator"]');
+  await page.waitForSelector('.pdfa-about-dialog', {timeout: 5000});
+  const aboutText = await page.textContent('.pdfa-about-dialog');
+  check(
+    aboutText?.includes('Git-Commit') && !aboutText.includes('unbekannt'),
+    `about dialog should show a git commit, got "${aboutText}"`,
+  );
+  await page.click('.pdfa-about-close');
+  await page.waitForTimeout(200);
+  check(
+    (await page.locator('.pdfa-about-dialog').count()) === 0,
+    'about dialog should close again',
+  );
+
   const errors = await page.evaluate(() => window.__harness.errors);
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
 } catch (error) {
@@ -124,7 +139,7 @@ if (problems.length) {
   console.error(`✗ pdf-annotator harness\n  ${problems.join('\n  ')}`);
   console.error(consoleLines.join('\n'));
 } else {
-  console.log('✓ pdf-annotator harness: render, annotate, comment, emit, verify, zoom');
+  console.log('✓ pdf-annotator harness: render, annotate, comment, emit, verify, zoom, about');
 }
 
 await browser.close();

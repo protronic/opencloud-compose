@@ -142,6 +142,17 @@
         <span class="separator" aria-hidden="true" />
         <span class="status-hint">Schreibgeschützt</span>
       </template>
+
+      <span class="separator" aria-hidden="true" />
+      <button
+        type="button"
+        class="tb-btn"
+        title="Über PDF Annotator"
+        aria-label="Über PDF Annotator"
+        @click="aboutOpen = true"
+      >
+        <span class="tb-icon icon-about" aria-hidden="true" />
+      </button>
     </header>
 
     <main ref="regionElement" class="viewer-region">
@@ -149,6 +160,26 @@
         <div ref="viewerElement" class="pdfViewer" />
       </div>
       <div v-if="error" class="error-banner">{{ error }}</div>
+      <div v-if="aboutOpen" class="pdfa-about-backdrop" @pointerdown.self="aboutOpen = false">
+        <div class="pdfa-about-dialog" role="dialog" aria-label="Über PDF Annotator">
+          <h2 class="pdfa-about-title">PDF Annotator</h2>
+          <dl class="pdfa-about-rows">
+            <dt>Version</dt>
+            <dd>{{ aboutInfo.version }}</dd>
+            <dt>Git-Commit</dt>
+            <dd class="pdfa-about-mono">{{ aboutInfo.commit }}</dd>
+            <dt>Build</dt>
+            <dd>{{ aboutInfo.buildTime }}</dd>
+            <dt>pdf.js</dt>
+            <dd>{{ aboutInfo.pdfjsVersion }}</dd>
+          </dl>
+          <div class="pdfa-about-actions">
+            <button type="button" class="pdfa-about-close" @click="aboutOpen = false">
+              Schließen
+            </button>
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 </template>
@@ -158,6 +189,7 @@ import {
   AnnotationEditorType,
   getDocument,
   GlobalWorkerOptions,
+  version as pdfjsVersion,
   type PDFDocumentLoadingTask,
   type PDFDocumentProxy,
 } from 'pdfjs-dist/legacy/build/pdf.mjs';
@@ -183,8 +215,14 @@ import iconZoomOut from 'pdfjs-dist/legacy/web/images/toolbarButton-zoomOut.svg?
 // enough for Vite to inline them as data URIs (Module-Federation-safe).
 // `--comment-edit-button-icon` is referenced by the components stylesheet
 // for the annotation comment buttons but never defined there.
+const aboutIconSvg =
+  "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'>" +
+  "<path d='M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1zm0 1.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM8 3.9a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2zM7.1 7h1.8v5.2H7.1z'/>" +
+  '</svg>';
+
 const iconVars = {
   '--tbi-select': `url("${iconSelect}")`,
+  '--tbi-about': `url("data:image/svg+xml,${encodeURIComponent(aboutIconSvg)}")`,
   '--tbi-freetext': `url("${iconFreeText}")`,
   '--tbi-highlight': `url("${iconHighlight}")`,
   '--tbi-ink': `url("${iconInk}")`,
@@ -247,6 +285,7 @@ const pageCount = ref(0);
 const scale = ref(1);
 const zoomSelect = ref('page-width');
 const pdfLoaded = ref(false);
+const aboutOpen = ref(false);
 const saving = ref(false);
 const pendingCommit = ref(false);
 const error = ref('');
@@ -267,6 +306,16 @@ let commitQueued = false;
 let loadToken = 0;
 let lastEmitted: ArrayBuffer | undefined;
 let lastAppliedContent: ContentValue | undefined;
+
+const aboutInfo = {
+  version: __PDFA_VERSION__,
+  commit: __PDFA_COMMIT__,
+  buildTime: new Date(__PDFA_BUILD_TIME__).toLocaleString('de-DE', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }),
+  pdfjsVersion,
+};
 
 const customZoomLabel = computed(() => `${Math.round(scale.value * 100)} %`);
 const statusText = computed(() => {
@@ -438,7 +487,15 @@ watch(
   },
 );
 
+function onWindowKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape' && aboutOpen.value) {
+    event.stopPropagation();
+    aboutOpen.value = false;
+  }
+}
+
 onMounted(() => {
+  window.addEventListener('keydown', onWindowKeydown, true);
   GlobalWorkerOptions.workerPort ??= new PdfWorker();
 
   eventBus = new EventBus();
@@ -504,6 +561,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onWindowKeydown, true);
   window.clearTimeout(commitTimer);
   loadToken++;
   resizeObserver?.disconnect();
@@ -630,6 +688,9 @@ onBeforeUnmount(() => {
 .icon-zoom-out {
   --tb-icon: var(--tbi-zoom-out);
 }
+.icon-about {
+  --tb-icon: var(--tbi-about);
+}
 
 .tb-btn:hover:enabled {
   background: var(--button-hover);
@@ -733,6 +794,80 @@ onBeforeUnmount(() => {
   border: 1px solid #f2b8b5;
   color: #8c1d18;
   font-size: 13px;
+}
+
+.pdfa-about-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.pdfa-about-dialog {
+  margin-top: 12vh;
+  width: min(340px, 90%);
+  padding: 14px 16px;
+  border: 1px solid var(--toolbar-border);
+  border-radius: 8px;
+  background: var(--toolbar-bg);
+  color: var(--toolbar-text);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  font-size: 13px;
+}
+
+.pdfa-about-title {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.pdfa-about-rows {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 16px;
+  margin: 0;
+}
+
+.pdfa-about-rows dt {
+  color: var(--toolbar-muted);
+}
+
+.pdfa-about-rows dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.pdfa-about-mono {
+  font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+  user-select: all;
+}
+
+.pdfa-about-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.pdfa-about-close {
+  padding: 4px 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 4px;
+  background: var(--field-bg);
+  color: var(--toolbar-text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.pdfa-about-close:hover {
+  background: var(--button-hover);
+}
+
+.pdfa-about-close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 </style>
 
