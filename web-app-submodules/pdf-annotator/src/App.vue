@@ -168,6 +168,7 @@ import type {Resource} from '@opencloud-eu/web-client';
 import {computed, onBeforeUnmount, onMounted, ref, shallowRef, watch} from 'vue';
 import {PdfCommentManager} from './commentManager';
 import iconCommentEdit from 'pdfjs-dist/legacy/web/images/comment-editButton.svg?url';
+import iconEditorDelete from 'pdfjs-dist/legacy/web/images/editor-toolbar-delete.svg?url';
 import iconSelect from 'pdfjs-dist/legacy/web/images/secondaryToolbarButton-selectTool.svg?url';
 import iconFreeText from 'pdfjs-dist/legacy/web/images/toolbarButton-editorFreeText.svg?url';
 import iconHighlight from 'pdfjs-dist/legacy/web/images/toolbarButton-editorHighlight.svg?url';
@@ -193,6 +194,10 @@ const iconVars = {
   '--tbi-zoom-in': `url("${iconZoomIn}")`,
   '--tbi-zoom-out': `url("${iconZoomOut}")`,
   '--comment-edit-button-icon': `url("${iconCommentEdit}")`,
+  // Fallback for the delete icon in case the pdfjs-dist components
+  // stylesheet (which defines --editor-toolbar-delete-image on .editToolbar)
+  // is overridden by host styles.
+  '--pdfa-delete-icon': `url("${iconEditorDelete}")`,
 };
 
 type ContentValue = ArrayBuffer | Uint8Array | string;
@@ -831,5 +836,145 @@ onBeforeUnmount(() => {
   font-size: 12px;
   white-space: pre-wrap;
   overflow-wrap: break-word;
+}
+
+/* pdf.js builds its per-annotation edit toolbar from buttons with generic
+   class names (.buttons, .basic, .comment, .commentButton, .deleteButton,
+   .highlightButton). Inside OpenCloud the extension shares the document
+   with the runtime and every other enabled extension, and a global rule
+   for one of those names (e.g. a comments app styling `.comment`) tears
+   the buttons out of the toolbar or hides their icons — seen in
+   production as empty toolbar cells with the bubble/trash icons pinned to
+   the bottom of the viewer. Re-assert layout and icons with scoped
+   !important rules so host stylesheets cannot displace them. */
+.pdf-annotator :is(.annotationEditorLayer, .textLayer, .annotationLayer) .editToolbar {
+  position: absolute !important;
+}
+
+.pdf-annotator .editToolbar.hidden {
+  display: none !important;
+}
+
+.pdf-annotator .editToolbar .buttons {
+  display: flex !important;
+  position: static !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdf-annotator .editToolbar .buttons > .hidden {
+  display: none !important;
+}
+
+.pdf-annotator
+  .editToolbar
+  .buttons
+  > :is(.basic, .comment, .commentButton, .deleteButton, .highlightButton, .altText) {
+  position: static !important;
+  inset: auto !important;
+  margin: 0 !important;
+  transform: none !important;
+  float: none !important;
+}
+
+.pdf-annotator
+  .editToolbar
+  .buttons
+  > :is(.basic, .comment, .commentButton, .deleteButton, .highlightButton):not(.hidden) {
+  display: block !important;
+  width: var(--editor-toolbar-height, 28px) !important;
+  height: var(--editor-toolbar-height, 28px) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  padding: 0 !important;
+  border: none !important;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.pdf-annotator .editToolbar .buttons .divider {
+  position: static !important;
+  display: inline-block !important;
+  width: 1px !important;
+}
+
+.pdf-annotator .editToolbar .buttons > :not(.divider):hover {
+  border-radius: 2px;
+  background-color: var(--editor-toolbar-hover-bg-color, #e0e0e6);
+}
+
+.pdf-annotator
+  .editToolbar
+  .buttons
+  > :is(.basic, .comment, .commentButton, .deleteButton, .highlightButton)::before {
+  content: '' !important;
+  display: inline-block !important;
+  position: static !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: var(--editor-toolbar-fg-color, #2e2e56) !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+  -webkit-mask-position: center !important;
+  mask-position: center !important;
+  -webkit-mask-size: auto !important;
+  mask-size: auto !important;
+}
+
+.pdf-annotator
+  .editToolbar
+  .buttons
+  > :is(.basic, .comment, .commentButton, .deleteButton, .highlightButton):hover::before {
+  background-color: var(--editor-toolbar-hover-fg-color, #28282e) !important;
+}
+
+.pdf-annotator .editToolbar .buttons > :is(.comment, .commentButton)::before {
+  -webkit-mask-image: var(--comment-edit-button-icon) !important;
+  mask-image: var(--comment-edit-button-icon) !important;
+}
+
+.pdf-annotator .editToolbar .buttons > .deleteButton::before {
+  -webkit-mask-image: var(--editor-toolbar-delete-image, var(--pdfa-delete-icon)) !important;
+  mask-image: var(--editor-toolbar-delete-image, var(--pdfa-delete-icon)) !important;
+}
+
+.pdf-annotator .editToolbar .buttons > .highlightButton::before {
+  -webkit-mask-image: var(--editor-toolbar-highlight-image, var(--tbi-highlight)) !important;
+  mask-image: var(--editor-toolbar-highlight-image, var(--tbi-highlight)) !important;
+}
+
+/* Standalone comment bubble on annotations that carry a comment. */
+.pdf-annotator :is(.annotationLayer, .annotationEditorLayer) .annotationCommentButton {
+  position: absolute !important;
+  width: var(--comment-button-dim, 24px) !important;
+  height: var(--comment-button-dim, 24px) !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.pdf-annotator
+  :is(.annotationLayer, .annotationEditorLayer)
+  .annotationCommentButton::before {
+  content: '' !important;
+  display: inline-block !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  -webkit-mask-image: var(--comment-edit-button-icon) !important;
+  mask-image: var(--comment-edit-button-icon) !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+  -webkit-mask-size: cover !important;
+  mask-size: cover !important;
+  background-color: var(--comment-button-fg, #5b5b66) !important;
+}
+
+.pdf-annotator .annotationLayer.disabled .annotationCommentButton {
+  display: none !important;
 }
 </style>
