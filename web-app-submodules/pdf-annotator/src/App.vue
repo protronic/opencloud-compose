@@ -160,7 +160,7 @@
         <div ref="viewerElement" class="pdfViewer" />
       </div>
       <div v-if="error" class="error-banner">{{ error }}</div>
-      <div v-if="aboutOpen" class="pdfa-about-backdrop" @pointerdown.self="aboutOpen = false">
+      <div v-if="aboutOpen" class="pdfa-about-backdrop" @pointerdown.self="closeAbout">
         <div class="pdfa-about-dialog" role="dialog" aria-label="Über PDF Annotator">
           <h2 class="pdfa-about-title">PDF Annotator</h2>
           <dl class="pdfa-about-rows">
@@ -173,8 +173,20 @@
             <dt>pdf.js</dt>
             <dd>{{ aboutInfo.pdfjsVersion }}</dd>
           </dl>
+          <textarea
+            v-if="diagnostics"
+            class="pdfa-about-diagnostics"
+            readonly
+            rows="8"
+            :value="diagnostics"
+            @focus="($event.target as HTMLTextAreaElement).select()"
+          />
           <div class="pdfa-about-actions">
-            <button type="button" class="pdfa-about-close" @click="aboutOpen = false">
+            <button type="button" class="pdfa-about-diag" @click="runDiagnostics">
+              Diagnose
+            </button>
+            <span class="pdfa-comment-spacer" />
+            <button type="button" class="pdfa-about-close" @click="closeAbout">
               Schließen
             </button>
           </div>
@@ -328,6 +340,89 @@ const aboutInfo = {
   }),
   pdfjsVersion,
 };
+
+const diagnostics = ref('');
+
+function closeAbout(): void {
+  aboutOpen.value = false;
+  diagnostics.value = '';
+}
+
+/**
+ * Captures the live geometry and styling of the pdf.js annotation UI so a
+ * misrendering in a production OpenCloud (host CSS we cannot reproduce
+ * locally) can be debugged from a pasted report.
+ */
+function runDiagnostics(): void {
+  const round = (value: number): number => Math.round(value);
+  const elements: unknown[] = [];
+  const record = (el: Element, kind: string): void => {
+    const cs = getComputedStyle(el);
+    const before = getComputedStyle(el, '::before');
+    const rect = el.getBoundingClientRect();
+    elements.push({
+      kind,
+      cls: String(el.className).slice(0, 80),
+      rect: {x: round(rect.x), y: round(rect.y), w: round(rect.width), h: round(rect.height)},
+      inline: (el as HTMLElement).style.cssText.slice(0, 200),
+      pos: cs.position,
+      top: cs.top,
+      insetInlineEnd: cs.insetInlineEnd,
+      display: cs.display,
+      transform: cs.transform,
+      margin: cs.margin,
+      vars: {
+        vertOffset: cs.getPropertyValue('--editor-toolbar-vert-offset'),
+        commentDim: cs.getPropertyValue('--comment-button-dim'),
+        commentIcon: cs.getPropertyValue('--comment-edit-button-icon').slice(0, 40),
+        scaleFactor: cs.getPropertyValue('--scale-factor'),
+        totalScaleFactor: cs.getPropertyValue('--total-scale-factor'),
+      },
+      before: {
+        content: before.content.slice(0, 30),
+        display: before.display,
+        position: before.position,
+        top: before.top,
+        left: before.left,
+        width: before.width,
+        height: before.height,
+        margin: before.margin,
+        transform: before.transform,
+        mask: (before.webkitMaskImage || before.maskImage || '').slice(0, 40),
+        bg: before.backgroundColor,
+      },
+    });
+  };
+  const host = regionElement.value ?? document.body;
+  host
+    .querySelectorAll('.page, .annotationEditorLayer, .textLayer, .annotationLayer')
+    .forEach((el) => record(el, 'layer'));
+  host
+    .querySelectorAll('.editToolbar, .editToolbar .buttons > *, .annotationCommentButton')
+    .forEach((el) => record(el, 'ui'));
+  const report = {
+    commit: aboutInfo.commit,
+    pdfjs: pdfjsVersion,
+    userAgent: navigator.userAgent,
+    viewport: {w: window.innerWidth, h: window.innerHeight},
+    rootColorScheme: getComputedStyle(document.documentElement).colorScheme,
+    rootVertOffset: getComputedStyle(document.documentElement).getPropertyValue(
+      '--editor-toolbar-vert-offset',
+    ),
+    styleSheets: Array.from(document.styleSheets).map((sheet) => {
+      let rules = -1;
+      try {
+        rules = sheet.cssRules.length;
+      } catch {
+        /* cross-origin */
+      }
+      return {href: sheet.href, rules};
+    }),
+    elements,
+  };
+  diagnostics.value = JSON.stringify(report);
+  void navigator.clipboard?.writeText(diagnostics.value).catch(() => {});
+}
 
 const customZoomLabel = computed(() => `${Math.round(scale.value * 100)} %`);
 const statusText = computed(() => {
@@ -502,7 +597,7 @@ watch(
 function onWindowKeydown(event: KeyboardEvent): void {
   if (event.key === 'Escape' && aboutOpen.value) {
     event.stopPropagation();
-    aboutOpen.value = false;
+    closeAbout();
   }
 }
 
@@ -820,7 +915,7 @@ onBeforeUnmount(() => {
 
 .pdfa-about-dialog {
   margin-top: 12vh;
-  width: min(340px, 90%);
+  width: min(420px, 90%);
   padding: 14px 16px;
   border: 1px solid var(--toolbar-border);
   border-radius: 8px;
@@ -857,13 +952,33 @@ onBeforeUnmount(() => {
   user-select: all;
 }
 
+.pdfa-about-diagnostics {
+  width: 100%;
+  margin-top: 10px;
+  padding: 6px 8px;
+  border: 1px solid var(--field-border);
+  border-radius: 4px;
+  background: var(--field-bg);
+  color: var(--toolbar-text);
+  font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+  font-size: 11px;
+  resize: vertical;
+}
+
 .pdfa-about-actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 8px;
   margin-top: 12px;
 }
 
-.pdfa-about-close {
+.pdfa-about-actions .pdfa-comment-spacer {
+  flex: 1;
+}
+
+.pdfa-about-close,
+.pdfa-about-diag {
   padding: 4px 12px;
   border: 1px solid var(--field-border);
   border-radius: 4px;
@@ -873,11 +988,13 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
-.pdfa-about-close:hover {
+.pdfa-about-close:hover,
+.pdfa-about-diag:hover {
   background: var(--button-hover);
 }
 
-.pdfa-about-close:focus-visible {
+.pdfa-about-close:focus-visible,
+.pdfa-about-diag:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }

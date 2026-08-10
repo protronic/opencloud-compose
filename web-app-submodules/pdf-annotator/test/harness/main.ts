@@ -13,6 +13,8 @@ declare global {
   interface Window {
     __harness: HarnessState;
     __verifyEmitted: () => Promise<{numPages: number; annotationSubtypes: string[]}>;
+    __loadPdf: (bytes: number[]) => void;
+    __lastEmittedBytes: () => number[];
   }
 }
 
@@ -105,6 +107,16 @@ window.__verifyEmitted = async () => {
 const Host = defineComponent({
   setup() {
     const currentContent = ref<ArrayBuffer | Uint8Array>(samplePdf.buffer as ArrayBuffer);
+
+    // Simulates re-opening a previously saved PDF (fresh buffer identity, so
+    // the app treats it as external content and reloads the document).
+    window.__loadPdf = (bytes: number[]) => {
+      currentContent.value = new Uint8Array(bytes).buffer;
+    };
+    window.__lastEmittedBytes = () => {
+      if (!lastEmitted) throw new Error('nothing emitted yet');
+      return Array.from(new Uint8Array(lastEmitted));
+    };
     const resource = {
       id: 'res-pdf-1',
       name: 'vertrag.pdf',
