@@ -356,50 +356,84 @@ function closeAbout(): void {
 function runDiagnostics(): void {
   const round = (value: number): number => Math.round(value);
   const elements: unknown[] = [];
+  const pseudo = (el: Element, which: '::before' | '::after'): unknown => {
+    const ps = getComputedStyle(el, which);
+    const mask = ps.webkitMaskImage || ps.maskImage || '';
+    if (ps.content === 'none' && (!mask || mask === 'none')) return undefined;
+    return {
+      content: ps.content.slice(0, 20),
+      display: ps.display,
+      position: ps.position,
+      top: ps.top,
+      left: ps.left,
+      width: ps.width,
+      height: ps.height,
+      margin: ps.margin,
+      transform: ps.transform,
+      mask: mask.slice(0, 30),
+      bg: ps.backgroundColor,
+    };
+  };
   const record = (el: Element, kind: string): void => {
+    if (elements.length >= 120) return;
     const cs = getComputedStyle(el);
-    const before = getComputedStyle(el, '::before');
     const rect = el.getBoundingClientRect();
+    const parents: string[] = [];
+    let ancestor = el.parentElement;
+    for (let depth = 0; ancestor && depth < 3; depth++) {
+      parents.push(`${ancestor.tagName.toLowerCase()}.${String(ancestor.className).slice(0, 40)}`);
+      ancestor = ancestor.parentElement;
+    }
     elements.push({
       kind,
+      tag: el.tagName.toLowerCase(),
+      id: el.id || undefined,
       cls: String(el.className).slice(0, 80),
+      parents,
       rect: {x: round(rect.x), y: round(rect.y), w: round(rect.width), h: round(rect.height)},
       inline: (el as HTMLElement).style.cssText.slice(0, 200),
       pos: cs.position,
       top: cs.top,
       insetInlineEnd: cs.insetInlineEnd,
       display: cs.display,
-      transform: cs.transform,
-      margin: cs.margin,
+      transform: cs.transform === 'none' ? undefined : cs.transform,
       vars: {
         vertOffset: cs.getPropertyValue('--editor-toolbar-vert-offset'),
         commentDim: cs.getPropertyValue('--comment-button-dim'),
-        commentIcon: cs.getPropertyValue('--comment-edit-button-icon').slice(0, 40),
         scaleFactor: cs.getPropertyValue('--scale-factor'),
-        totalScaleFactor: cs.getPropertyValue('--total-scale-factor'),
       },
-      before: {
-        content: before.content.slice(0, 30),
-        display: before.display,
-        position: before.position,
-        top: before.top,
-        left: before.left,
-        width: before.width,
-        height: before.height,
-        margin: before.margin,
-        transform: before.transform,
-        mask: (before.webkitMaskImage || before.maskImage || '').slice(0, 40),
-        bg: before.backgroundColor,
-      },
+      before: pseudo(el, '::before'),
+      after: pseudo(el, '::after'),
     });
   };
   const host = regionElement.value ?? document.body;
+  const seen = new Set<Element>();
+  const track = (el: Element, kind: string): void => {
+    if (seen.has(el)) return;
+    seen.add(el);
+    record(el, kind);
+  };
   host
-    .querySelectorAll('.page, .annotationEditorLayer, .textLayer, .annotationLayer')
-    .forEach((el) => record(el, 'layer'));
+    .querySelectorAll('.annotationEditorLayer, .textLayer, .annotationLayer')
+    .forEach((el) => track(el, 'layer'));
   host
-    .querySelectorAll('.editToolbar, .editToolbar .buttons > *, .annotationCommentButton')
-    .forEach((el) => record(el, 'ui'));
+    .querySelectorAll(
+      '.editToolbar, .editToolbar *, .annotationCommentButton, ' +
+        '.freeTextEditor, .inkEditor, .stampEditor, .highlightEditor, .signatureEditor',
+    )
+    .forEach((el) => track(el, 'ui'));
+  // Dragnet: any element in the viewer whose pseudo elements paint a mask
+  // icon - catches pdf.js UI we did not anticipate, wherever it renders.
+  host.querySelectorAll('*').forEach((el) => {
+    if (seen.has(el)) return;
+    const before = getComputedStyle(el, '::before');
+    const after = getComputedStyle(el, '::after');
+    const maskBefore = before.webkitMaskImage || before.maskImage;
+    const maskAfter = after.webkitMaskImage || after.maskImage;
+    if ((maskBefore && maskBefore !== 'none') || (maskAfter && maskAfter !== 'none')) {
+      track(el, 'masked');
+    }
+  });
   const report = {
     commit: aboutInfo.commit,
     pdfjs: pdfjsVersion,
