@@ -232,14 +232,16 @@ const aboutIconSvg =
   "<path d='M8 1a7 7 0 1 1 0 14A7 7 0 0 1 8 1zm0 1.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM8 3.9a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2zM7.1 7h1.8v5.2H7.1z'/>" +
   '</svg>';
 
-// Firefox paints mask-image icons on the annotation-UI pseudo elements at a
-// displaced position (production diagnostics: DOM geometry correct, icons
-// visibly astray), so those icons are rendered as pre-tinted background
-// images instead. The pdf.js sources use fill='black' / fill='%23000'.
+// Firefox paints mask-image icons on annotation-UI ::before elements at a
+// displaced position (DOM geometry correct, icons visibly astray), so icons
+// are pre-tinted SVGs drawn as background-image on the BUTTON itself — never
+// via mask/::before. pdf.js sources use fill='black' / fill="black".
 function tintIcon(dataUri: string, color: string): string {
   return dataUri
     .replaceAll("fill='black'", `fill='${color}'`)
-    .replaceAll("fill='%23000'", `fill='${color}'`);
+    .replaceAll('fill="black"', `fill="${color}"`)
+    .replaceAll("fill='%23000'", `fill='${color}'`)
+    .replaceAll('fill="%23000"', `fill="${color}"`);
 }
 
 const ICON_GRAY = '%235B5B66';
@@ -375,8 +377,17 @@ function runDiagnostics(): void {
   const elements: unknown[] = [];
   const pseudo = (el: Element, which: '::before' | '::after'): unknown => {
     const ps = getComputedStyle(el, which);
-    const mask = ps.webkitMaskImage || ps.maskImage || '';
-    if (ps.content === 'none' && (!mask || mask === 'none')) return undefined;
+    const mask = ps.maskImage || '';
+    const webkitMask = ps.webkitMaskImage || '';
+    const bgImage = ps.backgroundImage || '';
+    if (
+      ps.content === 'none' &&
+      (!mask || mask === 'none') &&
+      (!webkitMask || webkitMask === 'none') &&
+      (!bgImage || bgImage === 'none')
+    ) {
+      return undefined;
+    }
     return {
       content: ps.content.slice(0, 20),
       display: ps.display,
@@ -387,8 +398,10 @@ function runDiagnostics(): void {
       height: ps.height,
       margin: ps.margin,
       transform: ps.transform,
-      mask: mask.slice(0, 30),
+      mask: mask.slice(0, 40),
+      webkitMask: webkitMask.slice(0, 40),
       bg: ps.backgroundColor,
+      bgImage: bgImage.slice(0, 60),
     };
   };
   const record = (el: Element, kind: string): void => {
@@ -522,11 +535,7 @@ async function loadDocumentFrom(source: ContentValue): Promise<void> {
     }
     loadingTask = task;
     pdfDocument = document;
-    // Fires once whenever the annotation storage transitions to "modified"
-    // (editor added, edited, moved or removed); resetModified() re-arms it
-    // after each commit. The upstream typings declare the hook as `null`.
-    (document.annotationStorage as {onSetModified: (() => void) | null}).onSetModified = () =>
-      scheduleCommit();
+    wireAnnotationAutosave(document);
     pageCount.value = document.numPages;
     currentPage.value = 1;
     viewer.value!.setDocument(document);
@@ -563,6 +572,44 @@ function scheduleCommit(): void {
   }, 1200);
 }
 
+/**
+ * pdf.js only flips `onSetModified` from `AnnotationStorage.setValue`.
+ * `remove()` never does — and when the last editor is removed it even calls
+ * `resetModified()`. Delete-only edits (annotation trash, or deleting the
+ * last new annotation after a prior save) therefore never autosaved.
+ * Comment deletes that go through `UIManager.deleteComment` also skip our
+ * commentManager `onChanged` hook. Patch both paths.
+ */
+function wireAnnotationAutosave(document: PDFDocumentProxy): void {
+  const storage = document.annotationStorage as {
+    onSetModified: (() => void) | null;
+    remove: (key: string) => void;
+  };
+  storage.onSetModified = () => scheduleCommit();
+
+  const originalRemove = storage.remove.bind(storage);
+  storage.remove = (key: string) => {
+    originalRemove(key);
+    scheduleCommit();
+  };
+}
+
+function wireUiManagerAutosave(uiManager: {
+  delete: () => void;
+  deleteComment: (editor: unknown, savedData: unknown) => void;
+}): void {
+  const originalDelete = uiManager.delete.bind(uiManager);
+  uiManager.delete = () => {
+    originalDelete();
+    scheduleCommit();
+  };
+  const originalDeleteComment = uiManager.deleteComment.bind(uiManager);
+  uiManager.deleteComment = (editor: unknown, savedData: unknown) => {
+    originalDeleteComment(editor, savedData);
+    scheduleCommit();
+  };
+}
+
 async function commitAnnotations(): Promise<void> {
   if (!pdfDocument || props.isReadOnly || !pdfLoaded.value) return;
   if (commitInFlight) {
@@ -572,7 +619,14 @@ async function commitAnnotations(): Promise<void> {
   commitInFlight = true;
   saving.value = true;
   try {
-    const bytes = await pdfDocument.saveDocument();
+    // Empty storage means "no pending editor changes" relative to the loaded
+    // document. pdf.js warns that saveDocument is the wrong API then and that
+    // getData should be used — which returns the base PDF (without any
+    // session-only annotations that were just deleted from storage).
+    const bytes =
+      pdfDocument.annotationStorage.size > 0
+        ? await pdfDocument.saveDocument()
+        : await pdfDocument.getData();
     pdfDocument.annotationStorage.resetModified();
     // Emit an exact-size ArrayBuffer, never a Uint8Array view: axios sends
     // `view.buffer` for typed-array bodies, so a view over a larger buffer
@@ -652,7 +706,48 @@ function onWindowKeydown(event: KeyboardEvent): void {
   }
 }
 
+/**
+ * Vite/lightningcss drops `-webkit-mask-image: none` from the bundled CSS
+ * (only the `mask` shorthand survives). Firefox 153 still honors the
+ * pdf.js `-webkit-mask-image` longhand on ::before, which is exactly what
+ * paints the displaced ghost icons. Injecting the longhands at runtime
+ * bypasses the minifier.
+ */
+let maskKillStyle: HTMLStyleElement | undefined;
+
+function installMaskKillStyles(): void {
+  if (maskKillStyle || typeof document === 'undefined') return;
+  maskKillStyle = document.createElement('style');
+  maskKillStyle.setAttribute('data-pdfa-mask-kill', '1');
+  maskKillStyle.textContent = `
+.pdf-annotator .editToolbar .buttons > :is(.basic, .comment, .commentButton, .deleteButton, .highlightButton)::before,
+.pdf-annotator .editToolbar .buttons > :is(.basic, .comment, .commentButton, .deleteButton, .highlightButton)::after,
+.pdf-annotator :is(.annotationLayer, .annotationEditorLayer) .annotationCommentButton::before,
+.pdf-annotator :is(.annotationLayer, .annotationEditorLayer) .annotationCommentButton::after {
+  content: none !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: none !important;
+  background-image: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+}
+`;
+  document.head.appendChild(maskKillStyle);
+}
+
+function removeMaskKillStyles(): void {
+  maskKillStyle?.remove();
+  maskKillStyle = undefined;
+}
+
 onMounted(() => {
+  installMaskKillStyles();
   window.addEventListener('keydown', onWindowKeydown, true);
   GlobalWorkerOptions.workerPort ??= new PdfWorker();
 
@@ -683,6 +778,12 @@ onMounted(() => {
   });
   linkService.setViewer(viewer.value);
 
+  eventBus.on('annotationeditoruimanager', ({uiManager}: {uiManager: {
+    delete: () => void;
+    deleteComment: (editor: unknown, savedData: unknown) => void;
+  }}) => {
+    wireUiManagerAutosave(uiManager);
+  });
   eventBus.on('pagesinit', () => {
     if (!viewer.value) return;
     viewer.value.currentScaleValue = 'page-width';
@@ -730,6 +831,7 @@ onBeforeUnmount(() => {
   }
   loadingTask = undefined;
   pdfDocument = undefined;
+  removeMaskKillStyles();
 });
 </script>
 
@@ -1241,51 +1343,72 @@ onBeforeUnmount(() => {
   background-color: var(--editor-toolbar-hover-bg-color, #e0e0e6);
 }
 
-/* Mask-free icon rendering: Firefox paints mask-image pseudo-element icons
-   of this UI at a displaced position (production diagnostics showed correct
-   DOM geometry while the icons visibly rendered far below their buttons),
-   so the icons are pre-tinted SVGs drawn as plain background images. */
+/*
+  Firefox (seen in production on FF 153) keeps painting pdf.js
+  `-webkit-mask-image` icons for .editToolbar/.annotationCommentButton
+  ::before pseudos at a displaced Y, even when the button box itself is
+  correctly placed — leaving empty toolbar cells and "ghost" speech/trash
+  icons floating below the highlight.
+
+  Strategy:
+  1. Kill the pdf.js ::before icon layer completely (content/mask/bg).
+  2. Paint pre-tinted SVGs as background-image on the BUTTON element.
+  Clear BOTH the standard and -webkit mask longhands; the `mask` shorthand
+  alone is not enough in Firefox when pdf.js set `-webkit-mask-image`.
+*/
 .pdf-annotator
   .editToolbar
   .buttons
-  > :is(.basic, .comment, .commentButton, .deleteButton, .highlightButton)::before {
-  content: '' !important;
-  display: inline-block !important;
-  position: static !important;
-  width: 100% !important;
-  height: 100% !important;
+  > :is(.basic, .comment, .commentButton, .deleteButton, .highlightButton)::before,
+.pdf-annotator
+  .editToolbar
+  .buttons
+  > :is(.basic, .comment, .commentButton, .deleteButton, .highlightButton)::after {
+  content: none !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
+  background: none !important;
+  background-image: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
   -webkit-mask: none !important;
   mask: none !important;
-  background-color: transparent !important;
+}
+
+.pdf-annotator
+  .editToolbar
+  .buttons
+  > :is(.comment, .commentButton, .deleteButton, .highlightButton) {
   background-repeat: no-repeat !important;
   background-position: center !important;
   background-size: 16px 16px !important;
 }
 
-.pdf-annotator .editToolbar .buttons > :is(.comment, .commentButton)::before {
+.pdf-annotator .editToolbar .buttons > :is(.comment, .commentButton) {
   background-image: var(--pdfa-icon-comment) !important;
 }
 
-.pdf-annotator .editToolbar .buttons > .deleteButton::before {
+.pdf-annotator .editToolbar .buttons > .deleteButton {
   background-image: var(--pdfa-icon-delete) !important;
 }
 
-.pdf-annotator .editToolbar .buttons > .highlightButton::before {
+.pdf-annotator .editToolbar .buttons > .highlightButton {
   background-image: var(--pdfa-icon-highlight) !important;
 }
 
 @media (prefers-color-scheme: dark) {
-  .pdf-annotator .editToolbar .buttons > :is(.comment, .commentButton)::before {
+  .pdf-annotator .editToolbar .buttons > :is(.comment, .commentButton) {
     background-image: var(--pdfa-icon-comment-invert) !important;
   }
 
-  .pdf-annotator .editToolbar .buttons > .deleteButton::before {
+  .pdf-annotator .editToolbar .buttons > .deleteButton {
     background-image: var(--pdfa-icon-delete-invert) !important;
   }
 
-  .pdf-annotator .editToolbar .buttons > .highlightButton::before {
+  .pdf-annotator .editToolbar .buttons > .highlightButton {
     background-image: var(--pdfa-icon-highlight-invert) !important;
   }
 }
@@ -1297,29 +1420,31 @@ onBeforeUnmount(() => {
   height: var(--comment-button-dim, 24px) !important;
   margin: 0 !important;
   transform: none !important;
+  /* Always the gray tint: the bubble background is a light pastel mixed
+     from the annotation color, independent of the host color scheme. */
+  background-color: transparent !important;
+  background-image: var(--pdfa-icon-comment) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 14px 14px !important;
 }
 
 .pdf-annotator
   :is(.annotationLayer, .annotationEditorLayer)
-  .annotationCommentButton::before {
-  content: '' !important;
-  display: inline-block !important;
-  position: static !important;
-  inset: auto !important;
-  transform: none !important;
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
+  .annotationCommentButton::before,
+.pdf-annotator
+  :is(.annotationLayer, .annotationEditorLayer)
+  .annotationCommentButton::after {
+  content: none !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: none !important;
+  background-image: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
   -webkit-mask: none !important;
   mask: none !important;
-  background-color: transparent !important;
-  /* Always the gray tint: the bubble background is a light pastel mixed
-     from the annotation color, independent of the host color scheme. */
-  background-image: var(--pdfa-icon-comment) !important;
-  background-repeat: no-repeat !important;
-  background-position: center !important;
-  background-size: contain !important;
 }
 
 .pdf-annotator .annotationLayer.disabled .annotationCommentButton {
