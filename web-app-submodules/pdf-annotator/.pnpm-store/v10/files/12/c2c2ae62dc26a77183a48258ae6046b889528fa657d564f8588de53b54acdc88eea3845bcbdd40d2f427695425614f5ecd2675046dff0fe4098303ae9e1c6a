@@ -1,0 +1,8 @@
+import { SpaceResource } from '../helpers';
+import { WebDavOptions } from './types';
+import { DAV, DAVRequestOptions } from './client';
+export declare const SetFavoriteFactory: (dav: DAV, options: WebDavOptions) => {
+    setFavorite(space: SpaceResource, { path }: {
+        path: string;
+    }, value: unknown, opts?: DAVRequestOptions): Promise<import("./client").DavResult>;
+};

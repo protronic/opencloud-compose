@@ -1,0 +1,20 @@
+import { Language } from 'vue3-gettext';
+import { CapabilityStore } from '../../composables';
+import { PasswordPolicy } from 'password-sheriff';
+export declare class PasswordPolicyService {
+    private readonly language;
+    private capability;
+    private policy;
+    private generatePasswordRules;
+    constructor({ language }: {
+        language: Language;
+    });
+    initialize(capabilityStore: CapabilityStore): void;
+    private hasRules;
+    private buildGeneratePasswordRules;
+    private buildPolicy;
+    getPolicy({ enforcePassword }?: {
+        enforcePassword?: boolean;
+    }): PasswordPolicy;
+    generatePassword(): string;
+}

@@ -1,0 +1,48 @@
+import { Ref } from 'vue';
+interface KeyboardActionsOptions {
+    skipDisabledKeyBindingsCheck?: boolean;
+}
+export declare enum Key {
+    C = "c",
+    V = "v",
+    X = "x",
+    A = "a",
+    S = "s",
+    Z = "z",
+    Plus = "+",
+    Minus = "-",
+    Space = " ",
+    Slash = "/",
+    ArrowUp = "ArrowUp",
+    ArrowDown = "ArrowDown",
+    ArrowLeft = "ArrowLeft",
+    ArrowRight = "ArrowRight",
+    Esc = "Escape",
+    Backspace = "Backspace",
+    Delete = "Delete"
+}
+export declare enum Modifier {
+    Ctrl = "Control",
+    Shift = "Shift"
+}
+export interface KeyboardActions {
+    actions: Ref<Array<KeyboardAction>>;
+    selectionCursor: Ref<number>;
+    removeKeyAction: (id: string) => void;
+    resetSelectionCursor: () => void;
+    bindKeyAction: (keys: {
+        primary: Key;
+        modifier?: Modifier;
+    }, callback: (event: KeyboardEvent) => void, options?: {
+        preventDefault?: boolean;
+    }) => string;
+}
+export interface KeyboardAction {
+    id: string;
+    primary: Key;
+    modifier: Modifier | null;
+    preventDefault: boolean;
+    callback: (event: KeyboardEvent) => void;
+}
+export declare const useKeyboardActions: (options?: KeyboardActionsOptions) => KeyboardActions;
+export {};

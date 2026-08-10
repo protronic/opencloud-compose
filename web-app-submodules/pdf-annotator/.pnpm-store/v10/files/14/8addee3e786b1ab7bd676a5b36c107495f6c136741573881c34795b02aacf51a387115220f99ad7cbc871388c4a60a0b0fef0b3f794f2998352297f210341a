@@ -1,0 +1,13 @@
+import { Ref } from 'vue';
+import { Resource } from '@opencloud-eu/web-client';
+export declare const useResourceViewSelection: ({ resources, disabledResources, selectedIds, emit }: {
+    resources: Ref<Resource[]>;
+    disabledResources: Ref<string[]>;
+    selectedIds: Ref<string[]>;
+    emit: ReturnType<typeof defineEmits>;
+}) => {
+    getResourceCheckboxLabel: (resource: Resource) => string;
+    areAllResourcesSelected: import("vue").ComputedRef<boolean>;
+    selectAllCheckboxLabel: import("vue").ComputedRef<string>;
+    toggleSelectionAll: () => void;
+};

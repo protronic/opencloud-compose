@@ -1,0 +1,14 @@
+import { LinkShare } from '@opencloud-eu/web-client';
+/**
+ * Dedicated composable for copying created links to clipboard because it requires
+ * special handling for Safari. For this to work you need to pass the link create method
+ * to copyLink so that the link is created within the same user interaction as the clipboard write.
+ *
+ * This composable also takes care of showing success and error messages.
+ */
+export declare const useCopyLink: () => {
+    copyLink: ({ createLinkHandler, password }: {
+        createLinkHandler: () => Promise<PromiseSettledResult<LinkShare>[]>;
+        password?: string;
+    }) => Promise<void>;
+};

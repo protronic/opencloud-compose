@@ -1,0 +1,125 @@
+import { ComponentPublicInstance, PropType, Ref } from 'vue';
+import { SpaceResource } from '@opencloud-eu/web-client';
+import { Modal } from '../composables';
+import { SearchResult, SearchResultValue } from './Search';
+declare const _default: typeof __VLS_export;
+export default _default;
+declare const __VLS_export: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+    modal: {
+        type: PropType<Modal>;
+        required: true;
+    };
+    space: {
+        type: PropType<SpaceResource>;
+        required: true;
+    };
+}>, {
+    inputUrl: Ref<string, string>;
+    inputFilename: Ref<string, string>;
+    dropRef: Readonly<import("vue").ShallowRef<ComponentPublicInstance<{
+        new (...args: any[]): import("vue").CreateComponentPublicInstanceWithMixins<Readonly<import("@opencloud-eu/design-system/components").OcDropProps> & Readonly<{
+            onHideDrop?: () => any;
+            onShowDrop?: () => any;
+        }>, {
+            show: ({ anchorElement, noFocus }?: {
+                anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+                noFocus?: boolean;
+            }) => Promise<void>;
+            hide: () => void;
+            update: ({ anchorElement }?: {
+                anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+            }) => Promise<void>;
+        }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+            hideDrop: () => any;
+            showDrop: () => any;
+        }, import("vue").PublicProps, {}, true, {}, {}, import("vue").GlobalComponents, import("vue").GlobalDirectives, string, {}, any, import("vue").ComponentProvideOptions, {
+            P: {};
+            B: {};
+            D: {};
+            C: {};
+            M: {};
+            Defaults: {};
+        }, Readonly<import("@opencloud-eu/design-system/components").OcDropProps> & Readonly<{
+            onHideDrop?: () => any;
+            onShowDrop?: () => any;
+        }>, {
+            show: ({ anchorElement, noFocus }?: {
+                anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+                noFocus?: boolean;
+            }) => Promise<void>;
+            hide: () => void;
+            update: ({ anchorElement }?: {
+                anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+            }) => Promise<void>;
+        }, {}, {}, {}, {}>;
+        __isFragment?: never;
+        __isTeleport?: never;
+        __isSuspense?: never;
+    } & import("vue").ComponentOptionsBase<Readonly<import("@opencloud-eu/design-system/components").OcDropProps> & Readonly<{
+        onHideDrop?: () => any;
+        onShowDrop?: () => any;
+    }>, {
+        show: ({ anchorElement, noFocus }?: {
+            anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+            noFocus?: boolean;
+        }) => Promise<void>;
+        hide: () => void;
+        update: ({ anchorElement }?: {
+            anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+        }) => Promise<void>;
+    }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+        hideDrop: () => any;
+        showDrop: () => any;
+    }, string, {}, {}, string, {}, import("vue").GlobalComponents, import("vue").GlobalDirectives, string, import("vue").ComponentProvideOptions> & import("vue").VNodeProps & import("vue").AllowedComponentProps & import("vue").ComponentCustomProps & (new () => {
+        $slots: import("@opencloud-eu/design-system/components").OcDropSlots;
+    })>>>;
+    dropItemUrl: import("vue").ComputedRef<string>;
+    searchResult: Ref<SearchResult, SearchResult>;
+    confirmButtonDisabled: import("vue").ComputedRef<boolean>;
+    inputFileNameErrorMessage: import("vue").ComputedRef<string>;
+    searchTask: import("vue-concurrency").Task<void, [searchTerm: string]>;
+    dropItemUrlClicked: () => void;
+    dropItemResourceClicked: (item: SearchResultValue) => void;
+    getPathPrefix: (resource: import("@opencloud-eu/web-client").Resource) => string;
+    getFolderLink: (resource: import("@opencloud-eu/web-client").Resource) => import("vue-router").RouteLocationNamedRaw;
+    getParentFolderLink: (resource: import("@opencloud-eu/web-client").Resource) => import("vue-router").RouteLocationNamedRaw;
+    getParentFolderName: (resource: import("@opencloud-eu/web-client").Resource) => string;
+    getParentFolderLinkIconAdditionalAttributes: (resource: import("@opencloud-eu/web-client").Resource) => {
+        name: string;
+        'fill-type': string;
+    } | {
+        name?: undefined;
+        'fill-type'?: undefined;
+    };
+    onKeyEnterDrop: (e: Event) => void;
+    onKeyDownDrop: () => void;
+    onKeyUpDrop: () => void;
+    onKeyEscDrop: (e: Event) => void;
+    onHideDrop: () => void;
+    onShowDrop: () => void;
+    onInputUrlInput: () => Promise<void>;
+    onClickUrlInput: () => void;
+    isDropItemActive: (index: number) => boolean;
+    onConfirm: () => Promise<void>;
+}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, "update:confirmDisabled"[], "update:confirmDisabled", import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+    modal: {
+        type: PropType<Modal>;
+        required: true;
+    };
+    space: {
+        type: PropType<SpaceResource>;
+        required: true;
+    };
+}>> & Readonly<{
+    "onUpdate:confirmDisabled"?: (...args: any[]) => any;
+}>, {}, {}, {
+    ResourcePreview: import("vue").DefineComponent<{
+        searchResult?: SearchResultValue;
+        isClickable?: boolean;
+        term?: string;
+    }, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<{
+        searchResult?: SearchResultValue;
+        isClickable?: boolean;
+        term?: string;
+    }> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;

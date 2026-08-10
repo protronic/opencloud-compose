@@ -1,0 +1,8 @@
+import type { Action, FileActionOptions } from '../types';
+type UndoActionOptions = FileActionOptions & {
+    callback?: () => void;
+};
+export declare const useFileActionsUndoDelete: () => {
+    actions: import("vue").ComputedRef<Action<UndoActionOptions>[]>;
+};
+export {};

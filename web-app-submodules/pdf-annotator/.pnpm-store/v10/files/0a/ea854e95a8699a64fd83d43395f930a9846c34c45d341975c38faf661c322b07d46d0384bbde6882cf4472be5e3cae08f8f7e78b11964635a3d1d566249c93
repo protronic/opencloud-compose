@@ -1,0 +1,12 @@
+import { SpaceResource } from '../helpers';
+import { WebDavOptions } from './types';
+import { DAV, DAVRequestOptions } from './client';
+export declare const RestoreFileFactory: (dav: DAV, options: WebDavOptions) => {
+    restoreFile(space: SpaceResource, { id }: {
+        id: string;
+    }, { path: restorePath }: {
+        path: string;
+    }, { overwrite, ...opts }?: {
+        overwrite?: boolean;
+    } & DAVRequestOptions): Promise<import("./client").DavResult>;
+};

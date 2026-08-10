@@ -1,0 +1,4 @@
+import { FileAction } from '../types';
+export declare const useFileActionFallbackToDownload: () => {
+    actions: import("vue").ComputedRef<FileAction[]>;
+};

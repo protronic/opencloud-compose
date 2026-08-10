@@ -1,0 +1,49 @@
+import { FillType, SizeType } from '../../helpers';
+export interface Props {
+    /**
+     * @docs Accessible label for the icon. Should be set if the icon fulfills a purpose and is not purely decorative.
+     */
+    accessibleLabel?: string;
+    /**
+     * @docs Color of the icon.
+     */
+    color?: string;
+    /**
+     * @docs Fill type of the icon.
+     * @default fill
+     */
+    fillType?: FillType;
+    /**
+     * @docs Name of the icon. Please refer to `Remixicon` for a list of available icons.
+     */
+    name?: string;
+    /**
+     * @docs Size of the icon.
+     * @default medium
+     * @deprecated use sizeClass instead
+     */
+    size?: SizeType;
+    /**
+     * @docs Tailwind size class for the icon. Please refer to Tailwind documentation for a list of available size classes.
+     * @default size-5
+     */
+    sizeClass?: string;
+    /**
+     * @docs HTML element to be used for the icon.
+     * @default span
+     */
+    type?: string;
+}
+export interface Emits {
+    /**
+     * @docs Emitted when the SVG has been loaded.
+     */
+    (e: 'loaded'): void;
+}
+declare const __VLS_export: import("vue").DefineComponent<Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+    loaded: () => any;
+}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{
+    onLoaded?: () => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+declare const _default: typeof __VLS_export;
+export default _default;

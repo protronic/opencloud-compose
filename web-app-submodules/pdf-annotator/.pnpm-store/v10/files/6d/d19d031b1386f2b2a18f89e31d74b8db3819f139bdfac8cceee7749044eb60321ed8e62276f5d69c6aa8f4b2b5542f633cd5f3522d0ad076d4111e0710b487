@@ -1,0 +1,21 @@
+import { Resource } from '../helpers/resource';
+import { DavPropertyValue } from './constants';
+import { SpaceResource } from '../helpers';
+import { DAV, DAVRequestOptions } from './client';
+import { GetPathForFileIdFactory } from './getPathForFileId';
+import { WebDavOptions } from './types';
+export type ListFilesOptions = {
+    depth?: number;
+    davProperties?: DavPropertyValue[];
+    isTrash?: boolean;
+} & DAVRequestOptions;
+export declare const ListFilesFactory: (dav: DAV, pathForFileIdFactory: ReturnType<typeof GetPathForFileIdFactory>, options: WebDavOptions) => {
+    listFiles(space: SpaceResource, { path, fileId }?: {
+        path?: string;
+        fileId?: string;
+    }, { depth, davProperties, isTrash, ...opts }?: ListFilesOptions): Promise<ListFilesResult>;
+};
+export interface ListFilesResult {
+    resource: Resource;
+    children?: Resource[];
+}

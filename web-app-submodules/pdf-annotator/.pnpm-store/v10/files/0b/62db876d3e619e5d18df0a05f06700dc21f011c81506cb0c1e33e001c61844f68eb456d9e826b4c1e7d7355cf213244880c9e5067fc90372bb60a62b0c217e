@@ -1,0 +1,29 @@
+import { PropType } from 'vue';
+import { InlineFilterOption } from './types';
+declare const _default: typeof __VLS_export;
+export default _default;
+declare const __VLS_export: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+    filterName: {
+        type: StringConstructor;
+        required: true;
+    };
+    filterOptions: {
+        type: PropType<InlineFilterOption[]>;
+        required: true;
+    };
+}>, {
+    queryParam: string;
+    activeOption: import("vue").Ref<string, string>;
+    toggleFilter: (option: InlineFilterOption) => Promise<void>;
+}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, "toggleFilter"[], "toggleFilter", import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+    filterName: {
+        type: StringConstructor;
+        required: true;
+    };
+    filterOptions: {
+        type: PropType<InlineFilterOption[]>;
+        required: true;
+    };
+}>> & Readonly<{
+    onToggleFilter?: (...args: any[]) => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;

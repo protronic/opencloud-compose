@@ -1,0 +1,9 @@
+import { AppsStore } from '../piniaStores';
+interface AppMetaOptions {
+    appsStore: AppsStore;
+    applicationId: string;
+}
+export declare function useAppMeta({ appsStore, applicationId }: AppMetaOptions): {
+    applicationMeta: import("vue").ComputedRef<import("../..").ApplicationInformation>;
+};
+export {};

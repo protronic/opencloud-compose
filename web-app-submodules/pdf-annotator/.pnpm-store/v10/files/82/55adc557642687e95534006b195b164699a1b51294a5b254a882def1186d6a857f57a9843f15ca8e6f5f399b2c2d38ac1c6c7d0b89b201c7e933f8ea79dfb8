@@ -1,0 +1,3 @@
+import type { GraphFactoryOptions } from './../types';
+import type { GraphTags } from './types';
+export declare const TagsFactory: ({ axiosClient, config }: GraphFactoryOptions) => GraphTags;

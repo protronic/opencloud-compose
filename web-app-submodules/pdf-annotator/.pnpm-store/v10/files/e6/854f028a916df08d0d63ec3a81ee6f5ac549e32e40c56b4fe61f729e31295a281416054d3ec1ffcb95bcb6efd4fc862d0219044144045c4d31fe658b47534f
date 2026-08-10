@@ -1,0 +1,11 @@
+import { Resource, SpaceResource } from '@opencloud-eu/web-client';
+import { Ref } from 'vue';
+type GetMatchingSpaceOptions = {
+    space?: Ref<SpaceResource>;
+};
+export declare const useGetMatchingSpace: (options?: GetMatchingSpaceOptions) => {
+    getInternalSpace: (storageId: string) => SpaceResource;
+    getMatchingSpace: (resource: Resource) => SpaceResource;
+    isPersonalSpaceRoot: (resource: Resource) => boolean;
+};
+export {};

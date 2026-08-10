@@ -1,0 +1,11 @@
+import { Resource } from '@opencloud-eu/web-client';
+export declare const useIsResourceNameValid: () => {
+    isSpaceNameValid: (newName: string) => {
+        isValid: boolean;
+        error?: string;
+    };
+    isFileNameValid: (resource: Resource, newName: string, parentResources?: Resource[]) => {
+        isValid: boolean;
+        error?: string;
+    };
+};

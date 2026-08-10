@@ -1,0 +1,229 @@
+import { mergeConfig as e, searchForWorkspaceRoot as t } from "vite";
+import { join as n, posix as r } from "path";
+import { cwd as i } from "process";
+import { existsSync as a, readFileSync as o, watch as s } from "fs";
+import c from "@tailwindcss/vite";
+import l from "@vitejs/plugin-basic-ssl";
+import u from "@vitejs/plugin-vue";
+import { federation as d } from "@module-federation/vite";
+import f from "https";
+import p from "http";
+//#region src/externalModules.ts
+var m = [
+	"vue",
+	"luxon",
+	"pinia",
+	"vue3-gettext",
+	"@opencloud-eu/web-pkg",
+	"@opencloud-eu/web-pkg/editor",
+	"@opencloud-eu/web-client",
+	"@opencloud-eu/web-client/graph",
+	"@opencloud-eu/web-client/graph/generated",
+	"@opencloud-eu/web-client/ocs",
+	"@opencloud-eu/web-client/sse",
+	"@opencloud-eu/web-client/webdav"
+];
+//#endregion
+//#region src/plugins/federationRegistrationClient.ts
+function h(e, { method: t = "GET", body: n } = {}) {
+	return new Promise((r, i) => {
+		let a = (new URL(e).protocol === "https:" ? f : p).request(e, {
+			method: t,
+			rejectUnauthorized: !1
+		}, (e) => {
+			let t = "";
+			e.on("data", (e) => t += e), e.on("end", () => r({
+				ok: e.statusCode >= 200 && e.statusCode < 300,
+				status: e.statusCode,
+				data: t
+			}));
+		});
+		a.on("error", i), n && (a.setHeader("Content-Type", "application/json"), a.write(n)), a.end();
+	});
+}
+function g({ hostUrl: e, name: t, entryPoint: n, getMetadata: r, interval: i = 5e3, path: a = "/_dev/remotes", metadataWatchFiles: o = [] }) {
+	return {
+		name: "federation-registration-client",
+		apply: "serve",
+		configureServer(c) {
+			if (c.config.mode === "test") return;
+			let l = null, u = "", d = [];
+			async function f() {
+				if (!u) return;
+				let n = r?.(), i = `${e}${a}`;
+				try {
+					let e = await h(i, {
+						method: "POST",
+						body: JSON.stringify({
+							id: t,
+							path: u,
+							...n && { metadata: n }
+						})
+					});
+					e.ok || console.warn(`[federation-registration] Registration failed: ${e.status}`);
+				} catch {}
+			}
+			c.httpServer?.on("listening", () => {
+				let e = c.httpServer.address(), t = typeof e == "object" ? e?.port : e;
+				u = `https://${typeof c.config.server.host == "string" ? c.config.server.host : "localhost"}:${t}/${n}`, f(), l = setInterval(f, i);
+				for (let e of o) try {
+					let t = s(e, { persistent: !1 }, () => {
+						console.log(`[federation-registration] ${e} changed, re-registering...`), f();
+					});
+					d.push(t);
+				} catch {}
+			}), c.httpServer?.on("close", () => {
+				l &&= (clearInterval(l), null);
+				for (let e of d) e.close();
+			});
+		}
+	};
+}
+//#endregion
+//#region src/plugins/manifest.ts
+var _ = "manifest.json", v = n("./src/", _);
+function y(e) {
+	let t = "";
+	return {
+		name: "manifest",
+		apply: "build",
+		configResolved(e) {
+			t = e.build.outDir;
+		},
+		buildStart() {
+			this.addWatchFile(v);
+		},
+		generateBundle(r, i) {
+			let s = n(t, _);
+			if (a(s)) {
+				this.warn(`${s} already exists in output directory (likely from public/), skipping generation\nConsider using --emptyOutDir if outDir is outside of project root.`);
+				return;
+			}
+			let c = Object.values(i).find((t) => t.type === "chunk" && t.name === e);
+			c || this.error("No entry chunk found");
+			let l = {};
+			if (a(v)) try {
+				l = JSON.parse(o(v).toString());
+			} catch (e) {
+				this.error(`Failed to parse manifest.json at ${v}: ${e.message}\nPlease ensure manifest.json contains a valid JSON object.`);
+			}
+			l.entrypoint = c.fileName, this.emitFile({
+				type: "asset",
+				fileName: _,
+				source: JSON.stringify(l, null, 2)
+			});
+		}
+	};
+}
+//#endregion
+//#region src/utils.ts
+function b(e, t) {
+	let n = { ...e };
+	for (let r of Object.keys(t)) {
+		let i = e[r], a = t[r];
+		a && typeof a == "object" && !Array.isArray(a) && i && typeof i == "object" && !Array.isArray(i) ? n[r] = b(i, a) : n[r] = a;
+	}
+	return n;
+}
+//#endregion
+//#region src/index.ts
+var x = process.env.OPENCLOUD_EXTENSION_DIST_DIR || "dist", S = process.env.OPENCLOUD_CERTS_DIR, C = S ? {
+	key: o(n(S, "server.key")),
+	cert: o(n(S, "server.crt"))
+} : null, w = n("./src/", "config.json"), T = "remoteEntry", E = ".mjs";
+function D(s = {}) {
+	return ({ mode: f }) => {
+		let p = f === "production", h = f === "test", _ = JSON.parse(o(n(t(i()), "package.json")).toString()), S = s.name || _.name, { port: D = 9210 } = s?.server || {}, O = s?.opencloudWebHostUrl || process.env.OPENCLOUD_WEB_HOST_URL || "https://host.docker.internal:9201";
+		function k() {
+			let e = {};
+			if (a(v)) try {
+				let t = JSON.parse(o(v).toString());
+				t.config && (e = t.config);
+			} catch {}
+			if (a(w)) try {
+				let t = JSON.parse(o(w).toString());
+				e = b(e, t);
+			} catch {}
+			return Object.keys(e).length > 0 ? e : void 0;
+		}
+		return e({
+			base: "./",
+			build: {
+				cssCodeSplit: !0,
+				minify: p,
+				outDir: x,
+				rollupOptions: {
+					input: { [S]: "./src/index.ts" },
+					output: {
+						entryFileNames: r.join("js", `[name]${p ? "-[hash]" : ""}${E}`),
+						chunkFileNames: r.join("js", `[name]-[hash]${E}`)
+					}
+				}
+			},
+			plugins: [
+				u({
+					customElement: !1,
+					...h && { template: { compilerOptions: { whitespace: "preserve" } } }
+				}),
+				...C ? [] : [l({ name: "opencloud" })],
+				{
+					name: "fix-sec-fetch-dest",
+					configureServer(e) {
+						e.middlewares.use((e, t, n) => {
+							(e.url?.endsWith(".js") || e.url?.endsWith(".mjs")) && e.headers["sec-fetch-dest"] === "document" && (e.headers["sec-fetch-dest"] = "script"), n();
+						});
+					}
+				},
+				...h ? [] : [d({
+					name: S,
+					exposes: { ".": "./src/index.ts" },
+					filename: `${T}${p ? "-[hash]" : ""}${E}`,
+					shared: Object.fromEntries(m.map((e) => [e, {
+						singleton: !0,
+						import: !1
+					}])),
+					manifest: !1,
+					dts: !1
+				})],
+				c(),
+				y(T),
+				g({
+					hostUrl: O,
+					name: S,
+					entryPoint: `${T}${E}`,
+					getMetadata: k,
+					metadataWatchFiles: [v, w]
+				})
+			],
+			server: {
+				origin: `https://host.docker.internal:${D}`,
+				host: "host.docker.internal",
+				port: D,
+				cors: !0,
+				...C && { https: C }
+			},
+			test: {
+				globals: !0,
+				environment: "happy-dom",
+				clearMocks: !0,
+				include: ["**/*.spec.ts"],
+				exclude: [
+					"**/node_modules/**",
+					"**/dist/**",
+					"**/cypress/**",
+					"**/.{idea,git,cache,output,temp}/**",
+					"**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+					".pnpm-store/*",
+					"**/e2e/**"
+				],
+				coverage: {
+					provider: "v8",
+					reportsDirectory: "./coverage",
+					reporter: "lcov"
+				}
+			}
+		}, s);
+	};
+}
+//#endregion
+export { D as defineConfig };

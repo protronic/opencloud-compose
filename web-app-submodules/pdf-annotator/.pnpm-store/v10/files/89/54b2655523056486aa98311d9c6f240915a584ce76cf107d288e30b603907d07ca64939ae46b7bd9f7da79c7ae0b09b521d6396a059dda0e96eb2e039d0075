@@ -1,0 +1,12 @@
+import { RouteRecordRaw, RouteLocationNamedRaw, Router } from 'vue-router';
+/**
+ * listed routes only exist to keep backwards compatibility intact,
+ * all routes written in  a flat syntax to keep them readable.
+ */
+export declare const buildRoutes: () => RouteRecordRaw[];
+/**
+ * same as utils.isLocationActive with the difference that it remaps old route names to new ones and warns
+ * @param router
+ * @param comparatives
+ */
+export declare const isLocationActive: (router: Router, ...comparatives: [RouteLocationNamedRaw, ...RouteLocationNamedRaw[]]) => boolean;

@@ -1,0 +1,19 @@
+import { AxiosInstance } from 'axios';
+export interface UrlSignOptions {
+    axiosClient: AxiosInstance;
+    baseURI: string;
+}
+export declare class UrlSign {
+    private axiosClient;
+    private baseURI;
+    private xmlParser;
+    private signingKey;
+    private ALGORITHM;
+    private TTL;
+    private HASH_LENGTH;
+    private ITERATION_COUNT;
+    constructor({ axiosClient, baseURI }: UrlSignOptions);
+    signUrl(url: string, username: string): Promise<string>;
+    private getSignKey;
+    private createHashedKey;
+}

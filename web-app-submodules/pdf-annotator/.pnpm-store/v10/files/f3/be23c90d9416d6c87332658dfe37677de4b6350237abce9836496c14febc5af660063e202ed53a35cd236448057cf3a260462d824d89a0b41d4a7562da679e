@@ -1,0 +1,15 @@
+import { SpaceResource } from '../helpers';
+import { WebDavOptions } from './types';
+import { DAV, DAVRequestOptions } from './client';
+export declare const MoveFilesFactory: (dav: DAV, options: WebDavOptions) => {
+    moveFiles(sourceSpace: SpaceResource, { path: sourcePath, fileId: sourceFileId }: {
+        path?: string;
+        fileId?: string;
+    }, targetSpace: SpaceResource, { path: targetPath, parentFolderId, name }: {
+        path?: string;
+        parentFolderId?: string;
+        name?: string;
+    }, { overwrite, ...opts }?: {
+        overwrite?: boolean;
+    } & DAVRequestOptions): Promise<import("./client").DavResult>;
+};

@@ -1,0 +1,22 @@
+import { AxiosInstance } from 'axios';
+import { type GraphUsers } from './users';
+import { type GraphGroups } from './groups';
+import { GraphApplications } from './applications';
+import { GraphDrives } from './drives';
+import { GraphDriveItems } from './driveItems';
+import { GraphTags } from './tags';
+import { GraphActivities } from './activities';
+import { GraphPermissions } from './permissions';
+import { GraphPhotos } from './photos';
+export interface Graph {
+    activities: GraphActivities;
+    applications: GraphApplications;
+    tags: GraphTags;
+    drives: GraphDrives;
+    driveItems: GraphDriveItems;
+    users: GraphUsers;
+    groups: GraphGroups;
+    permissions: GraphPermissions;
+    photos: GraphPhotos;
+}
+export declare const graph: (baseURI: string, axiosClient: AxiosInstance) => Graph;

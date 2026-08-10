@@ -1,0 +1,43 @@
+import { FillType, SizeType } from '../../helpers';
+export interface Props {
+    /**
+     * @docs The name of the avatar item. This will not be displayed on the screen however.
+     */
+    name: string;
+    /**
+     * @docs The accessible label for the avatar item. Only needed in case the item is used alone. If not specified, the item will get `aria-hidden="true"`.
+     */
+    accessibleLabel?: string;
+    /**
+     * @docs The background color of the avatar item.
+     * @default var(--oc-role-secondary)
+     */
+    background?: string;
+    /**
+     * @docs The icon to be displayed in the avatar item. Please refer to the `OcIcon` component to see how to use icon names.
+     */
+    icon?: string;
+    /**
+     * @docs The color of the icon.
+     * @default var(--oc-role-on-secondary)
+     */
+    iconColor?: string;
+    /**
+     * @docs The fill type of the icon.
+     * @default 'fill'
+     */
+    iconFillType?: FillType;
+    /**
+     * @docs The size of the icon.
+     * @default 'small'
+     */
+    iconSize?: SizeType;
+    /**
+     * @docs The width of the avatar item.
+     * @default 30
+     */
+    width?: number;
+}
+declare const __VLS_export: import("vue").DefineComponent<Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const _default: typeof __VLS_export;
+export default _default;

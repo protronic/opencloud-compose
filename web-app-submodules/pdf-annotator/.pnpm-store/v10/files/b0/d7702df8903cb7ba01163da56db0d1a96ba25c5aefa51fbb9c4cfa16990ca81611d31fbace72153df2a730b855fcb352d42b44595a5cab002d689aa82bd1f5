@@ -1,0 +1,1360 @@
+import { Aa as e, Ba as t, Ea as n, Ia as r, Ja as i, La as a, Na as o, Oa as s, Pa as c, Ra as l, Sa as u, Ta as d, Ua as f, Va as p, Xa as m, Ya as h, ba as g, ca as _, eo as v, ga as y, ha as b, ja as x, no as S, o as C, pn as w, qa as T, va as E, xa as D, ya as O, za as k } from "../components-DGm07xAo.js";
+import { useGettext as A } from "vue3-gettext";
+import { EditorContent as j, VueRenderer as M, useEditor as N } from "@tiptap/vue-3";
+import { Extension as P } from "@tiptap/core";
+import F from "@tiptap/suggestion";
+import I from "@tiptap/starter-kit";
+import L from "@tiptap/extension-underline";
+import R from "@tiptap/extension-link";
+import z from "@tiptap/extension-image";
+import { Table as B, TableCell as V, TableHeader as H, TableRow as U } from "@tiptap/extension-table";
+import W from "@tiptap/extension-task-list";
+import G from "@tiptap/extension-task-item";
+import { BackgroundColor as K, Color as q, FontFamily as J, FontSize as Y, LineHeight as X, TextStyle as Z } from "@tiptap/extension-text-style";
+import { Markdown as Q } from "@tiptap/markdown";
+import ee from "@tiptap/extension-document";
+import te from "@tiptap/extension-paragraph";
+import ne from "@tiptap/extension-text";
+import re from "@tiptap/extension-hard-break";
+//#region src/editor/components/SlashCommandMenu.vue?vue&type=script&setup=true&lang.ts
+var ie = { class: "text-editor-slash-menu" }, ae = ["textContent"], oe = { class: "text-editor-slash-menu__item-text" }, se = ["textContent"], ce = ["textContent"], le = {
+	key: 1,
+	class: "text-editor-slash-menu__empty"
+}, ue = /* @__PURE__ */ n({
+	__name: "SlashCommandMenu",
+	props: {
+		editor: {},
+		range: {},
+		query: {},
+		text: {},
+		items: {},
+		command: { type: Function },
+		decorationNode: {},
+		clientRect: { type: [Function, null] }
+	},
+	setup(n, { expose: a }) {
+		let o = n, s = T("dropRef"), p = v(0);
+		i(() => o.items, () => {
+			p.value = 0;
+		});
+		let m = E(() => {
+			let e = [], t = null;
+			return o.items.forEach((n, r) => {
+				(!t || t.id !== n.groupId) && (t = {
+					id: n.groupId,
+					title: n.groupTitle,
+					entries: []
+				}, e.push(t)), t.entries.push({
+					item: n,
+					index: r
+				});
+			}), e;
+		}), _ = (e) => {
+			o.command(e);
+		}, b = (e) => {
+			let t = o.items.length;
+			if (t === 0) return !1;
+			switch (e.key) {
+				case "ArrowDown": return e.preventDefault(), p.value = (p.value + 1) % t, !0;
+				case "ArrowUp": return e.preventDefault(), p.value = (p.value - 1 + t) % t, !0;
+				case "Enter": return e.preventDefault(), _(o.items[p.value]), !0;
+				default: return !1;
+			}
+		};
+		i(p, async () => {
+			await e(), (s.value?.$el?.querySelector(".text-editor-slash-menu__item--selected"))?.scrollIntoView({ block: "nearest" });
+		});
+		let w = () => {
+			s.value?.update?.({ anchorElement: k() });
+		}, k = () => {
+			let e = o.clientRect?.();
+			return e ? { getBoundingClientRect: () => e } : null;
+		};
+		return c(async () => {
+			await e(), s.value?.show?.({
+				anchorElement: k(),
+				noFocus: !0
+			});
+		}), a({
+			onUpdate: w,
+			onKeyDown: b
+		}), (e, n) => {
+			let i = t("oc-icon"), a = t("oc-button");
+			return r(), g(S(C), {
+				ref_key: "dropRef",
+				ref: s,
+				mode: "manual",
+				"padding-size": "small",
+				class: "z-10001",
+				"enforce-drop-on-mobile": ""
+			}, {
+				default: h(() => [O("div", ie, [m.value.length ? (r(!0), u(y, { key: 0 }, l(m.value, (e) => (r(), u("div", {
+					key: e.id,
+					class: "text-editor-slash-menu__group"
+				}, [O("div", {
+					class: "text-editor-slash-menu__group-title",
+					textContent: f(e.title)
+				}, null, 8, ae), O("ul", null, [(r(!0), u(y, null, l(e.entries, (e) => (r(), u("li", { key: `slash-command-item-${e.item.id}` }, [d(a, {
+					appearance: "raw",
+					class: x(["text-editor-slash-menu__item", { "text-editor-slash-menu__item--selected": e.index === p.value }]),
+					onClick: (t) => _(e.item)
+				}, {
+					default: h(() => [e.item.icon ? (r(), g(i, {
+						key: 0,
+						name: e.item.icon,
+						"fill-type": e.item.iconFillType || "none",
+						size: "small",
+						class: "text-editor-slash-menu__item-icon"
+					}, null, 8, ["name", "fill-type"])) : D("", !0), O("span", oe, [O("span", {
+						class: "text-editor-slash-menu__item-title",
+						textContent: f(e.item.title)
+					}, null, 8, se), e.item.description ? (r(), u("span", {
+						key: 0,
+						class: "text-editor-slash-menu__item-description",
+						textContent: f(e.item.description)
+					}, null, 8, ce)) : D("", !0)])]),
+					_: 2
+				}, 1032, ["class", "onClick"])]))), 128))])]))), 128)) : (r(), u("div", le, f(e.$gettext("No matching commands")), 1))])]),
+				_: 1
+			}, 512);
+		};
+	}
+});
+//#endregion
+//#region src/editor/extensions/slashCommands.ts
+function de(e, t, n) {
+	let r = t.trim().toLowerCase(), i = [];
+	for (let t of e) for (let e of t.actions) if (!(e.showInSlashCommands === !1 || e.isEnabled && !e.isEnabled(n))) {
+		if (!r) {
+			i.push({
+				...e,
+				groupId: t.id,
+				groupTitle: t.title
+			});
+			continue;
+		}
+		[
+			e.title,
+			e.description ?? "",
+			...e.keywords ?? []
+		].join(" ").toLowerCase().includes(r) && i.push({
+			...e,
+			groupId: t.id,
+			groupTitle: t.title
+		});
+	}
+	return i;
+}
+var fe = P.create({
+	name: "slashCommands",
+	addOptions() {
+		return { getGroups: () => [] };
+	},
+	addProseMirrorPlugins() {
+		return [F({
+			editor: this.editor,
+			char: "/",
+			startOfLine: !1,
+			items: ({ query: e, editor: t }) => de(this.options.getGroups(), e, t),
+			command: ({ editor: e, range: t, props: n }) => {
+				n.slashCommandAction({
+					editor: e,
+					range: t
+				});
+			},
+			render: () => {
+				let e = null, t = () => e?.ref ?? null;
+				return {
+					onStart: (t) => {
+						e = new M(ue, {
+							props: t,
+							editor: t.editor
+						}), e.el && document.body.appendChild(e.el);
+					},
+					onUpdate: (n) => {
+						e?.updateProps(n), t()?.onUpdate(n);
+					},
+					onKeyDown: (e) => t()?.onKeyDown(e.event) ?? !1,
+					onExit: () => {
+						e?.el?.remove(), e?.destroy(), e = null;
+					}
+				};
+			}
+		})];
+	}
+});
+//#endregion
+//#region src/editor/composables/useEditorActions.ts
+function $(e, t = {}) {
+	let { $gettext: n } = A(), { dispatchModal: r } = w(), i = () => ({
+		id: "undo",
+		title: n("Undo"),
+		icon: "arrow-go-back",
+		iconFillType: "line",
+		toolbarAction: (e) => e.chain().focus().undo().run(),
+		isEnabled: (e) => e.can().undo(),
+		showInSlashCommands: !1
+	}), a = () => ({
+		id: "redo",
+		title: n("Redo"),
+		icon: "arrow-go-forward",
+		iconFillType: "line",
+		toolbarAction: (e) => e.chain().focus().redo().run(),
+		isEnabled: (e) => e.can().redo(),
+		showInSlashCommands: !1
+	}), o = () => ({
+		id: "source-mode",
+		title: n("Show source"),
+		icon: "code-s-slash",
+		iconFillType: "line",
+		toolbarAction: () => e.sourceMode.value = !e.sourceMode.value,
+		isActive: () => e.sourceMode.value,
+		showInSlashCommands: !1
+	}), s = () => ({
+		id: "font-size",
+		title: n("Font size"),
+		icon: "font-size-2",
+		showInSlashCommands: !1,
+		childActions: [
+			"12px",
+			"14px",
+			"16px",
+			"18px",
+			"20px",
+			"24px",
+			"28px",
+			"32px"
+		].map((e) => ({
+			id: `font-size-${e}`,
+			title: e,
+			icon: "font-size-2",
+			toolbarAction: (t) => t.chain().focus().setFontSize(e).run(),
+			isActive: (t) => t.getAttributes("textStyle").fontSize === e
+		}))
+	}), c = () => ({
+		id: "text-color",
+		title: n("Text color"),
+		icon: "font-color",
+		showInSlashCommands: !1,
+		childActions: [
+			{
+				value: "#000000",
+				label: n("Black")
+			},
+			{
+				value: "#e60000",
+				label: n("Red")
+			},
+			{
+				value: "#ff9900",
+				label: n("Orange")
+			},
+			{
+				value: "#ffff00",
+				label: n("Yellow")
+			},
+			{
+				value: "#008a00",
+				label: n("Green")
+			},
+			{
+				value: "#0066cc",
+				label: n("Blue")
+			},
+			{
+				value: "#9933ff",
+				label: n("Purple")
+			},
+			{
+				value: "#ffffff",
+				label: n("White")
+			},
+			{
+				value: "#facccc",
+				label: n("Light red")
+			},
+			{
+				value: "#ffebcc",
+				label: n("Light orange")
+			},
+			{
+				value: "#ffffcc",
+				label: n("Light yellow")
+			},
+			{
+				value: "#cce8cc",
+				label: n("Light green")
+			},
+			{
+				value: "#cce0f5",
+				label: n("Light blue")
+			},
+			{
+				value: "#ebd6ff",
+				label: n("Light purple")
+			}
+		].map(({ value: e, label: t }) => ({
+			id: `text-color-${e.replace("#", "")}`,
+			title: t,
+			icon: "font-color",
+			toolbarAction: (t) => t.chain().focus().setColor(e).run(),
+			isActive: (t) => t.getAttributes("textStyle").color === e
+		}))
+	}), l = () => ({
+		id: "background-color",
+		title: n("Background color"),
+		icon: "mark-pen",
+		iconFillType: "line",
+		showInSlashCommands: !1,
+		childActions: [
+			{
+				value: "transparent",
+				label: n("None")
+			},
+			{
+				value: "#facccc",
+				label: n("Light red")
+			},
+			{
+				value: "#ffebcc",
+				label: n("Light orange")
+			},
+			{
+				value: "#ffffcc",
+				label: n("Light yellow")
+			},
+			{
+				value: "#cce8cc",
+				label: n("Light green")
+			},
+			{
+				value: "#cce0f5",
+				label: n("Light blue")
+			},
+			{
+				value: "#ebd6ff",
+				label: n("Light purple")
+			},
+			{
+				value: "#e60000",
+				label: n("Red")
+			},
+			{
+				value: "#ff9900",
+				label: n("Orange")
+			},
+			{
+				value: "#ffff00",
+				label: n("Yellow")
+			},
+			{
+				value: "#008a00",
+				label: n("Green")
+			},
+			{
+				value: "#0066cc",
+				label: n("Blue")
+			},
+			{
+				value: "#9933ff",
+				label: n("Purple")
+			},
+			{
+				value: "#000000",
+				label: n("Black")
+			}
+		].map(({ value: e, label: t }) => ({
+			id: `background-color-${e.replace("#", "")}`,
+			title: t,
+			icon: "mark-pen",
+			iconFillType: "line",
+			toolbarAction: (t) => t.chain().focus().setBackgroundColor(e).run(),
+			isActive: (t) => t.getAttributes("textStyle").backgroundColor === e
+		}))
+	}), u = () => ({
+		id: "bold",
+		title: n("Bold"),
+		icon: "bold",
+		toolbarAction: (e) => e.chain().focus().toggleBold().run(),
+		slashCommandAction: ({ editor: e, range: t }) => e.chain().focus().deleteRange(t).toggleBold().run(),
+		isActive: (e) => e.isActive("bold")
+	}), d = () => ({
+		id: "italic",
+		title: n("Italic"),
+		icon: "italic",
+		toolbarAction: (e) => e.chain().focus().toggleItalic().run(),
+		slashCommandAction: ({ editor: e, range: t }) => e.chain().focus().deleteRange(t).toggleItalic().run(),
+		isActive: (e) => e.isActive("italic")
+	}), f = () => ({
+		id: "underline",
+		title: n("Underline"),
+		icon: "underline",
+		toolbarAction: (e) => e.chain().focus().toggleUnderline().run(),
+		slashCommandAction: ({ editor: e, range: t }) => e.chain().focus().deleteRange(t).toggleUnderline().run(),
+		isActive: (e) => e.isActive("underline")
+	}), p = () => ({
+		id: "strikethrough",
+		title: n("Strikethrough"),
+		icon: "strikethrough",
+		toolbarAction: (e) => e.chain().focus().toggleStrike().run(),
+		slashCommandAction: ({ editor: e, range: t }) => e.chain().focus().deleteRange(t).toggleStrike().run(),
+		isActive: (e) => e.isActive("strike")
+	}), m = () => ({
+		id: "code-inline",
+		title: n("Inline code"),
+		icon: "code-line",
+		toolbarAction: (e) => e.chain().focus().toggleCode().run(),
+		slashCommandAction: ({ editor: e, range: t }) => e.chain().focus().deleteRange(t).toggleCode().run(),
+		isActive: (e) => e.isActive("code")
+	}), h = () => ({
+		id: "heading",
+		title: n("Heading"),
+		icon: "heading",
+		activeIcon: (e) => {
+			for (let t of [
+				1,
+				2,
+				3,
+				4
+			]) if (e.isActive("heading", { level: t })) return { icon: `h-${t}` };
+		},
+		isActive: (e) => e.isActive("heading"),
+		showInSlashCommands: !1,
+		childActions: [
+			g(),
+			_(),
+			v(),
+			y()
+		]
+	}), g = () => ({
+		id: "heading-1",
+		title: n("Heading 1"),
+		description: n("Large section heading"),
+		icon: "h-1",
+		keywords: ["h1", "title"],
+		toolbarAction: (e) => e.chain().focus().toggleHeading({ level: 1 }).run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).setNode("heading", { level: 1 }).run();
+		},
+		isActive: (e) => e.isActive("heading", { level: 1 }),
+		showInToolbar: !1
+	}), _ = () => ({
+		id: "heading-2",
+		title: n("Heading 2"),
+		description: n("Medium section heading"),
+		icon: "h-2",
+		keywords: ["h2", "subtitle"],
+		toolbarAction: (e) => e.chain().focus().toggleHeading({ level: 2 }).run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).setNode("heading", { level: 2 }).run();
+		},
+		isActive: (e) => e.isActive("heading", { level: 2 }),
+		showInToolbar: !1
+	}), v = () => ({
+		id: "heading-3",
+		title: n("Heading 3"),
+		description: n("Small section heading"),
+		icon: "h-3",
+		keywords: ["h3"],
+		toolbarAction: (e) => e.chain().focus().toggleHeading({ level: 3 }).run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).setNode("heading", { level: 3 }).run();
+		},
+		isActive: (e) => e.isActive("heading", { level: 3 }),
+		showInToolbar: !1
+	}), y = () => ({
+		id: "heading-4",
+		title: n("Heading 4"),
+		description: n("Extra small section heading"),
+		icon: "h-4",
+		keywords: ["h4"],
+		toolbarAction: (e) => e.chain().focus().toggleHeading({ level: 4 }).run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).setNode("heading", { level: 4 }).run();
+		},
+		isActive: (e) => e.isActive("heading", { level: 4 }),
+		showInToolbar: !1
+	}), b = () => ({
+		id: "line-height",
+		title: n("Line height"),
+		icon: "line-height",
+		showInSlashCommands: !1,
+		childActions: [
+			"1",
+			"1.15",
+			"1.5",
+			"1.75",
+			"2",
+			"2.5",
+			"3"
+		].map((e) => ({
+			id: `line-height-${e}`,
+			title: e,
+			icon: "line-height",
+			toolbarAction: (t) => t.chain().focus().setLineHeight(e).run(),
+			isActive: (t) => t.getAttributes("textStyle").lineHeight === e
+		}))
+	}), x = () => ({
+		id: "blockquote",
+		title: n("Blockquote"),
+		description: n("Quote block"),
+		icon: "chat-quote-line",
+		keywords: ["quote"],
+		toolbarAction: (e) => e.chain().focus().toggleBlockquote().run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).toggleBlockquote().run();
+		},
+		isActive: (e) => e.isActive("blockquote")
+	}), C = () => ({
+		id: "code-block",
+		title: n("Code block"),
+		description: n("Preformatted code block"),
+		icon: "code-box-line",
+		keywords: ["code", "pre"],
+		toolbarAction: (e) => e.chain().focus().toggleCodeBlock().run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).toggleCodeBlock().run();
+		},
+		isActive: (e) => e.isActive("codeBlock")
+	}), T = () => ({
+		id: "bullet-list",
+		title: n("Bullet list"),
+		description: n("Unordered list of items"),
+		icon: "list-unordered",
+		keywords: ["ul", "unordered"],
+		toolbarAction: (e) => e.chain().focus().toggleBulletList().run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).toggleBulletList().run();
+		},
+		isActive: (e) => e.isActive("bulletList")
+	}), E = () => ({
+		id: "ordered-list",
+		title: n("Ordered list"),
+		description: n("Numbered list of items"),
+		icon: "list-ordered-2",
+		keywords: ["ol", "numbered"],
+		toolbarAction: (e) => e.chain().focus().toggleOrderedList().run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).toggleOrderedList().run();
+		},
+		isActive: (e) => e.isActive("orderedList")
+	}), D = () => ({
+		id: "task-list",
+		title: n("Task list"),
+		description: n("List with checkable items"),
+		icon: "list-check-3",
+		keywords: ["todo", "checklist"],
+		toolbarAction: (e) => e.chain().focus().toggleTaskList().run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).toggleTaskList().run();
+		},
+		isActive: (e) => e.isActive("taskList")
+	}), O = () => ({
+		id: "link",
+		title: n("Link"),
+		icon: "link",
+		toolbarAction: (e) => {
+			let n = S(t);
+			if (n.onRequestLinkUrl) {
+				let t = e.getAttributes("link").href;
+				n.onRequestLinkUrl(e, t);
+			}
+		},
+		isActive: (e) => e.isActive("link"),
+		showInSlashCommands: !1
+	}), k = (e) => {
+		r({
+			title: n("Insert image from URL"),
+			hasInput: !0,
+			inputLabel: n("Image URL"),
+			confirmText: n("Insert"),
+			inputRequiredMark: !0,
+			onInput: (e, t) => {
+				let r = e.trim();
+				if (r && !/^https?:\/\//i.test(r)) {
+					t(n("URL must start with http:// or https://"));
+					return;
+				}
+				t(null);
+			},
+			onConfirm: (t) => {
+				let n = t.trim();
+				!n || !/^https?:\/\//i.test(n) || e.chain().focus().setImage({ src: n }).run();
+			}
+		});
+	}, j = () => ({
+		id: "image-url",
+		title: n("Image from URL"),
+		description: n("Insert an image from a web URL"),
+		icon: "link-line",
+		keywords: [
+			"image",
+			"picture",
+			"url"
+		],
+		showInToolbar: !1,
+		toolbarAction: (e) => k(e),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).run(), k(e);
+		},
+		isActive: () => !1
+	}), M = () => ({
+		id: "image-upload",
+		title: n("Image from file"),
+		description: n("Upload an image from your device"),
+		icon: "image-line",
+		keywords: [
+			"image",
+			"picture",
+			"upload",
+			"file"
+		],
+		showInToolbar: !1,
+		showInSlashCommands: !0,
+		toolbarAction: (e) => P(e),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).run(), P(e);
+		},
+		isActive: () => !1
+	}), N = () => ({
+		id: "image",
+		title: n("Insert image"),
+		icon: "image-line",
+		keywords: [
+			"image",
+			"picture",
+			"upload",
+			"url"
+		],
+		showInSlashCommands: !1,
+		childActions: [M(), j()],
+		isActive: () => !1
+	}), P = (e) => {
+		let t = document.createElement("input");
+		t.type = "file", t.accept = "image/*", t.addEventListener("change", () => {
+			let n = t.files?.[0];
+			if (!n || !n.type.startsWith("image/") || n.size > 5242880) return;
+			let r = new FileReader();
+			r.addEventListener("load", () => {
+				let t = r.result;
+				e.chain().focus().setImage({ src: t }).run();
+			}), r.readAsDataURL(n);
+		}), t.click();
+	}, F = () => ({
+		id: "horizontal-rule",
+		title: n("Horizontal rule"),
+		description: n("Divider line"),
+		icon: "separator",
+		keywords: ["hr", "divider"],
+		toolbarAction: (e) => e.chain().focus().setHorizontalRule().run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).setHorizontalRule().run();
+		},
+		isActive: () => !1
+	}), I = () => ({
+		id: "table",
+		title: n("Create a table"),
+		description: n("3×3 table with header row"),
+		icon: "table-line",
+		keywords: ["grid"],
+		showInToolbar: !1,
+		toolbarAction: (e) => e.chain().focus().insertTable({
+			rows: 3,
+			cols: 3,
+			withHeaderRow: !0
+		}).run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).insertTable({
+				rows: 3,
+				cols: 3,
+				withHeaderRow: !0
+			}).run();
+		},
+		isActive: () => !1
+	}), L = () => ({
+		id: "add-row-before",
+		title: n("Add row above"),
+		description: n("Insert row before current"),
+		icon: "insert-row-top",
+		keywords: [
+			"table",
+			"row",
+			"above",
+			"before"
+		],
+		showInToolbar: !1,
+		toolbarAction: (e) => e.chain().focus().addRowBefore().run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).addRowBefore().run();
+		},
+		isActive: () => !1,
+		isEnabled: (e) => e.isActive("table")
+	}), R = () => ({
+		id: "add-row-after",
+		title: n("Add row below"),
+		description: n("Insert row after current"),
+		icon: "insert-row-bottom",
+		keywords: [
+			"table",
+			"row",
+			"below",
+			"after"
+		],
+		showInToolbar: !1,
+		toolbarAction: (e) => e.chain().focus().addRowAfter().run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).addRowAfter().run();
+		},
+		isActive: () => !1,
+		isEnabled: (e) => e.isActive("table")
+	}), z = () => ({
+		id: "delete-row",
+		title: n("Delete row"),
+		description: n("Remove current row"),
+		icon: "delete-row",
+		keywords: [
+			"table",
+			"row",
+			"remove"
+		],
+		showInToolbar: !1,
+		toolbarAction: (e) => {
+			!e.chain().focus().deleteRow().run() && e.isActive("table") && e.chain().focus().deleteTable().run();
+		},
+		slashCommandAction: ({ editor: e, range: t }) => {
+			!e.chain().focus().deleteRange(t).deleteRow().run() && e.isActive("table") && e.chain().focus().deleteTable().run();
+		},
+		isActive: () => !1,
+		isEnabled: (e) => e.isActive("table")
+	}), B = () => ({
+		id: "add-column-before",
+		title: n("Add column left"),
+		description: n("Insert column before current"),
+		icon: "insert-column-left",
+		keywords: [
+			"table",
+			"column",
+			"left",
+			"before"
+		],
+		showInToolbar: !1,
+		toolbarAction: (e) => e.chain().focus().addColumnBefore().run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).addColumnBefore().run();
+		},
+		isActive: () => !1,
+		isEnabled: (e) => e.isActive("table")
+	}), V = () => ({
+		id: "add-column-after",
+		title: n("Add column right"),
+		description: n("Insert column after current"),
+		icon: "insert-column-right",
+		keywords: [
+			"table",
+			"column",
+			"right",
+			"after"
+		],
+		showInToolbar: !1,
+		toolbarAction: (e) => e.chain().focus().addColumnAfter().run(),
+		slashCommandAction: ({ editor: e, range: t }) => {
+			e.chain().focus().deleteRange(t).addColumnAfter().run();
+		},
+		isActive: () => !1,
+		isEnabled: (e) => e.isActive("table")
+	}), H = () => ({
+		id: "delete-column",
+		title: n("Delete column"),
+		description: n("Remove current column"),
+		icon: "delete-column",
+		keywords: [
+			"table",
+			"column",
+			"remove"
+		],
+		showInToolbar: !1,
+		toolbarAction: (e) => {
+			!e.chain().focus().deleteColumn().run() && e.isActive("table") && e.chain().focus().deleteTable().run();
+		},
+		slashCommandAction: ({ editor: e, range: t }) => {
+			!e.chain().focus().deleteRange(t).deleteColumn().run() && e.isActive("table") && e.chain().focus().deleteTable().run();
+		},
+		isActive: () => !1,
+		isEnabled: (e) => e.isActive("table")
+	});
+	return {
+		undo: i,
+		redo: a,
+		toggleSourceMode: o,
+		heading: h,
+		heading1: g,
+		heading2: _,
+		heading3: v,
+		heading4: y,
+		fontSize: s,
+		textColor: c,
+		backgroundColor: l,
+		bold: u,
+		italic: d,
+		underline: f,
+		strikethrough: p,
+		codeInline: m,
+		lineHeight: b,
+		blockquote: x,
+		codeBlock: C,
+		bulletList: T,
+		orderedList: E,
+		taskList: D,
+		link: O,
+		image: N,
+		imageUrl: j,
+		imageUpload: M,
+		horizontalRule: F,
+		tableMenu: () => ({
+			id: "table-menu",
+			title: n("Table"),
+			icon: "table-line",
+			showInSlashCommands: !1,
+			childActions: [
+				I(),
+				L(),
+				R(),
+				z(),
+				B(),
+				V(),
+				H()
+			]
+		}),
+		createTable: I,
+		addRowBefore: L,
+		addRowAfter: R,
+		deleteRow: z,
+		addColumnBefore: B,
+		addColumnAfter: V,
+		deleteColumn: H
+	};
+}
+//#endregion
+//#region src/editor/composables/strategies/html.ts
+var pe = (e) => {
+	let { $gettext: t } = A(), n = () => "html", r = (e) => e.getHTML(), i = (e) => e, a = () => [
+		I.configure({ link: !1 }),
+		R.configure({
+			openOnClick: !0,
+			autolink: !0,
+			linkOnPaste: !0,
+			HTMLAttributes: {
+				target: "_blank",
+				rel: "noopener noreferrer"
+			}
+		}),
+		z.configure({ inline: !1 }),
+		B.configure({ resizable: !1 }),
+		U,
+		V,
+		H,
+		W,
+		G.configure({ nested: !0 }),
+		J,
+		Z,
+		L,
+		q,
+		K,
+		Y,
+		X
+	], { undo: o, redo: s, fontSize: c, lineHeight: l, backgroundColor: u, textColor: d, bold: f, italic: p, underline: m, strikethrough: h, heading: g, heading1: _, heading2: v, heading3: y, heading4: b, bulletList: x, orderedList: S, taskList: C, blockquote: w, codeBlock: T, horizontalRule: E, tableMenu: D, createTable: O, addRowBefore: k, addRowAfter: j, deleteRow: M, addColumnBefore: N, addColumnAfter: P, deleteColumn: F } = $(e);
+	return {
+		editorContentType: n,
+		serialize: r,
+		deserialize: i,
+		extensions: a,
+		editorActionGroups: () => [
+			{
+				id: "history",
+				title: t("History"),
+				actions: [o(), s()]
+			},
+			{
+				id: "formatting",
+				title: t("Formatting"),
+				actions: [
+					g(),
+					_(),
+					v(),
+					y(),
+					b(),
+					c(),
+					l(),
+					u(),
+					d(),
+					f(),
+					p(),
+					m(),
+					h()
+				]
+			},
+			{
+				id: "lists",
+				title: t("Lists"),
+				actions: [
+					x(),
+					S(),
+					C()
+				]
+			},
+			{
+				id: "blocks",
+				title: t("Blocks"),
+				actions: [w(), T()]
+			},
+			{
+				id: "insert",
+				title: t("Insert"),
+				actions: [
+					D(),
+					O(),
+					P(),
+					N(),
+					j(),
+					k(),
+					F(),
+					M(),
+					E()
+				]
+			}
+		]
+	};
+}, me = (e) => {
+	let { $gettext: t } = A(), n = () => "markdown", r = (e) => e.getMarkdown(), i = (e) => e, a = () => [
+		I.configure({ link: !1 }),
+		Q,
+		R.configure({
+			openOnClick: !0,
+			autolink: !0,
+			linkOnPaste: !0,
+			HTMLAttributes: {
+				target: "_blank",
+				rel: "noopener noreferrer"
+			}
+		}),
+		B.configure({ resizable: !1 }),
+		U,
+		V,
+		H,
+		W,
+		G.configure({ nested: !0 }),
+		z.configure({ inline: !1 })
+	], { undo: o, redo: s, toggleSourceMode: c, bold: l, italic: u, strikethrough: d, heading: f, heading1: p, heading2: m, heading3: h, heading4: g, bulletList: _, orderedList: v, taskList: y, blockquote: b, codeBlock: x, horizontalRule: S, image: C, imageUrl: w, imageUpload: T, tableMenu: E, createTable: D, addRowBefore: O, addRowAfter: k, deleteRow: j, addColumnBefore: M, addColumnAfter: N, deleteColumn: P } = $(e);
+	return {
+		editorContentType: n,
+		serialize: r,
+		deserialize: i,
+		extensions: a,
+		editorActionGroups: () => [
+			{
+				id: "history",
+				title: t("History"),
+				actions: [o(), s()]
+			},
+			{
+				id: "view-options",
+				title: t("View options"),
+				actions: [c()]
+			},
+			{
+				id: "formatting",
+				title: t("Formatting"),
+				actions: [
+					f(),
+					p(),
+					m(),
+					h(),
+					g(),
+					l(),
+					u(),
+					d()
+				]
+			},
+			{
+				id: "lists",
+				title: t("Lists"),
+				actions: [
+					_(),
+					v(),
+					y()
+				]
+			},
+			{
+				id: "blocks",
+				title: t("Blocks"),
+				actions: [b(), x()]
+			},
+			{
+				id: "insert",
+				title: t("Insert"),
+				actions: [
+					C(),
+					w(),
+					T(),
+					E(),
+					D(),
+					N(),
+					M(),
+					k(),
+					O(),
+					P(),
+					j(),
+					S()
+				]
+			}
+		]
+	};
+}, he = (e) => ({
+	editorContentType: () => "plainText",
+	serialize: (e) => e.getText(),
+	deserialize: (e) => e ? {
+		type: "doc",
+		content: e.split("\n").map((e) => e ? {
+			type: "paragraph",
+			content: [{
+				type: "text",
+				text: e
+			}]
+		} : { type: "paragraph" })
+	} : {
+		type: "doc",
+		content: [{ type: "paragraph" }]
+	},
+	extensions: () => [
+		ee,
+		te,
+		ne,
+		re
+	],
+	editorActionGroups: () => []
+}), ge = (e) => {
+	let { $gettext: t } = A(), n = () => "json", r = (e) => JSON.stringify(e.getJSON()), i = (e) => JSON.parse(e), a = () => [
+		I.configure({ link: !1 }),
+		R.configure({
+			openOnClick: !0,
+			autolink: !0,
+			linkOnPaste: !0,
+			HTMLAttributes: {
+				target: "_blank",
+				rel: "noopener noreferrer"
+			}
+		}),
+		z.configure({ inline: !1 }),
+		B.configure({ resizable: !1 }),
+		U,
+		V,
+		H,
+		W,
+		G.configure({ nested: !0 }),
+		J,
+		Z,
+		L,
+		q,
+		K,
+		Y,
+		X
+	], { undo: o, redo: s, fontSize: c, lineHeight: l, backgroundColor: u, textColor: d, bold: f, italic: p, underline: m, strikethrough: h, heading: g, heading1: _, heading2: v, heading3: y, heading4: b, bulletList: x, orderedList: S, taskList: C, blockquote: w, codeBlock: T, horizontalRule: E, image: D, imageUrl: O, imageUpload: k, tableMenu: j, createTable: M, addRowBefore: N, addRowAfter: P, deleteRow: F, addColumnBefore: Q, addColumnAfter: ee, deleteColumn: te } = $(e);
+	return {
+		editorContentType: n,
+		serialize: r,
+		deserialize: i,
+		extensions: a,
+		editorActionGroups: () => [
+			{
+				id: "history",
+				title: t("History"),
+				actions: [o(), s()]
+			},
+			{
+				id: "formatting",
+				title: t("Formatting"),
+				actions: [
+					g(),
+					_(),
+					v(),
+					y(),
+					b(),
+					c(),
+					u(),
+					d(),
+					f(),
+					p(),
+					m(),
+					h()
+				]
+			},
+			{
+				id: "lists",
+				title: t("Lists"),
+				actions: [
+					x(),
+					S(),
+					C()
+				]
+			},
+			{
+				id: "blocks",
+				title: t("Blocks"),
+				actions: [
+					l(),
+					w(),
+					T()
+				]
+			},
+			{
+				id: "insert",
+				title: t("Insert"),
+				actions: [
+					D(),
+					O(),
+					k(),
+					j(),
+					M(),
+					ee(),
+					Q(),
+					P(),
+					N(),
+					te(),
+					F(),
+					E()
+				]
+			}
+		]
+	};
+}, _e = () => ({ resolveStrategy: (e, t) => {
+	switch (e) {
+		case "plain-text": return he(t);
+		case "markdown": return me(t);
+		case "html": return pe(t);
+		case "tiptap-json": return ge(t);
+		default: throw Error(`Unknown content type: ${e}`);
+	}
+} });
+//#endregion
+//#region src/editor/composables/useTextEditor.ts
+function ve(e) {
+	let { resolveStrategy: t } = _e(), n = { sourceMode: v(!1) }, r = v(e.contentType), a = v(e.readonly ?? !1), s = t(e.contentType, n), l = null, u = s.extensions();
+	if (e.slashCommands !== !1) {
+		let e = s.editorActionGroups();
+		e.length > 0 && u.push(fe.configure({ getGroups: () => e }));
+	}
+	let d = {
+		extensions: u,
+		content: S(e.modelValue) ? s.deserialize(S(e.modelValue)) : "",
+		editable: !a.value
+	};
+	i(e.modelValue, (e) => {
+		!S(f) || S(f).options.editable || m(e);
+	}), s.editorContentType && (d.contentType = s.editorContentType());
+	let f = N({
+		...d,
+		onUpdate({ editor: t }) {
+			e.onUpdate && (l && clearTimeout(l), l = setTimeout(() => {
+				e.onUpdate(s.serialize(t));
+			}, 250));
+		}
+	});
+	i(a, (e) => {
+		f.value?.setEditable(!e);
+	});
+	let p = () => f.value ? s.serialize(f.value) : "", m = (e) => {
+		if (!f.value) return;
+		let t = s.deserialize(e), n = { emitUpdate: !1 };
+		s.editorContentType && (n.contentType = s.editorContentType()), f.value.commands.setContent(t, n);
+	}, h = E(() => f.value?.isEmpty ?? !0), g = E(() => f.value?.isFocused ?? !1), _ = () => {
+		f.value?.commands.focus("start");
+	}, y = () => {
+		f.value?.commands.blur();
+	}, b = () => {
+		l &&= (clearTimeout(l), e.onUpdate && f.value && e.onUpdate(s.serialize(f.value)), null), f.value?.destroy(), f.value = null;
+	};
+	return c(() => {
+		S(a) || _();
+	}), o(() => {
+		b();
+	}), {
+		state: n,
+		editor: f,
+		contentType: r,
+		readonly: a,
+		actionGroups: s.editorActionGroups,
+		getContent: p,
+		isEmpty: h,
+		isFocused: g,
+		focus: _,
+		blur: y,
+		destroy: b
+	};
+}
+//#endregion
+//#region src/editor/components/TextEditorProvider.vue?vue&type=script&setup=true&lang.ts
+var ye = { class: "text-editor-provider h-full flex flex-col" }, be = /* @__PURE__ */ n({
+	__name: "TextEditorProvider",
+	props: { editor: {} },
+	setup(e) {
+		return a("textEditor", e.editor), (e, t) => (r(), u("div", ye, [k(e.$slots, "default")]));
+	}
+}), xe = /* @__PURE__ */ n({
+	__name: "TextEditorContent",
+	props: { editor: { default: () => void 0 } },
+	setup(e) {
+		let t = e.editor || s("textEditor"), n = E(() => S(t.contentType) === "markdown" && S(t.state.sourceMode));
+		return (e, i) => S(t).editor.value ? (r(), g(S(j), {
+			key: 0,
+			class: x(["text-editor-content", { "markdown-source-mode": n.value }]),
+			editor: S(t).editor.value
+		}, null, 8, ["class", "editor"])) : D("", !0);
+	}
+}), Se = {
+	key: 0,
+	class: "text-editor-toolbar relative border-b border-b-role-border py-1"
+}, Ce = { class: "oc-list" }, we = { class: "inline-flex items-center gap-2" }, Te = {
+	key: 0,
+	class: "pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-black/15 to-transparent"
+}, Ee = {
+	key: 1,
+	class: "pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-black/15 to-transparent"
+}, De = /* @__PURE__ */ _(/* @__PURE__ */ n({
+	__name: "TextEditorToolbar",
+	setup(n) {
+		let a = s("textEditor"), o = T("scrollContainer"), _ = v(!1), C = v(!1), w = () => {
+			let e = o.value;
+			if (!e) {
+				_.value = !1, C.value = !1;
+				return;
+			}
+			_.value = e.scrollLeft > 0, C.value = e.scrollLeft + e.clientWidth < e.scrollWidth - 1;
+		};
+		c(async () => {
+			await e(), w();
+		});
+		let k = E(() => S(a.readonly) || S(a.contentType) === "plain-text" ? !1 : !!S(a.editor)), A = v(0);
+		i(() => S(a.editor), (e, t) => {
+			t && (t.off("selectionUpdate", j), t.off("transaction", j)), e && (e.on("selectionUpdate", j), e.on("transaction", j));
+		}, { immediate: !0 });
+		let j = () => {
+			A.value++;
+		}, M = (e) => {
+			A.value;
+			let t = S(a.editor);
+			return t ? e.isEnabled ? e.isEnabled(t) : !0 : !1;
+		}, N = (e) => {
+			A.value;
+			let t = S(a.editor);
+			return t && e.isActive ? e.isActive(t) : !1;
+		}, P = (e) => {
+			A.value;
+			let t = S(a.editor);
+			if (t && e.activeIcon) {
+				let n = e.activeIcon(t);
+				if (n) return n;
+			}
+			return {
+				icon: e.icon,
+				iconFillType: e.iconFillType
+			};
+		};
+		return (e, n) => {
+			let i = t("oc-icon"), o = t("oc-button"), s = t("oc-drop"), c = p("oc-tooltip");
+			return k.value ? (r(), u("div", Se, [
+				O("div", {
+					ref: "scrollContainer",
+					class: "flex items-center gap-1 overflow-x-auto before:grow after:grow",
+					onScroll: w
+				}, [(r(!0), u(y, null, l(S(a).actionGroups(), (e, t) => (r(), u("div", {
+					key: `toolbar-group-${e.id}`,
+					class: x(["text-editor-toolbar-group inline-flex items-stretch", { "border-l border-l-role-border pl-1": t > 0 }])
+				}, [(r(!0), u(y, null, l(e.actions.filter((e) => e.showInToolbar !== !1), (e) => (r(), u(y, { key: `toolbar-item-${e.id}` }, [e.childActions ? (r(), u(y, { key: 0 }, [m((r(), g(o, {
+					id: `toolbar-dropdown-trigger-${e.id}`,
+					type: "button",
+					appearance: "raw",
+					class: x(["text-editor-toolbar-btn min-w-[52px] inline-flex items-center justify-center p-2", { "text-editor-toolbar-btn--active": N(e) }]),
+					"aria-label": e.title
+				}, {
+					default: h(() => [d(i, {
+						name: P(e).icon,
+						"fill-type": P(e).iconFillType || "none",
+						size: "small"
+					}, null, 8, ["name", "fill-type"]), d(i, {
+						name: "arrow-down-s",
+						"fill-type": "line",
+						size: "small"
+					})]),
+					_: 2
+				}, 1032, [
+					"id",
+					"class",
+					"aria-label"
+				])), [[c, e.title]]), d(s, {
+					"drop-id": `toolbar-dropdown-${e.id}`,
+					toggle: `#toolbar-dropdown-trigger-${e.id}`,
+					mode: "click",
+					class: "text-editor-toolbar-dropdown w-auto min-w-40",
+					"padding-size": "small",
+					"close-on-click": ""
+				}, {
+					default: h(() => [O("ul", Ce, [(r(!0), u(y, null, l(e.childActions, (t) => (r(), u("li", {
+						key: `${e.id}-${t.id}`,
+						class: "oc-rounded oc-menu-item-hover"
+					}, [d(o, {
+						appearance: N(t) ? "filled" : "raw-inverse",
+						"color-role": N(t) ? "secondaryContainer" : "surface",
+						"no-hover": N(t),
+						"justify-content": "space-between",
+						class: "p-1",
+						disabled: !M(t),
+						onClick: (e) => t.toolbarAction?.(S(a).editor.value)
+					}, {
+						default: h(() => [O("span", we, [d(i, {
+							name: t.icon,
+							"fill-type": t.iconFillType || "none",
+							size: "small"
+						}, null, 8, ["name", "fill-type"]), O("span", null, f(t.title), 1)]), N(t) ? (r(), g(i, {
+							key: 0,
+							name: "check",
+							"fill-type": "line",
+							size: "small"
+						})) : D("", !0)]),
+						_: 2
+					}, 1032, [
+						"appearance",
+						"color-role",
+						"no-hover",
+						"disabled",
+						"onClick"
+					])]))), 128))])]),
+					_: 2
+				}, 1032, ["drop-id", "toggle"])], 64)) : m((r(), g(o, {
+					key: 1,
+					type: "button",
+					appearance: "raw",
+					class: x(["text-editor-toolbar-btn min-w-[42px] inline-flex items-center justify-center p-2", { "text-editor-toolbar-btn--active": N(e) }]),
+					"aria-label": e.title,
+					disabled: !M(e),
+					onClick: b((t) => e.toolbarAction?.(S(a).editor.value), ["stop"])
+				}, {
+					default: h(() => [d(i, {
+						name: e.icon,
+						"fill-type": e.iconFillType || "none",
+						size: "small"
+					}, null, 8, ["name", "fill-type"])]),
+					_: 2
+				}, 1032, [
+					"class",
+					"aria-label",
+					"disabled",
+					"onClick"
+				])), [[c, e.title]])], 64))), 128))], 2))), 128))], 544),
+				_.value ? (r(), u("div", Te)) : D("", !0),
+				C.value ? (r(), u("div", Ee)) : D("", !0)
+			])) : D("", !0);
+		};
+	}
+}), [["__scopeId", "data-v-5eabe917"]]);
+//#endregion
+export { xe as TextEditorContent, be as TextEditorProvider, De as TextEditorToolbar, ve as useTextEditor };

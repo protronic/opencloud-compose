@@ -1,0 +1,73 @@
+import { BreadcrumbItem, SizeType } from '../../helpers';
+import { RouteLocationPathRaw } from 'vue-router';
+export interface Props {
+    /**
+     * @docs The items to display in the breadcrumb. Please refer to the component source for the `BreadcrumbItem` type definition.
+     */
+    items: BreadcrumbItem[];
+    /**
+     * @docs The padding size of the context menu dropdown.
+     * @default medium
+     */
+    contextMenuPadding?: SizeType | 'remove';
+    /**
+     * @docs The element ID of the breadcrumb.
+     */
+    id?: string;
+    /**
+     * @docs The maximum width of the breadcrumb. If the breadcrumb exceeds this width, items will be truncated. Set to `-1` to disable truncation.
+     * @default -1
+     */
+    maxWidth?: number;
+    /**
+     * @docs The Tailwind breakpoint at which the mobile version of the breadcrumb is shown.
+     * @default sm
+     */
+    mobileBreakpoint?: 'sm' | 'md' | 'lg';
+    /**
+     * @docs Determines if the context actions are shown for the last breadcrumb item.
+     * @default false
+     */
+    showContextActions?: boolean;
+    /**
+     * @docs The component to use for router links.
+     * @default router-link
+     */
+    routerLinkComponent?: 'router-link' | 'nuxt-link';
+    /**
+     * @docs The number of items to show before truncating the breadcrumb.
+     * @default 2
+     */
+    truncationOffset?: number;
+    /**
+     * @docs The variation of the breadcrumb.
+     * @default default
+     */
+    variation?: 'default' | 'lead';
+}
+export interface Emits {
+    /**
+     * @docs Emitted when an item has been droped onto a breadcrumb element.
+     */
+    (e: 'itemDroppedBreadcrumb', to: RouteLocationPathRaw): void;
+}
+export interface Slots {
+    /**
+     * @docs Context menu for the last breadcrumb item. Needs `showContextActions` to be `true`.
+     */
+    contextMenu?: () => unknown;
+}
+type __VLS_Slots = Slots;
+declare const __VLS_base: import("vue").DefineComponent<Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+    itemDroppedBreadcrumb: (to: RouteLocationPathRaw) => any;
+}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{
+    onItemDroppedBreadcrumb?: (to: RouteLocationPathRaw) => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const __VLS_export: __VLS_WithSlots<typeof __VLS_base, __VLS_Slots>;
+declare const _default: typeof __VLS_export;
+export default _default;
+type __VLS_WithSlots<T, S> = T & {
+    new (): {
+        $slots: S;
+    };
+};

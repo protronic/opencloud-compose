@@ -1,0 +1,26 @@
+/**
+ * Displays a formatted resource size
+ */
+declare const _default: typeof __VLS_export;
+export default _default;
+declare const __VLS_export: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+    /**
+     * Number of bytes to display as a reasonable resource size string.
+     * Value can be a non-formatted string or a number.
+     */
+    size: {
+        type: (StringConstructor | NumberConstructor)[];
+        required: true;
+    };
+}>, {
+    formattedSize: import("vue").ComputedRef<string>;
+}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+    /**
+     * Number of bytes to display as a reasonable resource size string.
+     * Value can be a non-formatted string or a number.
+     */
+    size: {
+        type: (StringConstructor | NumberConstructor)[];
+        required: true;
+    };
+}>> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;

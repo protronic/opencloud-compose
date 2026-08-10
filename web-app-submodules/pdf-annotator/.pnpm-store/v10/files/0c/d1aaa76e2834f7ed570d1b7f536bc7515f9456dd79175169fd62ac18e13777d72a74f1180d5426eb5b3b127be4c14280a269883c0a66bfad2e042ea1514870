@@ -1,0 +1,31 @@
+import { PropType } from 'vue';
+import { Resource } from '@opencloud-eu/web-client';
+/**
+ * Please head to the OpenCloud web ResourceTable component (https://github.com/opencloud-eu/web/blob/main/packages/web-app-files/src/components/FilesList/ResourceTable.vue) for a demo of the Ghost Element.
+ */
+declare const _default: typeof __VLS_export;
+export default _default;
+declare const __VLS_export: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+    previewItems: {
+        type: PropType<Resource[]>;
+        required: true;
+    };
+}>, {}, {}, {
+    layerCount(): number;
+    showSecondLayer(): boolean;
+    showThirdLayer(): boolean;
+    itemCount(): number;
+}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+    previewItems: {
+        type: PropType<Resource[]>;
+        required: true;
+    };
+}>> & Readonly<{}>, {}, {}, {
+    ResourceIcon: import("vue").DefineComponent<{
+        resource: Resource | import("@opencloud-eu/web-client").SpaceResource;
+        size?: import("@opencloud-eu/design-system/helpers").SizeType;
+    }, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<{
+        resource: Resource | import("@opencloud-eu/web-client").SpaceResource;
+        size?: import("@opencloud-eu/design-system/helpers").SizeType;
+    }> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;

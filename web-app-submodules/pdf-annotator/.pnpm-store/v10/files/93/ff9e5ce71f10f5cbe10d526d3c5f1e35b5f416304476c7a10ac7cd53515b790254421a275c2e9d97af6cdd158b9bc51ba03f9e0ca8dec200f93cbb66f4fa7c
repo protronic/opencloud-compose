@@ -1,0 +1,2 @@
+import { PasswordPolicyService } from '../../services/passwordPolicy';
+export declare const usePasswordPolicyService: () => PasswordPolicyService;

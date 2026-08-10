@@ -1,0 +1,26 @@
+export interface Props {
+    /**
+     * @docs Theme of the emoji picker.
+     * @default light
+     */
+    theme?: 'light' | 'dark';
+}
+export interface Emits {
+    /**
+     * @docs Emitted when an emoji has been selected.
+     */
+    (e: 'emojiSelect', emoji: string): void;
+    /**
+     * @docs Emitted when the user has clicked outside of the emoji picker.
+     */
+    (e: 'clickOutside'): void;
+}
+declare const __VLS_export: import("vue").DefineComponent<Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+    emojiSelect: (emoji: string) => any;
+    clickOutside: () => any;
+}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{
+    onEmojiSelect?: (emoji: string) => any;
+    onClickOutside?: () => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+declare const _default: typeof __VLS_export;
+export default _default;

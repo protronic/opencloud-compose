@@ -1,0 +1,4 @@
+export declare const useIsMobile: () => {
+    isMobile: import("vue").ComputedRef<boolean>;
+    isTablet: import("vue").ComputedRef<boolean>;
+};

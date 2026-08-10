@@ -1,0 +1,12 @@
+interface EventListenerEntry {
+    target: Element | Document;
+    type: string;
+    handler: EventListener;
+    options?: AddEventListenerOptions | boolean;
+    category: 'anchor' | 'drop' | 'document';
+}
+export declare const useEventListeners: () => {
+    registerEventListener: (target: Element | Document, type: string, handler: EventListener, category: EventListenerEntry["category"], options?: AddEventListenerOptions | boolean) => void;
+    unregisterEventListeners: (categories?: EventListenerEntry["category"][]) => void;
+};
+export {};

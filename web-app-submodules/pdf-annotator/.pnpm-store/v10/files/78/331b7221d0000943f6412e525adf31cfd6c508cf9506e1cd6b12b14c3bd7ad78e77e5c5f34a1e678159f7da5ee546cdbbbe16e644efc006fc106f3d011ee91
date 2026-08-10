@@ -1,0 +1,41 @@
+export interface Props {
+    /**
+     * @docs Determines if the switch is checked.
+     */
+    checked?: boolean;
+    /**
+     * @docs The label of the switch.
+     */
+    label: string;
+    /**
+     * @docs The element ID of the label.
+     */
+    labelId?: string;
+    /**
+     * @docs Determines if the switch is disabled.
+     */
+    disabled?: boolean;
+}
+export interface Emits {
+    /**
+     * @docs Emitted when the switch has been toggled.
+     */
+    (e: 'update:checked', value: boolean): void;
+}
+declare var __VLS_1: {};
+type __VLS_Slots = {} & {
+    default?: (props: typeof __VLS_1) => any;
+};
+declare const __VLS_base: import("vue").DefineComponent<Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+    "update:checked": (value: boolean) => any;
+}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{
+    "onUpdate:checked"?: (value: boolean) => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const __VLS_export: __VLS_WithSlots<typeof __VLS_base, __VLS_Slots>;
+declare const _default: typeof __VLS_export;
+export default _default;
+type __VLS_WithSlots<T, S> = T & {
+    new (): {
+        $slots: S;
+    };
+};

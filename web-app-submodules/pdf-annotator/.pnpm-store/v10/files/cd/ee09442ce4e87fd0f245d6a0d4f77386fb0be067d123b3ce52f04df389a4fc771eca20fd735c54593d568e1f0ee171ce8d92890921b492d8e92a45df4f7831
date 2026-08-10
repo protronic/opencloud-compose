@@ -1,0 +1,3 @@
+import { FieldType, SizeType } from './types';
+export declare const getTailwindXPadding: (paddingX: SizeType | "remove", side: "right" | "left") => "pr-0" | "pl-0" | "pr-1" | "pl-1" | "pr-2" | "pl-2" | "pr-4" | "pl-4" | "pr-6" | "pl-6" | "pr-12" | "pl-12" | "pr-24" | "pl-24";
+export declare const extractCellProps: (field: FieldType) => Record<string, string>;

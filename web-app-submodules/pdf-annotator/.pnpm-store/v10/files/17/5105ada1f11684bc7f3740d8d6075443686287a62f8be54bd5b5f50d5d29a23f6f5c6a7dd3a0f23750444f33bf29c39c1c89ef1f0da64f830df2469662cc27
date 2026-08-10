@@ -1,0 +1,2 @@
+import type { TextEditorOptions, TextEditorInstance } from '../types';
+export declare function useTextEditor(options: TextEditorOptions): TextEditorInstance;

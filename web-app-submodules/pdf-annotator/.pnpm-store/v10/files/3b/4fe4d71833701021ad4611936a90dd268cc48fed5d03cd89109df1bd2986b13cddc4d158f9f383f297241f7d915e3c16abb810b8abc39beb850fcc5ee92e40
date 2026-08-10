@@ -1,0 +1,12 @@
+import { RouteLocation } from 'vue-router';
+import { BreadcrumbItem } from '@opencloud-eu/design-system/helpers';
+import { Ref } from 'vue';
+import { AncestorMetaData } from '../../types';
+export declare const useBreadcrumbsFromPath: () => {
+    breadcrumbsFromPath: ({ route, resourcePath, ancestorMetaData }: {
+        route: RouteLocation;
+        resourcePath: string;
+        ancestorMetaData?: Ref<AncestorMetaData>;
+    }) => BreadcrumbItem[];
+    concatBreadcrumbs: (...items: BreadcrumbItem[]) => BreadcrumbItem[];
+};

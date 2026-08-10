@@ -1,0 +1,107 @@
+import { Audio, GeoCoordinates, Image, Photo } from '../../graph/generated';
+export declare abstract class DavPermission {
+    static readonly Shared: string;
+    static readonly Shareable: string;
+    static readonly Mounted: string;
+    static readonly Deletable: string;
+    static readonly Renameable: string;
+    static readonly Moveable: string;
+    static readonly Updateable: string;
+    static readonly FileUpdateable: string;
+    static readonly FolderCreateable: string;
+    static readonly Deny: string;
+    static readonly SecureView: string;
+}
+export type DavErrorCode = 'ERR_LISTING_MEMBERS_NOT_ALLOWED' | 'ERR_INVALID_CREDENTIALS' | 'ERR_MISSING_BASIC_AUTH' | 'ERR_MISSING_BEARER_AUTH' | 'ERR_FILE_NOT_FOUND_IN_ROOT';
+export declare enum DavMethod {
+    copy = "COPY",
+    delete = "DELETE",
+    lock = "LOCK",
+    mkcol = "MKCOL",
+    move = "MOVE",
+    propfind = "PROPFIND",
+    proppatch = "PROPPATCH",
+    put = "PUT",
+    report = "REPORT",
+    unlock = "UNLOCK"
+}
+type M<V, T> = {
+    value: V;
+    type: T;
+};
+declare const DavPropertyMapping: {
+    readonly Permissions: M<"permissions", string>;
+    readonly IsFavorite: M<"favorite", number>;
+    readonly FileId: M<"fileid", string>;
+    readonly FileParent: M<"file-parent", string>;
+    readonly Name: M<"name", string>;
+    readonly OwnerId: M<"owner-id", string>;
+    readonly OwnerDisplayName: M<"owner-display-name", string>;
+    readonly PrivateLink: M<"privatelink", string>;
+    readonly ContentLength: M<"getcontentlength", number>;
+    readonly ContentSize: M<"size", number>;
+    readonly LastModifiedDate: M<"getlastmodified", string>;
+    readonly Tags: M<"tags", string | number>;
+    readonly Audio: {
+        readonly value: "audio";
+        readonly type: Audio;
+    };
+    readonly Location: {
+        readonly value: "location";
+        readonly type: GeoCoordinates;
+    };
+    readonly Image: {
+        readonly value: "image";
+        readonly type: Image;
+    };
+    readonly Photo: {
+        readonly value: "photo";
+        readonly type: Photo;
+    };
+    readonly ETag: M<"getetag", string>;
+    readonly MimeType: M<"getcontenttype", string>;
+    readonly ResourceType: M<"resourcetype", string[]>;
+    readonly LockDiscovery: {
+        readonly value: "lockdiscovery";
+        readonly type: Record<string, unknown>;
+    };
+    readonly LockOwner: M<"owner", string>;
+    readonly LockTime: M<"locktime", string>;
+    readonly ActiveLock: {
+        readonly value: "activelock";
+        readonly type: Record<string, unknown>;
+    };
+    readonly DownloadURL: M<"downloadURL", string>;
+    readonly Highlights: M<"highlights", string>;
+    readonly MetaPathForUser: M<"meta-path-for-user", string>;
+    readonly RemoteItemId: M<"remote-item-id", string>;
+    readonly HasPreview: M<"has-preview", number>;
+    readonly ShareId: M<"shareid", string>;
+    readonly ShareRoot: M<"shareroot", string>;
+    readonly ShareTypes: {
+        readonly value: "share-types";
+        readonly type: Record<string, number[]>;
+    };
+    readonly SharePermissions: M<"share-permissions", string>;
+    readonly TrashbinOriginalFilename: M<"trashbin-original-filename", string>;
+    readonly TrashbinOriginalLocation: M<"trashbin-original-location", string>;
+    readonly TrashbinDeletedDate: M<"trashbin-delete-datetime", string>;
+    readonly PublicLinkItemType: M<"public-link-item-type", string>;
+    readonly PublicLinkPermission: M<"public-link-permission", string>;
+    readonly PublicLinkExpiration: M<"public-link-expiration", string>;
+    readonly PublicLinkShareDate: M<"public-link-share-datetime", string>;
+    readonly PublicLinkShareOwner: M<"public-link-share-owner", string>;
+};
+type DavPropertyMappingType = typeof DavPropertyMapping;
+export declare const DavProperty: { [K in keyof DavPropertyMappingType as K]: DavPropertyMappingType[K]["value"]; };
+export type DavFileInfoResponse = {
+    [K in keyof DavPropertyMappingType as DavPropertyMappingType[K]['value']]: DavPropertyMappingType[K]['type'];
+};
+export type DavPropertyValue = (typeof DavProperty)[keyof typeof DavProperty];
+export declare abstract class DavProperties {
+    static readonly Default: DavPropertyValue[];
+    static readonly PublicLink: DavPropertyValue[];
+    static readonly Trashbin: DavPropertyValue[];
+    static readonly DavNamespace: DavPropertyValue[];
+}
+export {};

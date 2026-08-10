@@ -1,0 +1,10 @@
+import { FillType } from '@opencloud-eu/design-system/helpers';
+export type IconFillType = FillType;
+export type IconType = {
+    name: string;
+    color?: string;
+    fillType?: IconFillType;
+};
+export type ResourceIconMapping = Record<'mimeType' | 'extension', Record<string, IconType>>;
+export declare const resourceIconMappingInjectionKey = "oc-resource-icon-mapping";
+export declare function createDefaultFileIconMapping(): Record<string, IconType>;

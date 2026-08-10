@@ -1,0 +1,2 @@
+import { PreviewService } from '../../services/preview';
+export declare const usePreviewService: () => PreviewService;

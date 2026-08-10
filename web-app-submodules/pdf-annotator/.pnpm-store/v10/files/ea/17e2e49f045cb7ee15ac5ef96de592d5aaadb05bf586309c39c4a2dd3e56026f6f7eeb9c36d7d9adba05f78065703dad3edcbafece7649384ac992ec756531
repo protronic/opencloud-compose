@@ -1,0 +1,8 @@
+import { DavPropertyValue } from '../constants';
+export declare const buildPropFindBody: (properties: DavPropertyValue[], { pattern, filterRules, limit, extraProps }: {
+    pattern?: string;
+    filterRules?: Partial<Record<DavPropertyValue, unknown>>;
+    limit?: number;
+    extraProps: string[];
+}) => string;
+export declare const buildPropPatchBody: (properties: Partial<Record<DavPropertyValue, unknown>>) => string;

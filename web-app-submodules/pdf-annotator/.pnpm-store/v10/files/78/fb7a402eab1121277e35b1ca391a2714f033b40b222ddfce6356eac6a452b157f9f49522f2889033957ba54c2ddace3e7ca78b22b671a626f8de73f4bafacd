@@ -1,0 +1,5 @@
+export declare const useResourceContents: ({ showSizeInformation }?: {
+    showSizeInformation?: boolean;
+}) => {
+    resourceContentsText: import("vue").ComputedRef<string>;
+};

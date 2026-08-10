@@ -1,0 +1,4 @@
+import { FileAction } from '../types';
+export declare const useFileActionsOpenWithDefault: () => {
+    actions: import("vue").ComputedRef<FileAction[]>;
+};

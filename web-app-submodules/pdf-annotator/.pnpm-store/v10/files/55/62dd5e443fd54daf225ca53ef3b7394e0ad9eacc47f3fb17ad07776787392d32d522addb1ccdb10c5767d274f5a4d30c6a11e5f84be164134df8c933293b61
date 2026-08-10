@@ -1,0 +1,8 @@
+import { Ref } from 'vue';
+import { EventBus } from '../../services';
+interface DocumentTitleOptions {
+    titleSegments: Ref<string[]>;
+    eventBus?: EventBus;
+}
+export declare function useDocumentTitle({ titleSegments, eventBus }: DocumentTitleOptions): void;
+export {};

@@ -1,0 +1,26 @@
+import { Resource } from '@opencloud-eu/web-client';
+import { MaybeRef } from '../../utils';
+import { ClientService } from '../../services';
+import { FileContext } from './types';
+import { FileResource, SpaceResource } from '@opencloud-eu/web-client';
+import { ListFilesOptions } from '@opencloud-eu/web-client/webdav';
+import { WebDAV } from '@opencloud-eu/web-client/webdav';
+interface AppFileHandlingOptions {
+    clientService: ClientService;
+}
+export type FileContentOptions = {
+    responseType?: 'arraybuffer' | 'blob' | 'text';
+    signal?: AbortSignal;
+} & Record<string, any>;
+export type UrlForResourceOptions = Omit<Parameters<WebDAV['getFileUrl']>[2], 'isUrlSigningEnabled'>;
+export interface AppFileHandlingResult {
+    getUrlForResource(space: SpaceResource, resource: Resource, options?: UrlForResourceOptions): Promise<string>;
+    revokeUrl(url: string): void;
+    getFileInfo(fileContext: MaybeRef<FileContext>, options?: ListFilesOptions): Promise<Resource>;
+    getFileContents(fileContext: MaybeRef<FileContext>, options?: FileContentOptions): Promise<any>;
+    putFileContents(fileContext: MaybeRef<FileContext>, putFileOptions: {
+        content?: string;
+    } & Record<string, any>): Promise<FileResource>;
+}
+export declare function useAppFileHandling({ clientService }: AppFileHandlingOptions): AppFileHandlingResult;
+export {};

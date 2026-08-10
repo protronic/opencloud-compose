@@ -1,0 +1,1 @@
+export declare const applyCustomProp: (key: string, value: string | undefined) => void;

@@ -1,0 +1,84 @@
+import { ComponentPublicInstance } from 'vue';
+import { Resource } from '@opencloud-eu/web-client';
+type __VLS_Props = {
+    item: Resource;
+    resourceDomSelector?: (resource: Resource) => string;
+    title?: string;
+};
+declare var __VLS_22: {
+    item: Resource;
+};
+type __VLS_Slots = {} & {
+    contextMenu?: (props: typeof __VLS_22) => any;
+};
+declare const __VLS_base: import("vue").DefineComponent<__VLS_Props, {
+    drop: Readonly<import("vue").ShallowRef<ComponentPublicInstance<{
+        new (...args: any[]): import("vue").CreateComponentPublicInstanceWithMixins<Readonly<import("@opencloud-eu/design-system/components").OcDropProps> & Readonly<{
+            onHideDrop?: () => any;
+            onShowDrop?: () => any;
+        }>, {
+            show: ({ anchorElement, noFocus }?: {
+                anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+                noFocus?: boolean;
+            }) => Promise<void>;
+            hide: () => void;
+            update: ({ anchorElement }?: {
+                anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+            }) => Promise<void>;
+        }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+            hideDrop: () => any;
+            showDrop: () => any;
+        }, import("vue").PublicProps, {}, true, {}, {}, import("vue").GlobalComponents, import("vue").GlobalDirectives, string, {}, any, import("vue").ComponentProvideOptions, {
+            P: {};
+            B: {};
+            D: {};
+            C: {};
+            M: {};
+            Defaults: {};
+        }, Readonly<import("@opencloud-eu/design-system/components").OcDropProps> & Readonly<{
+            onHideDrop?: () => any;
+            onShowDrop?: () => any;
+        }>, {
+            show: ({ anchorElement, noFocus }?: {
+                anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+                noFocus?: boolean;
+            }) => Promise<void>;
+            hide: () => void;
+            update: ({ anchorElement }?: {
+                anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+            }) => Promise<void>;
+        }, {}, {}, {}, {}>;
+        __isFragment?: never;
+        __isTeleport?: never;
+        __isSuspense?: never;
+    } & import("vue").ComponentOptionsBase<Readonly<import("@opencloud-eu/design-system/components").OcDropProps> & Readonly<{
+        onHideDrop?: () => any;
+        onShowDrop?: () => any;
+    }>, {
+        show: ({ anchorElement, noFocus }?: {
+            anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+            noFocus?: boolean;
+        }) => Promise<void>;
+        hide: () => void;
+        update: ({ anchorElement }?: {
+            anchorElement?: HTMLElement | import("@floating-ui/dom").VirtualElement;
+        }) => Promise<void>;
+    }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+        hideDrop: () => any;
+        showDrop: () => any;
+    }, string, {}, {}, string, {}, import("vue").GlobalComponents, import("vue").GlobalDirectives, string, import("vue").ComponentProvideOptions> & import("vue").VNodeProps & import("vue").AllowedComponentProps & import("vue").ComponentCustomProps & (new () => {
+        $slots: import("@opencloud-eu/design-system/components").OcDropSlots;
+    })>>>;
+}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+    quickActionClicked: (event: MouseEvent | KeyboardEvent) => any;
+}, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{
+    onQuickActionClicked?: (event: MouseEvent | KeyboardEvent) => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const __VLS_export: __VLS_WithSlots<typeof __VLS_base, __VLS_Slots>;
+declare const _default: typeof __VLS_export;
+export default _default;
+type __VLS_WithSlots<T, S> = T & {
+    new (): {
+        $slots: S;
+    };
+};

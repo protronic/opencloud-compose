@@ -1,0 +1,5 @@
+import { DAV, DAVRequestOptions } from './client';
+import { WebDavOptions } from './types';
+export declare const GetPathForFileIdFactory: (dav: DAV, options: WebDavOptions) => {
+    getPathForFileId(id: string, opts?: DAVRequestOptions): Promise<string>;
+};

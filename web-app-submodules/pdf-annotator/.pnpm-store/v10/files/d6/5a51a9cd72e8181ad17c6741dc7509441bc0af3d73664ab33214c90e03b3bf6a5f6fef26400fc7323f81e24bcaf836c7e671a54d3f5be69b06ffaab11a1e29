@@ -1,0 +1,152 @@
+import { z } from 'zod';
+export declare const MailCapabilitiesSchema: z.ZodObject<{
+    maxMailboxDepth: z.ZodNumber;
+    maxSizeMailboxName: z.ZodNumber;
+    maxMailboxesPerEmail: z.ZodNumber;
+    maxSizeAttachmentsPerEmail: z.ZodNumber;
+    mayCreateTopLevelMailbox: z.ZodBoolean;
+    maxDelayedSend: z.ZodNumber;
+}, z.core.$strip>;
+export declare const SieveCapabilitiesSchema: z.ZodObject<{
+    maxSizeScriptName: z.ZodNumber;
+    maxSizeScript: z.ZodNumber;
+    maxNumberScripts: z.ZodNumber;
+    maxNumberRedirects: z.ZodNumber;
+}, z.core.$strip>;
+export declare const AccountCapabilitiesSchema: z.ZodObject<{
+    mail: z.ZodOptional<z.ZodObject<{
+        maxMailboxDepth: z.ZodNumber;
+        maxSizeMailboxName: z.ZodNumber;
+        maxMailboxesPerEmail: z.ZodNumber;
+        maxSizeAttachmentsPerEmail: z.ZodNumber;
+        mayCreateTopLevelMailbox: z.ZodBoolean;
+        maxDelayedSend: z.ZodNumber;
+    }, z.core.$strip>>;
+    sieve: z.ZodOptional<z.ZodObject<{
+        maxSizeScriptName: z.ZodNumber;
+        maxSizeScript: z.ZodNumber;
+        maxNumberScripts: z.ZodNumber;
+        maxNumberRedirects: z.ZodNumber;
+    }, z.core.$strip>>;
+}, z.core.$strip>;
+export declare const IdentitySchema: z.ZodObject<{
+    id: z.ZodString;
+    name: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    email: z.ZodOptional<z.ZodString>;
+    textSignature: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    htmlSignature: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    mayDelete: z.ZodOptional<z.ZodBoolean>;
+}, z.core.$strip>;
+export declare const AccountSchema: z.ZodObject<{
+    accountId: z.ZodString;
+    name: z.ZodString;
+    isPersonal: z.ZodBoolean;
+    isReadOnly: z.ZodBoolean;
+    capabilities: z.ZodOptional<z.ZodObject<{
+        mail: z.ZodOptional<z.ZodObject<{
+            maxMailboxDepth: z.ZodNumber;
+            maxSizeMailboxName: z.ZodNumber;
+            maxMailboxesPerEmail: z.ZodNumber;
+            maxSizeAttachmentsPerEmail: z.ZodNumber;
+            mayCreateTopLevelMailbox: z.ZodBoolean;
+            maxDelayedSend: z.ZodNumber;
+        }, z.core.$strip>>;
+        sieve: z.ZodOptional<z.ZodObject<{
+            maxSizeScriptName: z.ZodNumber;
+            maxSizeScript: z.ZodNumber;
+            maxNumberScripts: z.ZodNumber;
+            maxNumberRedirects: z.ZodNumber;
+        }, z.core.$strip>>;
+    }, z.core.$strip>>;
+    accountCapabilities: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{}, z.core.$strip>>>;
+    identities: z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        name: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+        email: z.ZodOptional<z.ZodString>;
+        textSignature: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+        htmlSignature: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+        mayDelete: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strip>>;
+}, z.core.$strip>;
+export type GroupwareAccount = z.infer<typeof AccountSchema>;
+export declare const LimitsSchema: z.ZodObject<{
+    maxSizeUpload: z.ZodNumber;
+    maxConcurrentUpload: z.ZodNumber;
+    maxSizeRequest: z.ZodNumber;
+    maxConcurrentRequests: z.ZodNumber;
+}, z.core.$strip>;
+export declare const AccountsSchema: z.ZodArray<z.ZodObject<{
+    accountId: z.ZodString;
+    name: z.ZodString;
+    isPersonal: z.ZodBoolean;
+    isReadOnly: z.ZodBoolean;
+    capabilities: z.ZodOptional<z.ZodObject<{
+        mail: z.ZodOptional<z.ZodObject<{
+            maxMailboxDepth: z.ZodNumber;
+            maxSizeMailboxName: z.ZodNumber;
+            maxMailboxesPerEmail: z.ZodNumber;
+            maxSizeAttachmentsPerEmail: z.ZodNumber;
+            mayCreateTopLevelMailbox: z.ZodBoolean;
+            maxDelayedSend: z.ZodNumber;
+        }, z.core.$strip>>;
+        sieve: z.ZodOptional<z.ZodObject<{
+            maxSizeScriptName: z.ZodNumber;
+            maxSizeScript: z.ZodNumber;
+            maxNumberScripts: z.ZodNumber;
+            maxNumberRedirects: z.ZodNumber;
+        }, z.core.$strip>>;
+    }, z.core.$strip>>;
+    accountCapabilities: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{}, z.core.$strip>>>;
+    identities: z.ZodArray<z.ZodObject<{
+        id: z.ZodString;
+        name: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+        email: z.ZodOptional<z.ZodString>;
+        textSignature: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+        htmlSignature: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+        mayDelete: z.ZodOptional<z.ZodBoolean>;
+    }, z.core.$strip>>;
+}, z.core.$strip>>;
+export declare const PrimaryAccountsSchema: z.ZodRecord<z.ZodString, z.ZodString>;
+export declare const RawGroupwareConfigSchema: z.ZodObject<{
+    version: z.ZodString;
+    capabilities: z.ZodArray<z.ZodString>;
+    limits: z.ZodObject<{
+        maxSizeUpload: z.ZodNumber;
+        maxConcurrentUpload: z.ZodNumber;
+        maxSizeRequest: z.ZodNumber;
+        maxConcurrentRequests: z.ZodNumber;
+    }, z.core.$strip>;
+    accounts: z.ZodArray<z.ZodObject<{
+        accountId: z.ZodString;
+        name: z.ZodString;
+        isPersonal: z.ZodBoolean;
+        isReadOnly: z.ZodBoolean;
+        capabilities: z.ZodOptional<z.ZodObject<{
+            mail: z.ZodOptional<z.ZodObject<{
+                maxMailboxDepth: z.ZodNumber;
+                maxSizeMailboxName: z.ZodNumber;
+                maxMailboxesPerEmail: z.ZodNumber;
+                maxSizeAttachmentsPerEmail: z.ZodNumber;
+                mayCreateTopLevelMailbox: z.ZodBoolean;
+                maxDelayedSend: z.ZodNumber;
+            }, z.core.$strip>>;
+            sieve: z.ZodOptional<z.ZodObject<{
+                maxSizeScriptName: z.ZodNumber;
+                maxSizeScript: z.ZodNumber;
+                maxNumberScripts: z.ZodNumber;
+                maxNumberRedirects: z.ZodNumber;
+            }, z.core.$strip>>;
+        }, z.core.$strip>>;
+        accountCapabilities: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodObject<{}, z.core.$strip>>>;
+        identities: z.ZodArray<z.ZodObject<{
+            id: z.ZodString;
+            name: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+            email: z.ZodOptional<z.ZodString>;
+            textSignature: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+            htmlSignature: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+            mayDelete: z.ZodOptional<z.ZodBoolean>;
+        }, z.core.$strip>>;
+    }, z.core.$strip>>;
+    primaryAccounts: z.ZodRecord<z.ZodString, z.ZodString>;
+}, z.core.$strip>;
+export type RawGroupwareConfig = z.infer<typeof RawGroupwareConfigSchema>;

@@ -1,0 +1,84 @@
+import { captureException, getAbsoluteUrl } from '@sentry/browser';
+import { URL_PATH_PARAMETER_KEY_BASE, PARAMS_KEY_BASE, URL_TEMPLATE, NAVIGATION_ROUTE_ID } from '@sentry/conventions/attributes';
+import { getCurrentScope, spanToJSON, SEMANTIC_ATTRIBUTE_SENTRY_SOURCE, SEMANTIC_ATTRIBUTE_SENTRY_ORIGIN, getActiveSpan, getRootSpan } from '@sentry/core';
+
+function instrumentVueRouter(router, options, startNavigationSpanFn) {
+  let hasHandledFirstPageLoad = false;
+  const isLegacyRouter = "mode" in router;
+  router.onError((error) => captureException(error, { mechanism: { handled: false } }));
+  router.beforeEach((to, _from, ...rest) => {
+    const activePageLoadSpan = !hasHandledFirstPageLoad ? getActivePageLoadSpan() : void 0;
+    const attributes = {};
+    for (const key of Object.keys(to.params)) {
+      attributes[`${URL_PATH_PARAMETER_KEY_BASE}.${key}`] = to.params[key];
+      attributes[`${PARAMS_KEY_BASE}.${key}`] = to.params[key];
+    }
+    for (const key of Object.keys(to.query)) {
+      const value = to.query[key];
+      if (value) {
+        attributes[`query.${key}`] = value;
+      }
+    }
+    let spanName = to.path;
+    let transactionSource = "url";
+    if (to.name && options.routeLabel !== "path") {
+      spanName = to.name.toString();
+      transactionSource = "custom";
+    } else if (to.matched.length > 0) {
+      const lastIndex = to.matched.length - 1;
+      spanName = to.matched[lastIndex].path;
+      transactionSource = "route";
+    }
+    if (transactionSource === "route") {
+      attributes[URL_TEMPLATE] = spanName;
+    }
+    if (to.name) {
+      attributes[NAVIGATION_ROUTE_ID] = to.name.toString();
+    }
+    getCurrentScope().setTransactionName(spanName);
+    if (options.instrumentPageLoad && activePageLoadSpan) {
+      const existingAttributes = spanToJSON(activePageLoadSpan).data;
+      if (existingAttributes[SEMANTIC_ATTRIBUTE_SENTRY_SOURCE] !== "custom") {
+        activePageLoadSpan.updateName(spanName);
+        activePageLoadSpan.setAttribute(SEMANTIC_ATTRIBUTE_SENTRY_SOURCE, transactionSource);
+      }
+      activePageLoadSpan.setAttributes({
+        ...attributes,
+        [SEMANTIC_ATTRIBUTE_SENTRY_ORIGIN]: "auto.pageload.vue"
+      });
+      hasHandledFirstPageLoad = true;
+    }
+    if (options.instrumentNavigation && !activePageLoadSpan) {
+      startNavigationSpanFn(
+        {
+          name: spanName,
+          op: "navigation",
+          attributes: {
+            ...attributes,
+            [SEMANTIC_ATTRIBUTE_SENTRY_ORIGIN]: "auto.navigation.vue",
+            [SEMANTIC_ATTRIBUTE_SENTRY_SOURCE]: transactionSource
+          }
+        },
+        getAbsoluteUrl(to.fullPath ?? to.path)
+      );
+    }
+    if (isLegacyRouter) {
+      const next = rest[0];
+      if (typeof next === "function") {
+        next();
+      }
+    }
+  });
+}
+function getActivePageLoadSpan() {
+  const span = getActiveSpan();
+  const rootSpan = span && getRootSpan(span);
+  if (!rootSpan) {
+    return void 0;
+  }
+  const op = spanToJSON(rootSpan).op;
+  return op === "pageload" ? rootSpan : void 0;
+}
+
+export { instrumentVueRouter };
+//# sourceMappingURL=router.js.map

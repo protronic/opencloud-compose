@@ -1,0 +1,53 @@
+import { Headers, ProgressEventCallback } from 'webdav';
+import { DavPropertyValue } from '../constants';
+import { WebDavResponseResource } from '../../helpers';
+export interface DAVOptions {
+    baseUrl: string;
+    headers?: () => Headers;
+}
+export interface DavResult {
+    body: WebDavResponseResource[] | undefined;
+    status: number;
+    result: Response;
+}
+export type DAVRequestOptions = {
+    headers?: Headers;
+    signal?: AbortSignal;
+};
+export declare class DAV {
+    private client;
+    private davPath;
+    private headers;
+    extraProps: string[];
+    constructor({ baseUrl, headers }: DAVOptions);
+    mkcol(path: string, opts?: DAVRequestOptions): Promise<DavResult>;
+    propfind(path: string, { depth, properties, headers, ...opts }?: {
+        depth?: number;
+        properties?: DavPropertyValue[];
+    } & DAVRequestOptions): Promise<WebDavResponseResource[]>;
+    report(path: string, { pattern, filterRules, limit, properties, ...opts }?: {
+        pattern?: string;
+        filterRules?: Partial<Record<DavPropertyValue, unknown>>;
+        limit?: number;
+        properties?: DavPropertyValue[];
+    } & DAVRequestOptions): Promise<{
+        results: WebDavResponseResource[];
+        range: string;
+    }>;
+    copy(source: string, target: string, { overwrite, headers, ...opts }?: {
+        overwrite?: boolean;
+    } & DAVRequestOptions): Promise<DavResult>;
+    move(source: string, target: string, { overwrite, headers, ...opts }?: {
+        overwrite?: boolean;
+    } & DAVRequestOptions): Promise<DavResult>;
+    put(path: string, content: string | ArrayBuffer, { headers, onUploadProgress, previousEntityTag, overwrite, ...opts }?: {
+        onUploadProgress?: ProgressEventCallback;
+        previousEntityTag?: string;
+        overwrite?: boolean;
+    } & DAVRequestOptions): Promise<DavResult>;
+    delete(path: string, opts?: DAVRequestOptions): Promise<DavResult>;
+    propPatch(path: string, properties: Partial<Record<DavPropertyValue, unknown>>, opts?: DAVRequestOptions): Promise<DavResult>;
+    getFileUrl(path: string): string;
+    private buildHeaders;
+    private request;
+}

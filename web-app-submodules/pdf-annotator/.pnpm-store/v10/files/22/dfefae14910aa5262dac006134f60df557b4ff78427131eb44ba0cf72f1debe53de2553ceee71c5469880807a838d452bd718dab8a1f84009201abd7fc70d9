@@ -1,0 +1,14 @@
+import { Ref } from 'vue';
+import { Resource, SpaceResource } from '@opencloud-eu/web-client';
+import { ConfigStore } from '../piniaStores';
+export type ResourceRouteResolverOptions = {
+    configStore?: ConfigStore;
+    space?: Ref<SpaceResource>;
+};
+export declare const useResourceRouteResolver: (options?: ResourceRouteResolverOptions) => {
+    createFolderLink: (createTargetRouteOptions: {
+        path: string;
+        resource: Resource | SpaceResource;
+        fileId?: string;
+    }) => import("vue-router").RouteLocationNamedRaw;
+};

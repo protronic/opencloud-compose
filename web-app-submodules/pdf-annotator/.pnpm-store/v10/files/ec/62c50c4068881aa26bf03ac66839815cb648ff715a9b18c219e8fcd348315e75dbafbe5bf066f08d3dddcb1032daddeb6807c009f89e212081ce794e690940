@@ -1,0 +1,12 @@
+import { SpaceResource } from '@opencloud-eu/web-client';
+import { Graph } from '@opencloud-eu/web-client/graph';
+import { SpacesStore } from '../../composables';
+/**
+ * Gets the drive item for a given shared space.
+ */
+export declare const getSharedDriveItem: ({ graphClient, spacesStore, space, signal }: {
+    graphClient: Graph;
+    spacesStore: SpacesStore;
+    space: SpaceResource;
+    signal?: AbortSignal;
+}) => Promise<import("@opencloud-eu/web-client/graph/generated").DriveItem>;

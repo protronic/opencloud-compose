@@ -1,0 +1,15 @@
+import { Resource } from '@opencloud-eu/web-client';
+import { ResolveConflict, ResolveStrategy } from './types';
+import type { Language } from 'vue3-gettext';
+export interface FileConflict {
+    resource: Resource;
+    strategy?: ResolveStrategy;
+}
+export declare class ConflictDialog {
+    protected $gettext: Language['$gettext'];
+    protected $ngettext: Language['$ngettext'];
+    constructor($gettext: Language['$gettext'], $ngettext: Language['$ngettext']);
+    resolveAllConflicts(resourcesToMove: Resource[], targetFolder: Resource, targetFolderResources: Resource[]): Promise<FileConflict[]>;
+    resolveFileExists(resource: Resource, conflictCount: number, suggestMerge?: boolean, separateSkipHandling?: boolean): Promise<ResolveConflict>;
+    resolveDoCopyInsteadOfMoveForSpaces(): Promise<boolean>;
+}

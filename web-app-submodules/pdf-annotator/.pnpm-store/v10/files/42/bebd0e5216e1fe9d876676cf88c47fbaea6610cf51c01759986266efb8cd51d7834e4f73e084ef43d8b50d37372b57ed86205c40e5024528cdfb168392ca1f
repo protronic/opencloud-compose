@@ -1,0 +1,13 @@
+export interface Props {
+    /**
+     * @docs Name of the icon to display. Please refer to the `OcIcon` component to see how to use icon names.
+     */
+    icon: string;
+    /**
+     * @docs Hex-code of the primary color to display. This color is being used for the left side of the gradient.
+     */
+    colorPrimary?: string;
+}
+declare const __VLS_export: import("vue").DefineComponent<Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const _default: typeof __VLS_export;
+export default _default;

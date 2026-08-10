@@ -1,0 +1,9 @@
+import { RouteComponents } from './router';
+import { RouteLocationNamedRaw, RouteRecordRaw } from 'vue-router';
+type shareTypes = 'files-public-link' | 'files-public-upload';
+export declare const createLocationPublic: (name: shareTypes, location?: {}) => RouteLocationNamedRaw;
+export declare const locationPublicLink: RouteLocationNamedRaw;
+export declare const locationPublicUpload: RouteLocationNamedRaw;
+export declare const isLocationPublicActive: import("./utils").ActiveRouteDirectorFunc<shareTypes>;
+export declare const buildRoutes: (components: RouteComponents) => RouteRecordRaw[];
+export {};

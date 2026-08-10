@@ -1,0 +1,1361 @@
+import { ContextualHelperData } from '@opencloud-eu/design-system/helpers';
+import { Component, ComponentPublicInstance } from 'vue';
+export type CustomModalComponent = Component<{
+    modal: Modal;
+} & Record<string, any>>;
+export type CustomModalComponentEmits = {
+    confirm?: () => Promise<void>;
+    cancel?: () => void;
+    'update:confirmDisabled': (value: boolean) => void;
+} & Record<string, any>;
+export type CustomModalComponentInstance = ComponentPublicInstance<{
+    modal: Modal;
+} & unknown, {
+    onConfirm?: () => Promise<unknown>;
+    onCancel?: () => unknown;
+}, any, any, any, CustomModalComponentEmits>;
+export type Modal = {
+    id: string;
+    elementId?: string;
+    elementClass?: string;
+    title: string;
+    message?: string;
+    confirmDisabled?: boolean;
+    isLoading?: boolean;
+    confirmText?: string;
+    hideActions?: boolean;
+    hideConfirmButton?: boolean;
+    hideCancelButton?: boolean;
+    hasInput?: boolean;
+    inputValue?: string;
+    inputType?: 'text' | 'number' | 'email' | 'password' | 'date';
+    inputSelectionRange?: [number, number];
+    inputLabel?: string;
+    inputError?: string;
+    inputDescription?: string;
+    inputRequiredMark?: boolean;
+    focusTrapInitial?: string | false;
+    contextualHelperLabel?: string;
+    contextualHelperData?: ContextualHelperData;
+    customComponent?: CustomModalComponent;
+    customComponentAttrs?: () => Record<string, unknown>;
+    onCancel?: () => void;
+    onConfirm?: (value: any) => void | Promise<void>;
+    onInput?: (value: string, setError: (error: string) => void) => void;
+};
+export declare const useModals: import("pinia").StoreDefinition<"modals", Pick<{
+    modals: import("vue").Ref<{
+        id: string;
+        elementId?: string;
+        elementClass?: string;
+        title: string;
+        message?: string;
+        confirmDisabled?: boolean;
+        isLoading?: boolean;
+        confirmText?: string;
+        hideActions?: boolean;
+        hideConfirmButton?: boolean;
+        hideCancelButton?: boolean;
+        hasInput?: boolean;
+        inputValue?: string;
+        inputType?: "text" | "number" | "email" | "password" | "date";
+        inputSelectionRange?: [number, number];
+        inputLabel?: string;
+        inputError?: string;
+        inputDescription?: string;
+        inputRequiredMark?: boolean;
+        focusTrapInitial?: string | false;
+        contextualHelperLabel?: string;
+        contextualHelperData?: {
+            title: string;
+            text?: string;
+            list?: {
+                text: string;
+                headline?: boolean;
+            }[];
+            readMoreLink?: string;
+        };
+        customComponent?: import("vue").FunctionalComponent<{
+            modal: Modal;
+        } & Record<string, any>, {}, any, {}> | {
+            new (...args: any[]): {
+                modal: Modal;
+            } & Record<string, any>;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+        } | {
+            [x: string]: any;
+            setup?: (this: void, props: import("@vue/shared").LooseRequired<{
+                modal: Modal;
+            } & Record<string, any> & {}>, ctx: {
+                attrs: import("vue").Attrs;
+                slots: Readonly<{
+                    [name: string]: import("vue").Slot<any>;
+                }>;
+                emit: ((event: unknown, ...args: any[]) => void) | ((event: string, ...args: any[]) => void);
+                expose: <Exposed extends Record<string, any> = Record<string, any>>(exposed?: Exposed) => void;
+            }) => any;
+            name?: string;
+            template?: string | object;
+            render?: Function;
+            components?: Record<string, Component<any, any, any, import("vue").ComputedOptions, import("vue").MethodOptions, {}, any>>;
+            directives?: Record<string, import("vue").Directive<any, any, string, any>>;
+            inheritAttrs?: boolean;
+            emits?: any;
+            slots?: {};
+            expose?: string[];
+            serverPrefetch?: () => void | Promise<any>;
+            compilerOptions?: {
+                isCustomElement?: (tag: string) => boolean;
+                whitespace?: "preserve" | "condense";
+                comments?: boolean;
+                delimiters?: [string, string];
+            };
+            call?: (this: unknown, ...args: unknown[]) => never;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+            __defaults?: {};
+            compatConfig?: {
+                GLOBAL_MOUNT?: boolean | "suppress-warning";
+                GLOBAL_MOUNT_CONTAINER?: boolean | "suppress-warning";
+                GLOBAL_EXTEND?: boolean | "suppress-warning";
+                GLOBAL_PROTOTYPE?: boolean | "suppress-warning";
+                GLOBAL_SET?: boolean | "suppress-warning";
+                GLOBAL_DELETE?: boolean | "suppress-warning";
+                GLOBAL_OBSERVABLE?: boolean | "suppress-warning";
+                GLOBAL_PRIVATE_UTIL?: boolean | "suppress-warning";
+                CONFIG_SILENT?: boolean | "suppress-warning";
+                CONFIG_DEVTOOLS?: boolean | "suppress-warning";
+                CONFIG_KEY_CODES?: boolean | "suppress-warning";
+                CONFIG_PRODUCTION_TIP?: boolean | "suppress-warning";
+                CONFIG_IGNORED_ELEMENTS?: boolean | "suppress-warning";
+                CONFIG_WHITESPACE?: boolean | "suppress-warning";
+                CONFIG_OPTION_MERGE_STRATS?: boolean | "suppress-warning";
+                INSTANCE_SET?: boolean | "suppress-warning";
+                INSTANCE_DELETE?: boolean | "suppress-warning";
+                INSTANCE_DESTROY?: boolean | "suppress-warning";
+                INSTANCE_EVENT_EMITTER?: boolean | "suppress-warning";
+                INSTANCE_EVENT_HOOKS?: boolean | "suppress-warning";
+                INSTANCE_CHILDREN?: boolean | "suppress-warning";
+                INSTANCE_LISTENERS?: boolean | "suppress-warning";
+                INSTANCE_SCOPED_SLOTS?: boolean | "suppress-warning";
+                INSTANCE_ATTRS_CLASS_STYLE?: boolean | "suppress-warning";
+                OPTIONS_DATA_FN?: boolean | "suppress-warning";
+                OPTIONS_DATA_MERGE?: boolean | "suppress-warning";
+                OPTIONS_BEFORE_DESTROY?: boolean | "suppress-warning";
+                OPTIONS_DESTROYED?: boolean | "suppress-warning";
+                WATCH_ARRAY?: boolean | "suppress-warning";
+                PROPS_DEFAULT_THIS?: boolean | "suppress-warning";
+                V_ON_KEYCODE_MODIFIER?: boolean | "suppress-warning";
+                CUSTOM_DIR?: boolean | "suppress-warning";
+                ATTR_FALSE_VALUE?: boolean | "suppress-warning";
+                ATTR_ENUMERATED_COERCION?: boolean | "suppress-warning";
+                TRANSITION_CLASSES?: boolean | "suppress-warning";
+                TRANSITION_GROUP_ROOT?: boolean | "suppress-warning";
+                COMPONENT_ASYNC?: boolean | "suppress-warning";
+                COMPONENT_FUNCTIONAL?: boolean | "suppress-warning";
+                COMPONENT_V_MODEL?: boolean | "suppress-warning";
+                RENDER_FUNCTION?: boolean | "suppress-warning";
+                FILTERS?: boolean | "suppress-warning";
+                PRIVATE_APIS?: boolean | "suppress-warning";
+                MODE?: 2 | 3 | ((comp: Component | null) => 2 | 3);
+            };
+            data?: (this: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>, vm: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>) => any;
+            computed?: import("vue").ComputedOptions;
+            methods?: import("vue").MethodOptions;
+            watch?: {
+                [x: string]: (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>)) | (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>))[];
+            };
+            provide?: import("vue").ComponentProvideOptions;
+            inject?: {} | string[];
+            filters?: Record<string, Function>;
+            mixins?: any[];
+            extends?: any;
+            beforeCreate?: () => any;
+            created?: () => any;
+            beforeMount?: () => any;
+            mounted?: () => any;
+            beforeUpdate?: () => any;
+            updated?: () => any;
+            activated?: () => any;
+            deactivated?: () => any;
+            beforeDestroy?: () => any;
+            beforeUnmount?: () => any;
+            destroyed?: () => any;
+            unmounted?: () => any;
+            renderTracked?: (e: import("vue").DebuggerEvent) => void;
+            renderTriggered?: (e: import("vue").DebuggerEvent) => void;
+            errorCaptured?: (err: unknown, instance: ComponentPublicInstance | null, info: string) => boolean | void;
+            delimiters?: [string, string];
+            __differentiator?: string | number | symbol;
+            __isBuiltIn?: boolean;
+            __file?: string;
+            __name?: string;
+            beforeRouteEnter?: import("vue-router").TypesConfig extends Record<"beforeRouteEnter", infer T> ? T : import("vue-router").NavigationGuardWithThis<undefined>;
+            beforeRouteUpdate?: import("vue-router").TypesConfig extends Record<"beforeRouteUpdate", infer T> ? T : import("vue-router").NavigationGuard;
+            beforeRouteLeave?: import("vue-router").TypesConfig extends Record<"beforeRouteLeave", infer T> ? T : import("vue-router").NavigationGuard;
+        };
+        customComponentAttrs?: () => Record<string, unknown>;
+        onCancel?: () => void;
+        onConfirm?: (value: any) => void | Promise<void>;
+        onInput?: (value: string, setError: (error: string) => void) => void;
+    }[], Modal[] | {
+        id: string;
+        elementId?: string;
+        elementClass?: string;
+        title: string;
+        message?: string;
+        confirmDisabled?: boolean;
+        isLoading?: boolean;
+        confirmText?: string;
+        hideActions?: boolean;
+        hideConfirmButton?: boolean;
+        hideCancelButton?: boolean;
+        hasInput?: boolean;
+        inputValue?: string;
+        inputType?: "text" | "number" | "email" | "password" | "date";
+        inputSelectionRange?: [number, number];
+        inputLabel?: string;
+        inputError?: string;
+        inputDescription?: string;
+        inputRequiredMark?: boolean;
+        focusTrapInitial?: string | false;
+        contextualHelperLabel?: string;
+        contextualHelperData?: {
+            title: string;
+            text?: string;
+            list?: {
+                text: string;
+                headline?: boolean;
+            }[];
+            readMoreLink?: string;
+        };
+        customComponent?: import("vue").FunctionalComponent<{
+            modal: Modal;
+        } & Record<string, any>, {}, any, {}> | {
+            new (...args: any[]): {
+                modal: Modal;
+            } & Record<string, any>;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+        } | {
+            [x: string]: any;
+            setup?: (this: void, props: import("@vue/shared").LooseRequired<{
+                modal: Modal;
+            } & Record<string, any> & {}>, ctx: {
+                attrs: import("vue").Attrs;
+                slots: Readonly<{
+                    [name: string]: import("vue").Slot<any>;
+                }>;
+                emit: ((event: unknown, ...args: any[]) => void) | ((event: string, ...args: any[]) => void);
+                expose: <Exposed extends Record<string, any> = Record<string, any>>(exposed?: Exposed) => void;
+            }) => any;
+            name?: string;
+            template?: string | object;
+            render?: Function;
+            components?: Record<string, Component<any, any, any, import("vue").ComputedOptions, import("vue").MethodOptions, {}, any>>;
+            directives?: Record<string, import("vue").Directive<any, any, string, any>>;
+            inheritAttrs?: boolean;
+            emits?: any;
+            slots?: {};
+            expose?: string[];
+            serverPrefetch?: () => void | Promise<any>;
+            compilerOptions?: {
+                isCustomElement?: (tag: string) => boolean;
+                whitespace?: "preserve" | "condense";
+                comments?: boolean;
+                delimiters?: [string, string];
+            };
+            call?: (this: unknown, ...args: unknown[]) => never;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+            __defaults?: {};
+            compatConfig?: {
+                GLOBAL_MOUNT?: boolean | "suppress-warning";
+                GLOBAL_MOUNT_CONTAINER?: boolean | "suppress-warning";
+                GLOBAL_EXTEND?: boolean | "suppress-warning";
+                GLOBAL_PROTOTYPE?: boolean | "suppress-warning";
+                GLOBAL_SET?: boolean | "suppress-warning";
+                GLOBAL_DELETE?: boolean | "suppress-warning";
+                GLOBAL_OBSERVABLE?: boolean | "suppress-warning";
+                GLOBAL_PRIVATE_UTIL?: boolean | "suppress-warning";
+                CONFIG_SILENT?: boolean | "suppress-warning";
+                CONFIG_DEVTOOLS?: boolean | "suppress-warning";
+                CONFIG_KEY_CODES?: boolean | "suppress-warning";
+                CONFIG_PRODUCTION_TIP?: boolean | "suppress-warning";
+                CONFIG_IGNORED_ELEMENTS?: boolean | "suppress-warning";
+                CONFIG_WHITESPACE?: boolean | "suppress-warning";
+                CONFIG_OPTION_MERGE_STRATS?: boolean | "suppress-warning";
+                INSTANCE_SET?: boolean | "suppress-warning";
+                INSTANCE_DELETE?: boolean | "suppress-warning";
+                INSTANCE_DESTROY?: boolean | "suppress-warning";
+                INSTANCE_EVENT_EMITTER?: boolean | "suppress-warning";
+                INSTANCE_EVENT_HOOKS?: boolean | "suppress-warning";
+                INSTANCE_CHILDREN?: boolean | "suppress-warning";
+                INSTANCE_LISTENERS?: boolean | "suppress-warning";
+                INSTANCE_SCOPED_SLOTS?: boolean | "suppress-warning";
+                INSTANCE_ATTRS_CLASS_STYLE?: boolean | "suppress-warning";
+                OPTIONS_DATA_FN?: boolean | "suppress-warning";
+                OPTIONS_DATA_MERGE?: boolean | "suppress-warning";
+                OPTIONS_BEFORE_DESTROY?: boolean | "suppress-warning";
+                OPTIONS_DESTROYED?: boolean | "suppress-warning";
+                WATCH_ARRAY?: boolean | "suppress-warning";
+                PROPS_DEFAULT_THIS?: boolean | "suppress-warning";
+                V_ON_KEYCODE_MODIFIER?: boolean | "suppress-warning";
+                CUSTOM_DIR?: boolean | "suppress-warning";
+                ATTR_FALSE_VALUE?: boolean | "suppress-warning";
+                ATTR_ENUMERATED_COERCION?: boolean | "suppress-warning";
+                TRANSITION_CLASSES?: boolean | "suppress-warning";
+                TRANSITION_GROUP_ROOT?: boolean | "suppress-warning";
+                COMPONENT_ASYNC?: boolean | "suppress-warning";
+                COMPONENT_FUNCTIONAL?: boolean | "suppress-warning";
+                COMPONENT_V_MODEL?: boolean | "suppress-warning";
+                RENDER_FUNCTION?: boolean | "suppress-warning";
+                FILTERS?: boolean | "suppress-warning";
+                PRIVATE_APIS?: boolean | "suppress-warning";
+                MODE?: 2 | 3 | ((comp: Component | null) => 2 | 3);
+            };
+            data?: (this: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>, vm: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>) => any;
+            computed?: import("vue").ComputedOptions;
+            methods?: import("vue").MethodOptions;
+            watch?: {
+                [x: string]: (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>)) | (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>))[];
+            };
+            provide?: import("vue").ComponentProvideOptions;
+            inject?: {} | string[];
+            filters?: Record<string, Function>;
+            mixins?: any[];
+            extends?: any;
+            beforeCreate?: () => any;
+            created?: () => any;
+            beforeMount?: () => any;
+            mounted?: () => any;
+            beforeUpdate?: () => any;
+            updated?: () => any;
+            activated?: () => any;
+            deactivated?: () => any;
+            beforeDestroy?: () => any;
+            beforeUnmount?: () => any;
+            destroyed?: () => any;
+            unmounted?: () => any;
+            renderTracked?: (e: import("vue").DebuggerEvent) => void;
+            renderTriggered?: (e: import("vue").DebuggerEvent) => void;
+            errorCaptured?: (err: unknown, instance: ComponentPublicInstance | null, info: string) => boolean | void;
+            delimiters?: [string, string];
+            __differentiator?: string | number | symbol;
+            __isBuiltIn?: boolean;
+            __file?: string;
+            __name?: string;
+            beforeRouteEnter?: import("vue-router").TypesConfig extends Record<"beforeRouteEnter", infer T> ? T : import("vue-router").NavigationGuardWithThis<undefined>;
+            beforeRouteUpdate?: import("vue-router").TypesConfig extends Record<"beforeRouteUpdate", infer T> ? T : import("vue-router").NavigationGuard;
+            beforeRouteLeave?: import("vue-router").TypesConfig extends Record<"beforeRouteLeave", infer T> ? T : import("vue-router").NavigationGuard;
+        };
+        customComponentAttrs?: () => Record<string, unknown>;
+        onCancel?: () => void;
+        onConfirm?: (value: any) => void | Promise<void>;
+        onInput?: (value: string, setError: (error: string) => void) => void;
+    }[]>;
+    activeModal: import("vue").ComputedRef<Modal>;
+    dispatchModal: (data: Omit<Modal, "id">) => {
+        id: string;
+        message?: string;
+        title: string;
+        onInput?: (value: string, setError: (error: string) => void) => void;
+        contextualHelperData?: ContextualHelperData;
+        contextualHelperLabel?: string;
+        elementClass?: string;
+        elementId?: string;
+        focusTrapInitial?: string | false;
+        hasInput?: boolean;
+        hideActions?: boolean;
+        hideCancelButton?: boolean;
+        hideConfirmButton?: boolean;
+        inputDescription?: string;
+        inputRequiredMark?: boolean;
+        inputError?: string;
+        inputLabel?: string;
+        inputSelectionRange?: [number, number];
+        inputType?: "text" | "number" | "email" | "password" | "date";
+        inputValue?: string;
+        isLoading?: boolean;
+        onCancel?: () => void;
+        onConfirm?: (value: any) => void | Promise<void>;
+        customComponent?: CustomModalComponent;
+        confirmDisabled?: boolean;
+        confirmText?: string;
+        customComponentAttrs?: () => Record<string, unknown>;
+    };
+    updateModal: <T extends Modal, K extends keyof Modal>(id: T["id"], key: K, value: T[K]) => void;
+    removeModal: (id: Modal["id"]) => void;
+    removeAllModals: () => void;
+    setModalActive: (id: Modal["id"]) => void;
+}, "modals">, Pick<{
+    modals: import("vue").Ref<{
+        id: string;
+        elementId?: string;
+        elementClass?: string;
+        title: string;
+        message?: string;
+        confirmDisabled?: boolean;
+        isLoading?: boolean;
+        confirmText?: string;
+        hideActions?: boolean;
+        hideConfirmButton?: boolean;
+        hideCancelButton?: boolean;
+        hasInput?: boolean;
+        inputValue?: string;
+        inputType?: "text" | "number" | "email" | "password" | "date";
+        inputSelectionRange?: [number, number];
+        inputLabel?: string;
+        inputError?: string;
+        inputDescription?: string;
+        inputRequiredMark?: boolean;
+        focusTrapInitial?: string | false;
+        contextualHelperLabel?: string;
+        contextualHelperData?: {
+            title: string;
+            text?: string;
+            list?: {
+                text: string;
+                headline?: boolean;
+            }[];
+            readMoreLink?: string;
+        };
+        customComponent?: import("vue").FunctionalComponent<{
+            modal: Modal;
+        } & Record<string, any>, {}, any, {}> | {
+            new (...args: any[]): {
+                modal: Modal;
+            } & Record<string, any>;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+        } | {
+            [x: string]: any;
+            setup?: (this: void, props: import("@vue/shared").LooseRequired<{
+                modal: Modal;
+            } & Record<string, any> & {}>, ctx: {
+                attrs: import("vue").Attrs;
+                slots: Readonly<{
+                    [name: string]: import("vue").Slot<any>;
+                }>;
+                emit: ((event: unknown, ...args: any[]) => void) | ((event: string, ...args: any[]) => void);
+                expose: <Exposed extends Record<string, any> = Record<string, any>>(exposed?: Exposed) => void;
+            }) => any;
+            name?: string;
+            template?: string | object;
+            render?: Function;
+            components?: Record<string, Component<any, any, any, import("vue").ComputedOptions, import("vue").MethodOptions, {}, any>>;
+            directives?: Record<string, import("vue").Directive<any, any, string, any>>;
+            inheritAttrs?: boolean;
+            emits?: any;
+            slots?: {};
+            expose?: string[];
+            serverPrefetch?: () => void | Promise<any>;
+            compilerOptions?: {
+                isCustomElement?: (tag: string) => boolean;
+                whitespace?: "preserve" | "condense";
+                comments?: boolean;
+                delimiters?: [string, string];
+            };
+            call?: (this: unknown, ...args: unknown[]) => never;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+            __defaults?: {};
+            compatConfig?: {
+                GLOBAL_MOUNT?: boolean | "suppress-warning";
+                GLOBAL_MOUNT_CONTAINER?: boolean | "suppress-warning";
+                GLOBAL_EXTEND?: boolean | "suppress-warning";
+                GLOBAL_PROTOTYPE?: boolean | "suppress-warning";
+                GLOBAL_SET?: boolean | "suppress-warning";
+                GLOBAL_DELETE?: boolean | "suppress-warning";
+                GLOBAL_OBSERVABLE?: boolean | "suppress-warning";
+                GLOBAL_PRIVATE_UTIL?: boolean | "suppress-warning";
+                CONFIG_SILENT?: boolean | "suppress-warning";
+                CONFIG_DEVTOOLS?: boolean | "suppress-warning";
+                CONFIG_KEY_CODES?: boolean | "suppress-warning";
+                CONFIG_PRODUCTION_TIP?: boolean | "suppress-warning";
+                CONFIG_IGNORED_ELEMENTS?: boolean | "suppress-warning";
+                CONFIG_WHITESPACE?: boolean | "suppress-warning";
+                CONFIG_OPTION_MERGE_STRATS?: boolean | "suppress-warning";
+                INSTANCE_SET?: boolean | "suppress-warning";
+                INSTANCE_DELETE?: boolean | "suppress-warning";
+                INSTANCE_DESTROY?: boolean | "suppress-warning";
+                INSTANCE_EVENT_EMITTER?: boolean | "suppress-warning";
+                INSTANCE_EVENT_HOOKS?: boolean | "suppress-warning";
+                INSTANCE_CHILDREN?: boolean | "suppress-warning";
+                INSTANCE_LISTENERS?: boolean | "suppress-warning";
+                INSTANCE_SCOPED_SLOTS?: boolean | "suppress-warning";
+                INSTANCE_ATTRS_CLASS_STYLE?: boolean | "suppress-warning";
+                OPTIONS_DATA_FN?: boolean | "suppress-warning";
+                OPTIONS_DATA_MERGE?: boolean | "suppress-warning";
+                OPTIONS_BEFORE_DESTROY?: boolean | "suppress-warning";
+                OPTIONS_DESTROYED?: boolean | "suppress-warning";
+                WATCH_ARRAY?: boolean | "suppress-warning";
+                PROPS_DEFAULT_THIS?: boolean | "suppress-warning";
+                V_ON_KEYCODE_MODIFIER?: boolean | "suppress-warning";
+                CUSTOM_DIR?: boolean | "suppress-warning";
+                ATTR_FALSE_VALUE?: boolean | "suppress-warning";
+                ATTR_ENUMERATED_COERCION?: boolean | "suppress-warning";
+                TRANSITION_CLASSES?: boolean | "suppress-warning";
+                TRANSITION_GROUP_ROOT?: boolean | "suppress-warning";
+                COMPONENT_ASYNC?: boolean | "suppress-warning";
+                COMPONENT_FUNCTIONAL?: boolean | "suppress-warning";
+                COMPONENT_V_MODEL?: boolean | "suppress-warning";
+                RENDER_FUNCTION?: boolean | "suppress-warning";
+                FILTERS?: boolean | "suppress-warning";
+                PRIVATE_APIS?: boolean | "suppress-warning";
+                MODE?: 2 | 3 | ((comp: Component | null) => 2 | 3);
+            };
+            data?: (this: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>, vm: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>) => any;
+            computed?: import("vue").ComputedOptions;
+            methods?: import("vue").MethodOptions;
+            watch?: {
+                [x: string]: (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>)) | (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>))[];
+            };
+            provide?: import("vue").ComponentProvideOptions;
+            inject?: {} | string[];
+            filters?: Record<string, Function>;
+            mixins?: any[];
+            extends?: any;
+            beforeCreate?: () => any;
+            created?: () => any;
+            beforeMount?: () => any;
+            mounted?: () => any;
+            beforeUpdate?: () => any;
+            updated?: () => any;
+            activated?: () => any;
+            deactivated?: () => any;
+            beforeDestroy?: () => any;
+            beforeUnmount?: () => any;
+            destroyed?: () => any;
+            unmounted?: () => any;
+            renderTracked?: (e: import("vue").DebuggerEvent) => void;
+            renderTriggered?: (e: import("vue").DebuggerEvent) => void;
+            errorCaptured?: (err: unknown, instance: ComponentPublicInstance | null, info: string) => boolean | void;
+            delimiters?: [string, string];
+            __differentiator?: string | number | symbol;
+            __isBuiltIn?: boolean;
+            __file?: string;
+            __name?: string;
+            beforeRouteEnter?: import("vue-router").TypesConfig extends Record<"beforeRouteEnter", infer T> ? T : import("vue-router").NavigationGuardWithThis<undefined>;
+            beforeRouteUpdate?: import("vue-router").TypesConfig extends Record<"beforeRouteUpdate", infer T> ? T : import("vue-router").NavigationGuard;
+            beforeRouteLeave?: import("vue-router").TypesConfig extends Record<"beforeRouteLeave", infer T> ? T : import("vue-router").NavigationGuard;
+        };
+        customComponentAttrs?: () => Record<string, unknown>;
+        onCancel?: () => void;
+        onConfirm?: (value: any) => void | Promise<void>;
+        onInput?: (value: string, setError: (error: string) => void) => void;
+    }[], Modal[] | {
+        id: string;
+        elementId?: string;
+        elementClass?: string;
+        title: string;
+        message?: string;
+        confirmDisabled?: boolean;
+        isLoading?: boolean;
+        confirmText?: string;
+        hideActions?: boolean;
+        hideConfirmButton?: boolean;
+        hideCancelButton?: boolean;
+        hasInput?: boolean;
+        inputValue?: string;
+        inputType?: "text" | "number" | "email" | "password" | "date";
+        inputSelectionRange?: [number, number];
+        inputLabel?: string;
+        inputError?: string;
+        inputDescription?: string;
+        inputRequiredMark?: boolean;
+        focusTrapInitial?: string | false;
+        contextualHelperLabel?: string;
+        contextualHelperData?: {
+            title: string;
+            text?: string;
+            list?: {
+                text: string;
+                headline?: boolean;
+            }[];
+            readMoreLink?: string;
+        };
+        customComponent?: import("vue").FunctionalComponent<{
+            modal: Modal;
+        } & Record<string, any>, {}, any, {}> | {
+            new (...args: any[]): {
+                modal: Modal;
+            } & Record<string, any>;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+        } | {
+            [x: string]: any;
+            setup?: (this: void, props: import("@vue/shared").LooseRequired<{
+                modal: Modal;
+            } & Record<string, any> & {}>, ctx: {
+                attrs: import("vue").Attrs;
+                slots: Readonly<{
+                    [name: string]: import("vue").Slot<any>;
+                }>;
+                emit: ((event: unknown, ...args: any[]) => void) | ((event: string, ...args: any[]) => void);
+                expose: <Exposed extends Record<string, any> = Record<string, any>>(exposed?: Exposed) => void;
+            }) => any;
+            name?: string;
+            template?: string | object;
+            render?: Function;
+            components?: Record<string, Component<any, any, any, import("vue").ComputedOptions, import("vue").MethodOptions, {}, any>>;
+            directives?: Record<string, import("vue").Directive<any, any, string, any>>;
+            inheritAttrs?: boolean;
+            emits?: any;
+            slots?: {};
+            expose?: string[];
+            serverPrefetch?: () => void | Promise<any>;
+            compilerOptions?: {
+                isCustomElement?: (tag: string) => boolean;
+                whitespace?: "preserve" | "condense";
+                comments?: boolean;
+                delimiters?: [string, string];
+            };
+            call?: (this: unknown, ...args: unknown[]) => never;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+            __defaults?: {};
+            compatConfig?: {
+                GLOBAL_MOUNT?: boolean | "suppress-warning";
+                GLOBAL_MOUNT_CONTAINER?: boolean | "suppress-warning";
+                GLOBAL_EXTEND?: boolean | "suppress-warning";
+                GLOBAL_PROTOTYPE?: boolean | "suppress-warning";
+                GLOBAL_SET?: boolean | "suppress-warning";
+                GLOBAL_DELETE?: boolean | "suppress-warning";
+                GLOBAL_OBSERVABLE?: boolean | "suppress-warning";
+                GLOBAL_PRIVATE_UTIL?: boolean | "suppress-warning";
+                CONFIG_SILENT?: boolean | "suppress-warning";
+                CONFIG_DEVTOOLS?: boolean | "suppress-warning";
+                CONFIG_KEY_CODES?: boolean | "suppress-warning";
+                CONFIG_PRODUCTION_TIP?: boolean | "suppress-warning";
+                CONFIG_IGNORED_ELEMENTS?: boolean | "suppress-warning";
+                CONFIG_WHITESPACE?: boolean | "suppress-warning";
+                CONFIG_OPTION_MERGE_STRATS?: boolean | "suppress-warning";
+                INSTANCE_SET?: boolean | "suppress-warning";
+                INSTANCE_DELETE?: boolean | "suppress-warning";
+                INSTANCE_DESTROY?: boolean | "suppress-warning";
+                INSTANCE_EVENT_EMITTER?: boolean | "suppress-warning";
+                INSTANCE_EVENT_HOOKS?: boolean | "suppress-warning";
+                INSTANCE_CHILDREN?: boolean | "suppress-warning";
+                INSTANCE_LISTENERS?: boolean | "suppress-warning";
+                INSTANCE_SCOPED_SLOTS?: boolean | "suppress-warning";
+                INSTANCE_ATTRS_CLASS_STYLE?: boolean | "suppress-warning";
+                OPTIONS_DATA_FN?: boolean | "suppress-warning";
+                OPTIONS_DATA_MERGE?: boolean | "suppress-warning";
+                OPTIONS_BEFORE_DESTROY?: boolean | "suppress-warning";
+                OPTIONS_DESTROYED?: boolean | "suppress-warning";
+                WATCH_ARRAY?: boolean | "suppress-warning";
+                PROPS_DEFAULT_THIS?: boolean | "suppress-warning";
+                V_ON_KEYCODE_MODIFIER?: boolean | "suppress-warning";
+                CUSTOM_DIR?: boolean | "suppress-warning";
+                ATTR_FALSE_VALUE?: boolean | "suppress-warning";
+                ATTR_ENUMERATED_COERCION?: boolean | "suppress-warning";
+                TRANSITION_CLASSES?: boolean | "suppress-warning";
+                TRANSITION_GROUP_ROOT?: boolean | "suppress-warning";
+                COMPONENT_ASYNC?: boolean | "suppress-warning";
+                COMPONENT_FUNCTIONAL?: boolean | "suppress-warning";
+                COMPONENT_V_MODEL?: boolean | "suppress-warning";
+                RENDER_FUNCTION?: boolean | "suppress-warning";
+                FILTERS?: boolean | "suppress-warning";
+                PRIVATE_APIS?: boolean | "suppress-warning";
+                MODE?: 2 | 3 | ((comp: Component | null) => 2 | 3);
+            };
+            data?: (this: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>, vm: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>) => any;
+            computed?: import("vue").ComputedOptions;
+            methods?: import("vue").MethodOptions;
+            watch?: {
+                [x: string]: (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>)) | (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>))[];
+            };
+            provide?: import("vue").ComponentProvideOptions;
+            inject?: {} | string[];
+            filters?: Record<string, Function>;
+            mixins?: any[];
+            extends?: any;
+            beforeCreate?: () => any;
+            created?: () => any;
+            beforeMount?: () => any;
+            mounted?: () => any;
+            beforeUpdate?: () => any;
+            updated?: () => any;
+            activated?: () => any;
+            deactivated?: () => any;
+            beforeDestroy?: () => any;
+            beforeUnmount?: () => any;
+            destroyed?: () => any;
+            unmounted?: () => any;
+            renderTracked?: (e: import("vue").DebuggerEvent) => void;
+            renderTriggered?: (e: import("vue").DebuggerEvent) => void;
+            errorCaptured?: (err: unknown, instance: ComponentPublicInstance | null, info: string) => boolean | void;
+            delimiters?: [string, string];
+            __differentiator?: string | number | symbol;
+            __isBuiltIn?: boolean;
+            __file?: string;
+            __name?: string;
+            beforeRouteEnter?: import("vue-router").TypesConfig extends Record<"beforeRouteEnter", infer T> ? T : import("vue-router").NavigationGuardWithThis<undefined>;
+            beforeRouteUpdate?: import("vue-router").TypesConfig extends Record<"beforeRouteUpdate", infer T> ? T : import("vue-router").NavigationGuard;
+            beforeRouteLeave?: import("vue-router").TypesConfig extends Record<"beforeRouteLeave", infer T> ? T : import("vue-router").NavigationGuard;
+        };
+        customComponentAttrs?: () => Record<string, unknown>;
+        onCancel?: () => void;
+        onConfirm?: (value: any) => void | Promise<void>;
+        onInput?: (value: string, setError: (error: string) => void) => void;
+    }[]>;
+    activeModal: import("vue").ComputedRef<Modal>;
+    dispatchModal: (data: Omit<Modal, "id">) => {
+        id: string;
+        message?: string;
+        title: string;
+        onInput?: (value: string, setError: (error: string) => void) => void;
+        contextualHelperData?: ContextualHelperData;
+        contextualHelperLabel?: string;
+        elementClass?: string;
+        elementId?: string;
+        focusTrapInitial?: string | false;
+        hasInput?: boolean;
+        hideActions?: boolean;
+        hideCancelButton?: boolean;
+        hideConfirmButton?: boolean;
+        inputDescription?: string;
+        inputRequiredMark?: boolean;
+        inputError?: string;
+        inputLabel?: string;
+        inputSelectionRange?: [number, number];
+        inputType?: "text" | "number" | "email" | "password" | "date";
+        inputValue?: string;
+        isLoading?: boolean;
+        onCancel?: () => void;
+        onConfirm?: (value: any) => void | Promise<void>;
+        customComponent?: CustomModalComponent;
+        confirmDisabled?: boolean;
+        confirmText?: string;
+        customComponentAttrs?: () => Record<string, unknown>;
+    };
+    updateModal: <T extends Modal, K extends keyof Modal>(id: T["id"], key: K, value: T[K]) => void;
+    removeModal: (id: Modal["id"]) => void;
+    removeAllModals: () => void;
+    setModalActive: (id: Modal["id"]) => void;
+}, "activeModal">, Pick<{
+    modals: import("vue").Ref<{
+        id: string;
+        elementId?: string;
+        elementClass?: string;
+        title: string;
+        message?: string;
+        confirmDisabled?: boolean;
+        isLoading?: boolean;
+        confirmText?: string;
+        hideActions?: boolean;
+        hideConfirmButton?: boolean;
+        hideCancelButton?: boolean;
+        hasInput?: boolean;
+        inputValue?: string;
+        inputType?: "text" | "number" | "email" | "password" | "date";
+        inputSelectionRange?: [number, number];
+        inputLabel?: string;
+        inputError?: string;
+        inputDescription?: string;
+        inputRequiredMark?: boolean;
+        focusTrapInitial?: string | false;
+        contextualHelperLabel?: string;
+        contextualHelperData?: {
+            title: string;
+            text?: string;
+            list?: {
+                text: string;
+                headline?: boolean;
+            }[];
+            readMoreLink?: string;
+        };
+        customComponent?: import("vue").FunctionalComponent<{
+            modal: Modal;
+        } & Record<string, any>, {}, any, {}> | {
+            new (...args: any[]): {
+                modal: Modal;
+            } & Record<string, any>;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+        } | {
+            [x: string]: any;
+            setup?: (this: void, props: import("@vue/shared").LooseRequired<{
+                modal: Modal;
+            } & Record<string, any> & {}>, ctx: {
+                attrs: import("vue").Attrs;
+                slots: Readonly<{
+                    [name: string]: import("vue").Slot<any>;
+                }>;
+                emit: ((event: unknown, ...args: any[]) => void) | ((event: string, ...args: any[]) => void);
+                expose: <Exposed extends Record<string, any> = Record<string, any>>(exposed?: Exposed) => void;
+            }) => any;
+            name?: string;
+            template?: string | object;
+            render?: Function;
+            components?: Record<string, Component<any, any, any, import("vue").ComputedOptions, import("vue").MethodOptions, {}, any>>;
+            directives?: Record<string, import("vue").Directive<any, any, string, any>>;
+            inheritAttrs?: boolean;
+            emits?: any;
+            slots?: {};
+            expose?: string[];
+            serverPrefetch?: () => void | Promise<any>;
+            compilerOptions?: {
+                isCustomElement?: (tag: string) => boolean;
+                whitespace?: "preserve" | "condense";
+                comments?: boolean;
+                delimiters?: [string, string];
+            };
+            call?: (this: unknown, ...args: unknown[]) => never;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+            __defaults?: {};
+            compatConfig?: {
+                GLOBAL_MOUNT?: boolean | "suppress-warning";
+                GLOBAL_MOUNT_CONTAINER?: boolean | "suppress-warning";
+                GLOBAL_EXTEND?: boolean | "suppress-warning";
+                GLOBAL_PROTOTYPE?: boolean | "suppress-warning";
+                GLOBAL_SET?: boolean | "suppress-warning";
+                GLOBAL_DELETE?: boolean | "suppress-warning";
+                GLOBAL_OBSERVABLE?: boolean | "suppress-warning";
+                GLOBAL_PRIVATE_UTIL?: boolean | "suppress-warning";
+                CONFIG_SILENT?: boolean | "suppress-warning";
+                CONFIG_DEVTOOLS?: boolean | "suppress-warning";
+                CONFIG_KEY_CODES?: boolean | "suppress-warning";
+                CONFIG_PRODUCTION_TIP?: boolean | "suppress-warning";
+                CONFIG_IGNORED_ELEMENTS?: boolean | "suppress-warning";
+                CONFIG_WHITESPACE?: boolean | "suppress-warning";
+                CONFIG_OPTION_MERGE_STRATS?: boolean | "suppress-warning";
+                INSTANCE_SET?: boolean | "suppress-warning";
+                INSTANCE_DELETE?: boolean | "suppress-warning";
+                INSTANCE_DESTROY?: boolean | "suppress-warning";
+                INSTANCE_EVENT_EMITTER?: boolean | "suppress-warning";
+                INSTANCE_EVENT_HOOKS?: boolean | "suppress-warning";
+                INSTANCE_CHILDREN?: boolean | "suppress-warning";
+                INSTANCE_LISTENERS?: boolean | "suppress-warning";
+                INSTANCE_SCOPED_SLOTS?: boolean | "suppress-warning";
+                INSTANCE_ATTRS_CLASS_STYLE?: boolean | "suppress-warning";
+                OPTIONS_DATA_FN?: boolean | "suppress-warning";
+                OPTIONS_DATA_MERGE?: boolean | "suppress-warning";
+                OPTIONS_BEFORE_DESTROY?: boolean | "suppress-warning";
+                OPTIONS_DESTROYED?: boolean | "suppress-warning";
+                WATCH_ARRAY?: boolean | "suppress-warning";
+                PROPS_DEFAULT_THIS?: boolean | "suppress-warning";
+                V_ON_KEYCODE_MODIFIER?: boolean | "suppress-warning";
+                CUSTOM_DIR?: boolean | "suppress-warning";
+                ATTR_FALSE_VALUE?: boolean | "suppress-warning";
+                ATTR_ENUMERATED_COERCION?: boolean | "suppress-warning";
+                TRANSITION_CLASSES?: boolean | "suppress-warning";
+                TRANSITION_GROUP_ROOT?: boolean | "suppress-warning";
+                COMPONENT_ASYNC?: boolean | "suppress-warning";
+                COMPONENT_FUNCTIONAL?: boolean | "suppress-warning";
+                COMPONENT_V_MODEL?: boolean | "suppress-warning";
+                RENDER_FUNCTION?: boolean | "suppress-warning";
+                FILTERS?: boolean | "suppress-warning";
+                PRIVATE_APIS?: boolean | "suppress-warning";
+                MODE?: 2 | 3 | ((comp: Component | null) => 2 | 3);
+            };
+            data?: (this: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>, vm: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>) => any;
+            computed?: import("vue").ComputedOptions;
+            methods?: import("vue").MethodOptions;
+            watch?: {
+                [x: string]: (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>)) | (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>))[];
+            };
+            provide?: import("vue").ComponentProvideOptions;
+            inject?: {} | string[];
+            filters?: Record<string, Function>;
+            mixins?: any[];
+            extends?: any;
+            beforeCreate?: () => any;
+            created?: () => any;
+            beforeMount?: () => any;
+            mounted?: () => any;
+            beforeUpdate?: () => any;
+            updated?: () => any;
+            activated?: () => any;
+            deactivated?: () => any;
+            beforeDestroy?: () => any;
+            beforeUnmount?: () => any;
+            destroyed?: () => any;
+            unmounted?: () => any;
+            renderTracked?: (e: import("vue").DebuggerEvent) => void;
+            renderTriggered?: (e: import("vue").DebuggerEvent) => void;
+            errorCaptured?: (err: unknown, instance: ComponentPublicInstance | null, info: string) => boolean | void;
+            delimiters?: [string, string];
+            __differentiator?: string | number | symbol;
+            __isBuiltIn?: boolean;
+            __file?: string;
+            __name?: string;
+            beforeRouteEnter?: import("vue-router").TypesConfig extends Record<"beforeRouteEnter", infer T> ? T : import("vue-router").NavigationGuardWithThis<undefined>;
+            beforeRouteUpdate?: import("vue-router").TypesConfig extends Record<"beforeRouteUpdate", infer T> ? T : import("vue-router").NavigationGuard;
+            beforeRouteLeave?: import("vue-router").TypesConfig extends Record<"beforeRouteLeave", infer T> ? T : import("vue-router").NavigationGuard;
+        };
+        customComponentAttrs?: () => Record<string, unknown>;
+        onCancel?: () => void;
+        onConfirm?: (value: any) => void | Promise<void>;
+        onInput?: (value: string, setError: (error: string) => void) => void;
+    }[], Modal[] | {
+        id: string;
+        elementId?: string;
+        elementClass?: string;
+        title: string;
+        message?: string;
+        confirmDisabled?: boolean;
+        isLoading?: boolean;
+        confirmText?: string;
+        hideActions?: boolean;
+        hideConfirmButton?: boolean;
+        hideCancelButton?: boolean;
+        hasInput?: boolean;
+        inputValue?: string;
+        inputType?: "text" | "number" | "email" | "password" | "date";
+        inputSelectionRange?: [number, number];
+        inputLabel?: string;
+        inputError?: string;
+        inputDescription?: string;
+        inputRequiredMark?: boolean;
+        focusTrapInitial?: string | false;
+        contextualHelperLabel?: string;
+        contextualHelperData?: {
+            title: string;
+            text?: string;
+            list?: {
+                text: string;
+                headline?: boolean;
+            }[];
+            readMoreLink?: string;
+        };
+        customComponent?: import("vue").FunctionalComponent<{
+            modal: Modal;
+        } & Record<string, any>, {}, any, {}> | {
+            new (...args: any[]): {
+                modal: Modal;
+            } & Record<string, any>;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+        } | {
+            [x: string]: any;
+            setup?: (this: void, props: import("@vue/shared").LooseRequired<{
+                modal: Modal;
+            } & Record<string, any> & {}>, ctx: {
+                attrs: import("vue").Attrs;
+                slots: Readonly<{
+                    [name: string]: import("vue").Slot<any>;
+                }>;
+                emit: ((event: unknown, ...args: any[]) => void) | ((event: string, ...args: any[]) => void);
+                expose: <Exposed extends Record<string, any> = Record<string, any>>(exposed?: Exposed) => void;
+            }) => any;
+            name?: string;
+            template?: string | object;
+            render?: Function;
+            components?: Record<string, Component<any, any, any, import("vue").ComputedOptions, import("vue").MethodOptions, {}, any>>;
+            directives?: Record<string, import("vue").Directive<any, any, string, any>>;
+            inheritAttrs?: boolean;
+            emits?: any;
+            slots?: {};
+            expose?: string[];
+            serverPrefetch?: () => void | Promise<any>;
+            compilerOptions?: {
+                isCustomElement?: (tag: string) => boolean;
+                whitespace?: "preserve" | "condense";
+                comments?: boolean;
+                delimiters?: [string, string];
+            };
+            call?: (this: unknown, ...args: unknown[]) => never;
+            __isFragment?: never;
+            __isTeleport?: never;
+            __isSuspense?: never;
+            __defaults?: {};
+            compatConfig?: {
+                GLOBAL_MOUNT?: boolean | "suppress-warning";
+                GLOBAL_MOUNT_CONTAINER?: boolean | "suppress-warning";
+                GLOBAL_EXTEND?: boolean | "suppress-warning";
+                GLOBAL_PROTOTYPE?: boolean | "suppress-warning";
+                GLOBAL_SET?: boolean | "suppress-warning";
+                GLOBAL_DELETE?: boolean | "suppress-warning";
+                GLOBAL_OBSERVABLE?: boolean | "suppress-warning";
+                GLOBAL_PRIVATE_UTIL?: boolean | "suppress-warning";
+                CONFIG_SILENT?: boolean | "suppress-warning";
+                CONFIG_DEVTOOLS?: boolean | "suppress-warning";
+                CONFIG_KEY_CODES?: boolean | "suppress-warning";
+                CONFIG_PRODUCTION_TIP?: boolean | "suppress-warning";
+                CONFIG_IGNORED_ELEMENTS?: boolean | "suppress-warning";
+                CONFIG_WHITESPACE?: boolean | "suppress-warning";
+                CONFIG_OPTION_MERGE_STRATS?: boolean | "suppress-warning";
+                INSTANCE_SET?: boolean | "suppress-warning";
+                INSTANCE_DELETE?: boolean | "suppress-warning";
+                INSTANCE_DESTROY?: boolean | "suppress-warning";
+                INSTANCE_EVENT_EMITTER?: boolean | "suppress-warning";
+                INSTANCE_EVENT_HOOKS?: boolean | "suppress-warning";
+                INSTANCE_CHILDREN?: boolean | "suppress-warning";
+                INSTANCE_LISTENERS?: boolean | "suppress-warning";
+                INSTANCE_SCOPED_SLOTS?: boolean | "suppress-warning";
+                INSTANCE_ATTRS_CLASS_STYLE?: boolean | "suppress-warning";
+                OPTIONS_DATA_FN?: boolean | "suppress-warning";
+                OPTIONS_DATA_MERGE?: boolean | "suppress-warning";
+                OPTIONS_BEFORE_DESTROY?: boolean | "suppress-warning";
+                OPTIONS_DESTROYED?: boolean | "suppress-warning";
+                WATCH_ARRAY?: boolean | "suppress-warning";
+                PROPS_DEFAULT_THIS?: boolean | "suppress-warning";
+                V_ON_KEYCODE_MODIFIER?: boolean | "suppress-warning";
+                CUSTOM_DIR?: boolean | "suppress-warning";
+                ATTR_FALSE_VALUE?: boolean | "suppress-warning";
+                ATTR_ENUMERATED_COERCION?: boolean | "suppress-warning";
+                TRANSITION_CLASSES?: boolean | "suppress-warning";
+                TRANSITION_GROUP_ROOT?: boolean | "suppress-warning";
+                COMPONENT_ASYNC?: boolean | "suppress-warning";
+                COMPONENT_FUNCTIONAL?: boolean | "suppress-warning";
+                COMPONENT_V_MODEL?: boolean | "suppress-warning";
+                RENDER_FUNCTION?: boolean | "suppress-warning";
+                FILTERS?: boolean | "suppress-warning";
+                PRIVATE_APIS?: boolean | "suppress-warning";
+                MODE?: 2 | 3 | ((comp: Component | null) => 2 | 3);
+            };
+            data?: (this: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>, vm: import("vue").CreateComponentPublicInstanceWithMixins<{
+                modal: Modal;
+            } & Record<string, any>, {}, {}, {}, import("vue").MethodOptions, any, any, {}, {
+                modal: Modal;
+            } & Record<string, any>, {}, false, {}, {}, {}, {}, string, {}, any, import("vue").ComponentProvideOptions, {
+                P: {};
+                B: {};
+                D: {};
+                C: import("vue").ComputedOptions;
+                M: import("vue").MethodOptions;
+                Defaults: {};
+            } & {
+                P: {};
+                B: {};
+                D: {};
+                C: {};
+                M: {};
+                Defaults: {};
+            }, {
+                modal: Modal;
+            } & Record<string, any>, {}, {}, import("vue").ComputedOptions, import("vue").MethodOptions, {}>) => any;
+            computed?: import("vue").ComputedOptions;
+            methods?: import("vue").MethodOptions;
+            watch?: {
+                [x: string]: (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>)) | (string | import("vue").WatchCallback | ({
+                    handler: import("vue").WatchCallback | string;
+                } & import("vue").WatchOptions<boolean>))[];
+            };
+            provide?: import("vue").ComponentProvideOptions;
+            inject?: {} | string[];
+            filters?: Record<string, Function>;
+            mixins?: any[];
+            extends?: any;
+            beforeCreate?: () => any;
+            created?: () => any;
+            beforeMount?: () => any;
+            mounted?: () => any;
+            beforeUpdate?: () => any;
+            updated?: () => any;
+            activated?: () => any;
+            deactivated?: () => any;
+            beforeDestroy?: () => any;
+            beforeUnmount?: () => any;
+            destroyed?: () => any;
+            unmounted?: () => any;
+            renderTracked?: (e: import("vue").DebuggerEvent) => void;
+            renderTriggered?: (e: import("vue").DebuggerEvent) => void;
+            errorCaptured?: (err: unknown, instance: ComponentPublicInstance | null, info: string) => boolean | void;
+            delimiters?: [string, string];
+            __differentiator?: string | number | symbol;
+            __isBuiltIn?: boolean;
+            __file?: string;
+            __name?: string;
+            beforeRouteEnter?: import("vue-router").TypesConfig extends Record<"beforeRouteEnter", infer T> ? T : import("vue-router").NavigationGuardWithThis<undefined>;
+            beforeRouteUpdate?: import("vue-router").TypesConfig extends Record<"beforeRouteUpdate", infer T> ? T : import("vue-router").NavigationGuard;
+            beforeRouteLeave?: import("vue-router").TypesConfig extends Record<"beforeRouteLeave", infer T> ? T : import("vue-router").NavigationGuard;
+        };
+        customComponentAttrs?: () => Record<string, unknown>;
+        onCancel?: () => void;
+        onConfirm?: (value: any) => void | Promise<void>;
+        onInput?: (value: string, setError: (error: string) => void) => void;
+    }[]>;
+    activeModal: import("vue").ComputedRef<Modal>;
+    dispatchModal: (data: Omit<Modal, "id">) => {
+        id: string;
+        message?: string;
+        title: string;
+        onInput?: (value: string, setError: (error: string) => void) => void;
+        contextualHelperData?: ContextualHelperData;
+        contextualHelperLabel?: string;
+        elementClass?: string;
+        elementId?: string;
+        focusTrapInitial?: string | false;
+        hasInput?: boolean;
+        hideActions?: boolean;
+        hideCancelButton?: boolean;
+        hideConfirmButton?: boolean;
+        inputDescription?: string;
+        inputRequiredMark?: boolean;
+        inputError?: string;
+        inputLabel?: string;
+        inputSelectionRange?: [number, number];
+        inputType?: "text" | "number" | "email" | "password" | "date";
+        inputValue?: string;
+        isLoading?: boolean;
+        onCancel?: () => void;
+        onConfirm?: (value: any) => void | Promise<void>;
+        customComponent?: CustomModalComponent;
+        confirmDisabled?: boolean;
+        confirmText?: string;
+        customComponentAttrs?: () => Record<string, unknown>;
+    };
+    updateModal: <T extends Modal, K extends keyof Modal>(id: T["id"], key: K, value: T[K]) => void;
+    removeModal: (id: Modal["id"]) => void;
+    removeAllModals: () => void;
+    setModalActive: (id: Modal["id"]) => void;
+}, "dispatchModal" | "updateModal" | "removeModal" | "removeAllModals" | "setModalActive">>;
+export type ModalStore = ReturnType<typeof useModals>;

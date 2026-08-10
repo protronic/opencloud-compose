@@ -1,0 +1,12 @@
+import { Modal } from '../../composables';
+import { SpaceResource } from '@opencloud-eu/web-client';
+type __VLS_Props = {
+    modal: Modal;
+    space: SpaceResource;
+    file: File;
+};
+declare const __VLS_export: import("vue").DefineComponent<__VLS_Props, {
+    onConfirm: () => Promise<void>;
+}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const _default: typeof __VLS_export;
+export default _default;

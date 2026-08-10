@@ -1,0 +1,26 @@
+interface CbackOptions {
+    element: Element;
+    callCount: number;
+    unobserve: () => void;
+}
+type cback = (options: CbackOptions) => void;
+interface Cbacks {
+    onEnter?: cback;
+    onExit?: cback;
+}
+interface VisibilityObserverOptions {
+    root?: Element | Document | null;
+    rootMargin?: string;
+    threshold?: number;
+}
+export declare class VisibilityObserver {
+    private targets;
+    private readonly intersectionObserver;
+    private readonly options;
+    constructor(options?: VisibilityObserverOptions);
+    observe(element: Element, cbacks?: Cbacks, threshold?: number): void;
+    unobserve(element: Element): void;
+    disconnect(): void;
+    private trigger;
+}
+export {};

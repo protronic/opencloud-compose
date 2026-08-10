@@ -1,0 +1,50 @@
+export interface Props {
+    /**
+     * @docs The label of the checkbox element.
+     */
+    label: string;
+    /**
+     * @docs Determines if the checkbox is disabled.
+     *
+     */
+    disabled?: boolean;
+    /**
+     * @docs The element ID of the checkbox.
+     */
+    id?: string;
+    /**
+     * @docs Determines if the label is hidden visually. Note that the label will still be read by screen readers.
+     * @default false
+     */
+    labelHidden?: boolean;
+    /**
+     * @docs The option value of the checkbox.
+     */
+    option?: unknown;
+    /**
+     * @docs The size of the checkbox.
+     * @default medium
+     */
+    size?: 'small' | 'medium' | 'large';
+}
+export interface Emits {
+    /**
+     * @docs Emitted when the checkbox has been clicked.
+     */
+    (e: 'click', event: MouseEvent | KeyboardEvent): void;
+}
+type __VLS_Props = Props;
+type __VLS_ModelProps = {
+    modelValue?: boolean;
+};
+type __VLS_PublicProps = __VLS_Props & __VLS_ModelProps;
+declare const __VLS_export: import("vue").DefineComponent<__VLS_PublicProps, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {
+    "update:modelValue": (value: boolean) => any;
+} & {
+    click: (event: KeyboardEvent | MouseEvent) => any;
+}, string, import("vue").PublicProps, Readonly<__VLS_PublicProps> & Readonly<{
+    onClick?: (event: KeyboardEvent | MouseEvent) => any;
+    "onUpdate:modelValue"?: (value: boolean) => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const _default: typeof __VLS_export;
+export default _default;

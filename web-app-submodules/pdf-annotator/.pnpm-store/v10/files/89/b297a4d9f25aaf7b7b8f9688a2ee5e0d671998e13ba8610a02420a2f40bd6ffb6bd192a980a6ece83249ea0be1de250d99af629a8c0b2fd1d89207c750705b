@@ -1,0 +1,17 @@
+import { ComputedRef, MaybeRef } from 'vue';
+interface PaginationOptions<T> {
+    items: MaybeRef<Array<T>>;
+    page?: MaybeRef<number>;
+    perPage?: MaybeRef<number>;
+    perPageDefault?: string;
+    perPageQueryName?: string;
+    perPageStoragePrefix: string;
+}
+interface PaginationResult<T> {
+    items: ComputedRef<Array<T>>;
+    total: ComputedRef<number>;
+    page: ComputedRef<number>;
+    perPage: ComputedRef<number>;
+}
+export declare function usePagination<T>(options: PaginationOptions<T>): PaginationResult<T>;
+export {};

@@ -1,0 +1,3 @@
+export declare const useLoadAvatars: () => {
+    enqueueAvatar: (userId: string) => void;
+};

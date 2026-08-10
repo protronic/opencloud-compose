@@ -1,0 +1,8 @@
+/**
+ * Determines if the topbar (including table headers) should be sticky or not.
+ * With a vertical height less than 500px, the topbar should not be sticky because
+ * it takes up too much space and overflows content.
+ */
+export declare const useIsTopBarSticky: () => {
+    isSticky: import("vue").Ref<boolean, boolean>;
+};

@@ -1,0 +1,84 @@
+import { Resource, SpaceResource } from '@opencloud-eu/web-client';
+import { FolderViewModeConstants } from '../../composables';
+import { FileActionOptions } from '../../composables/actions';
+import { SortDir } from '@opencloud-eu/design-system/helpers';
+type __VLS_Props = {
+    resources: Resource[];
+    resourceDomSelector?: (resource: Resource) => string;
+    arePathsDisplayed?: boolean;
+    selectedIds?: string[];
+    hasActions?: boolean;
+    showRenameQuickAction?: boolean;
+    areResourcesClickable?: boolean;
+    headerPosition?: number;
+    isSelectable?: boolean;
+    dragDrop?: boolean;
+    viewMode?: typeof FolderViewModeConstants.name.condensedTable | typeof FolderViewModeConstants.name.table;
+    hover?: boolean;
+    sortBy?: string;
+    fieldsDisplayed?: string[];
+    sortDir?: SortDir;
+    space?: SpaceResource;
+    resourceType?: 'file' | 'space';
+    lazy?: boolean;
+};
+type __VLS_Slots = {
+    image?: (props: {
+        resource: Resource;
+    }) => unknown;
+    additionalResourceContent?: (props: {
+        resource: Resource;
+    }) => unknown;
+    syncEnabled?: (props: {
+        resource: Resource;
+    }) => unknown;
+    manager?: (props: {
+        resource: Resource;
+    }) => unknown;
+    members?: (props: {
+        resource: Resource;
+    }) => unknown;
+    totalQuota?: (props: {
+        resource: Resource;
+    }) => unknown;
+    usedQuota?: (props: {
+        resource: Resource;
+    }) => unknown;
+    remainingQuota?: (props: {
+        resource: Resource;
+    }) => unknown;
+    quickActions?: (props: {
+        resource: Resource;
+    }) => unknown;
+    contextMenu?: (props: {
+        resource: Resource;
+    }) => unknown;
+    footer?: () => unknown;
+};
+declare const __VLS_base: import("vue").DefineComponent<__VLS_Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+    sort: (options: {
+        sortBy: string;
+        sortDir: SortDir;
+    }) => any;
+    fileDropped: (id: string) => any;
+    "update:modelValue": (value: Resource[]) => any;
+    fileClick: (options: FileActionOptions) => any;
+    "update:selectedIds": (selectedIds: string[]) => any;
+}, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{
+    onSort?: (options: {
+        sortBy: string;
+        sortDir: SortDir;
+    }) => any;
+    onFileDropped?: (id: string) => any;
+    "onUpdate:modelValue"?: (value: Resource[]) => any;
+    onFileClick?: (options: FileActionOptions) => any;
+    "onUpdate:selectedIds"?: (selectedIds: string[]) => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const __VLS_export: __VLS_WithSlots<typeof __VLS_base, __VLS_Slots>;
+declare const _default: typeof __VLS_export;
+export default _default;
+type __VLS_WithSlots<T, S> = T & {
+    new (): {
+        $slots: S;
+    };
+};

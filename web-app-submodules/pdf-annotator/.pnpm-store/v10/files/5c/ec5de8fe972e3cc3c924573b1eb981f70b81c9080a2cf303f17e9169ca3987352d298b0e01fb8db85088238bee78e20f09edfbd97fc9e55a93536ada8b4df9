@@ -1,0 +1,9 @@
+import { App } from 'vue';
+import { InstallOptions } from './helpers';
+import './styles/fonts.css';
+import './styles/layers.css';
+export declare function setLanguage(lang: string): void;
+declare const _default: {
+    install(app: App, options?: InstallOptions): void;
+};
+export default _default;

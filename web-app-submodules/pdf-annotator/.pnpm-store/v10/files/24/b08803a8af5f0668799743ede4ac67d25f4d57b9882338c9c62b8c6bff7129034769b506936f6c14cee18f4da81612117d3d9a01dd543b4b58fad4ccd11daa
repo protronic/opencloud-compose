@@ -1,0 +1,30 @@
+import { Resource, SpaceResource } from '@opencloud-eu/web-client';
+import { IconFillType } from '../../helpers';
+export type ResourceIndicatorCategory = 'system' | 'sharing' | 'space';
+export interface ResourceIndicatorIcon {
+    id: string;
+    accessibleDescription: string;
+    label: string;
+    icon: string;
+    fillType: IconFillType;
+    type: string;
+    category: ResourceIndicatorCategory;
+    handler?: (resource: Resource, event?: MouseEvent) => void;
+    kind: 'icon';
+}
+export interface ResourceIndicatorTag {
+    id: string;
+    accessibleDescription: string;
+    label: string;
+    type: string;
+    category: ResourceIndicatorCategory;
+    class?: string;
+    kind: 'tag';
+}
+export type ResourceIndicator = ResourceIndicatorIcon | ResourceIndicatorTag;
+export declare const useResourceIndicators: () => {
+    getIndicators: ({ space, resource }: {
+        space: SpaceResource;
+        resource: Resource;
+    }) => ResourceIndicator[];
+};

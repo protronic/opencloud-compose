@@ -1,0 +1,63 @@
+import { Language } from 'vue3-gettext';
+export interface PasswordPolicyRuleOptions {
+    minLength?: number;
+    maxLength?: number;
+    characters?: string;
+}
+export interface PasswordPolicyRuleExplained {
+    code: string;
+    message: string;
+    helperMessage?: string;
+    format: (number | string)[];
+    verified?: boolean;
+}
+export interface PasswordPolicyRule {
+    assert(options: PasswordPolicyRuleOptions, password: string): boolean;
+    explain(options: PasswordPolicyRuleOptions, verified?: boolean): PasswordPolicyRuleExplained;
+    missing(options: PasswordPolicyRuleOptions, password: string): PasswordPolicyRuleExplained;
+    validate(options?: PasswordPolicyRuleOptions): boolean;
+}
+export declare class MustNotBeEmptyRule implements PasswordPolicyRule {
+    protected $gettext: Language['$gettext'];
+    constructor({ $gettext }: Language);
+    explain(options: PasswordPolicyRuleOptions, verified: boolean): PasswordPolicyRuleExplained;
+    assert(options: PasswordPolicyRuleOptions, password: string): boolean;
+    validate(): boolean;
+    missing(options: PasswordPolicyRuleOptions, password: string): PasswordPolicyRuleExplained;
+}
+export declare class MustContainRule implements PasswordPolicyRule {
+    protected $gettext: Language['$gettext'];
+    constructor({ $gettext }: Language);
+    explain(options: PasswordPolicyRuleOptions, verified: boolean): PasswordPolicyRuleExplained;
+    assert(options: PasswordPolicyRuleOptions, password: string): boolean;
+    validate(options: PasswordPolicyRuleOptions): boolean;
+    missing(options: PasswordPolicyRuleOptions, password: string): PasswordPolicyRuleExplained;
+}
+export declare class AtLeastBaseRule implements PasswordPolicyRule {
+    protected $gettext: Language['$gettext'];
+    constructor({ $gettext }: Language);
+    assert(options: PasswordPolicyRuleOptions, password: string): boolean;
+    explain(options: PasswordPolicyRuleOptions, verified?: boolean): PasswordPolicyRuleExplained;
+    validate(options: PasswordPolicyRuleOptions): boolean;
+    missing(options: PasswordPolicyRuleOptions, password: string): PasswordPolicyRuleExplained;
+}
+export declare class AtLeastCharactersRule extends AtLeastBaseRule implements PasswordPolicyRule {
+    constructor(args: Language);
+    explain(options: PasswordPolicyRuleOptions, verified: boolean): PasswordPolicyRuleExplained;
+    assert(options: PasswordPolicyRuleOptions, password: string): boolean;
+}
+export declare class AtLeastUppercaseCharactersRule extends AtLeastBaseRule {
+    constructor(args: Language);
+    explain(options: PasswordPolicyRuleOptions, verified: boolean): PasswordPolicyRuleExplained;
+    assert(options: PasswordPolicyRuleOptions, password: string): boolean;
+}
+export declare class AtLeastLowercaseCharactersRule extends AtLeastBaseRule {
+    constructor(args: Language);
+    explain(options: PasswordPolicyRuleOptions, verified: boolean): PasswordPolicyRuleExplained;
+    assert(options: PasswordPolicyRuleOptions, password: string): boolean;
+}
+export declare class AtLeastDigitsRule extends AtLeastBaseRule {
+    constructor(args: Language);
+    explain(options: PasswordPolicyRuleOptions, verified: boolean): PasswordPolicyRuleExplained;
+    assert(options: PasswordPolicyRuleOptions, password: string): boolean;
+}

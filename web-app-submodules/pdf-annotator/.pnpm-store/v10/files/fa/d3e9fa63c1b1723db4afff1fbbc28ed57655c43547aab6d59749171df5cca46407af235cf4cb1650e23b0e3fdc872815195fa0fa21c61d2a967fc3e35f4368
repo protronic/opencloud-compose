@@ -1,0 +1,8 @@
+import { SpaceResource } from '../helpers';
+import { WebDavOptions } from './types';
+import { DAV, DAVRequestOptions } from './client';
+export declare const DeleteFileFactory: (dav: DAV, options: WebDavOptions) => {
+    deleteFile(space: SpaceResource, { path, ...opts }: {
+        path: string;
+    } & DAVRequestOptions): Promise<import("./client").DavResult>;
+};

@@ -1,0 +1,12 @@
+export interface AuthParameters {
+    accessToken?: string;
+    publicLinkToken?: string;
+    publicLinkPassword?: string;
+}
+export declare class Auth {
+    accessToken?: string;
+    publicLinkToken?: string;
+    publicLinkPassword?: string;
+    constructor(params?: AuthParameters);
+    getHeaders(): Record<string, string>;
+}

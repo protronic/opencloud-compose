@@ -1,0 +1,15 @@
+import { SearchResource } from '../helpers';
+import { WebDavOptions } from './types';
+import { DavPropertyValue } from './constants';
+import { DAV, DAVRequestOptions } from './client';
+export type SearchOptions = {
+    davProperties?: DavPropertyValue[];
+    searchLimit?: number;
+} & DAVRequestOptions;
+export type SearchResult = {
+    resources: SearchResource[];
+    totalResults: number;
+};
+export declare const SearchFactory: (dav: DAV, options: WebDavOptions) => {
+    search(term: string, { davProperties, searchLimit, ...opts }: SearchOptions): Promise<SearchResult>;
+};

@@ -1,0 +1,12 @@
+import { Resource, SearchResource, TrashResource, WebDavResponseResource } from './types';
+export declare const isTrashResource: (resource: Resource) => resource is TrashResource;
+export declare const isSearchResource: (resource: Resource) => resource is SearchResource;
+export declare const extractDomSelector: (str: string) => string;
+export declare const extractStorageId: (id?: string) => string;
+export declare const extractNodeId: (id?: string) => string;
+export declare const extractNameWithoutExtension: (resource?: Resource) => string;
+export declare const extractExtensionFromFile: (resource: Resource) => string;
+export declare const extractParentFolderName: (resource: Resource) => string | null;
+export declare const isShareRoot: (resource: Resource) => boolean;
+export declare function buildResource(resource: WebDavResponseResource, extraPropNames?: string[]): Resource;
+export declare function buildDeletedResource(resource: WebDavResponseResource): TrashResource;

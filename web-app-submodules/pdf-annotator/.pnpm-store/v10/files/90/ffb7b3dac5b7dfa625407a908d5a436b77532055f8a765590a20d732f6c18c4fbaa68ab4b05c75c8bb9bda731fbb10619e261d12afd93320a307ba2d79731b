@@ -1,0 +1,324 @@
+import type { RawGroupwareConfig } from './types';
+export declare const useGroupwareConfigStore: import("pinia").StoreDefinition<"groupwareConfig", Pick<{
+    version: import("vue").Ref<string, string>;
+    capabilities: import("vue").Ref<string[], string[]>;
+    limits: import("vue").Ref<{
+        maxSizeUpload: number;
+        maxConcurrentUpload: number;
+        maxSizeRequest: number;
+        maxConcurrentRequests: number;
+    }, {
+        maxSizeUpload: number;
+        maxConcurrentUpload: number;
+        maxSizeRequest: number;
+        maxConcurrentRequests: number;
+    }>;
+    accounts: import("vue").Ref<{
+        accountId: string;
+        name: string;
+        isPersonal: boolean;
+        isReadOnly: boolean;
+        identities: {
+            id: string;
+            textSignature: string;
+            htmlSignature: string;
+            name?: string;
+            email?: string;
+            mayDelete?: boolean;
+        }[];
+        capabilities?: {
+            mail?: {
+                maxMailboxDepth: number;
+                maxSizeMailboxName: number;
+                maxMailboxesPerEmail: number;
+                maxSizeAttachmentsPerEmail: number;
+                mayCreateTopLevelMailbox: boolean;
+                maxDelayedSend: number;
+            };
+            sieve?: {
+                maxSizeScriptName: number;
+                maxSizeScript: number;
+                maxNumberScripts: number;
+                maxNumberRedirects: number;
+            };
+        };
+        accountCapabilities?: Record<string, Record<string, never>>;
+    }[], {
+        accountId: string;
+        name: string;
+        isPersonal: boolean;
+        isReadOnly: boolean;
+        identities: {
+            id: string;
+            textSignature: string;
+            htmlSignature: string;
+            name?: string;
+            email?: string;
+            mayDelete?: boolean;
+        }[];
+        capabilities?: {
+            mail?: {
+                maxMailboxDepth: number;
+                maxSizeMailboxName: number;
+                maxMailboxesPerEmail: number;
+                maxSizeAttachmentsPerEmail: number;
+                mayCreateTopLevelMailbox: boolean;
+                maxDelayedSend: number;
+            };
+            sieve?: {
+                maxSizeScriptName: number;
+                maxSizeScript: number;
+                maxNumberScripts: number;
+                maxNumberRedirects: number;
+            };
+        };
+        accountCapabilities?: Record<string, Record<string, never>>;
+    }[] | {
+        accountId: string;
+        name: string;
+        isPersonal: boolean;
+        isReadOnly: boolean;
+        identities: {
+            id: string;
+            textSignature: string;
+            htmlSignature: string;
+            name?: string;
+            email?: string;
+            mayDelete?: boolean;
+        }[];
+        capabilities?: {
+            mail?: {
+                maxMailboxDepth: number;
+                maxSizeMailboxName: number;
+                maxMailboxesPerEmail: number;
+                maxSizeAttachmentsPerEmail: number;
+                mayCreateTopLevelMailbox: boolean;
+                maxDelayedSend: number;
+            };
+            sieve?: {
+                maxSizeScriptName: number;
+                maxSizeScript: number;
+                maxNumberScripts: number;
+                maxNumberRedirects: number;
+            };
+        };
+        accountCapabilities?: Record<string, Record<string, never>>;
+    }[]>;
+    primaryAccounts: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    loadGroupwareConfig: (data: RawGroupwareConfig) => void;
+}, "capabilities" | "version" | "limits" | "accounts" | "primaryAccounts">, Pick<{
+    version: import("vue").Ref<string, string>;
+    capabilities: import("vue").Ref<string[], string[]>;
+    limits: import("vue").Ref<{
+        maxSizeUpload: number;
+        maxConcurrentUpload: number;
+        maxSizeRequest: number;
+        maxConcurrentRequests: number;
+    }, {
+        maxSizeUpload: number;
+        maxConcurrentUpload: number;
+        maxSizeRequest: number;
+        maxConcurrentRequests: number;
+    }>;
+    accounts: import("vue").Ref<{
+        accountId: string;
+        name: string;
+        isPersonal: boolean;
+        isReadOnly: boolean;
+        identities: {
+            id: string;
+            textSignature: string;
+            htmlSignature: string;
+            name?: string;
+            email?: string;
+            mayDelete?: boolean;
+        }[];
+        capabilities?: {
+            mail?: {
+                maxMailboxDepth: number;
+                maxSizeMailboxName: number;
+                maxMailboxesPerEmail: number;
+                maxSizeAttachmentsPerEmail: number;
+                mayCreateTopLevelMailbox: boolean;
+                maxDelayedSend: number;
+            };
+            sieve?: {
+                maxSizeScriptName: number;
+                maxSizeScript: number;
+                maxNumberScripts: number;
+                maxNumberRedirects: number;
+            };
+        };
+        accountCapabilities?: Record<string, Record<string, never>>;
+    }[], {
+        accountId: string;
+        name: string;
+        isPersonal: boolean;
+        isReadOnly: boolean;
+        identities: {
+            id: string;
+            textSignature: string;
+            htmlSignature: string;
+            name?: string;
+            email?: string;
+            mayDelete?: boolean;
+        }[];
+        capabilities?: {
+            mail?: {
+                maxMailboxDepth: number;
+                maxSizeMailboxName: number;
+                maxMailboxesPerEmail: number;
+                maxSizeAttachmentsPerEmail: number;
+                mayCreateTopLevelMailbox: boolean;
+                maxDelayedSend: number;
+            };
+            sieve?: {
+                maxSizeScriptName: number;
+                maxSizeScript: number;
+                maxNumberScripts: number;
+                maxNumberRedirects: number;
+            };
+        };
+        accountCapabilities?: Record<string, Record<string, never>>;
+    }[] | {
+        accountId: string;
+        name: string;
+        isPersonal: boolean;
+        isReadOnly: boolean;
+        identities: {
+            id: string;
+            textSignature: string;
+            htmlSignature: string;
+            name?: string;
+            email?: string;
+            mayDelete?: boolean;
+        }[];
+        capabilities?: {
+            mail?: {
+                maxMailboxDepth: number;
+                maxSizeMailboxName: number;
+                maxMailboxesPerEmail: number;
+                maxSizeAttachmentsPerEmail: number;
+                mayCreateTopLevelMailbox: boolean;
+                maxDelayedSend: number;
+            };
+            sieve?: {
+                maxSizeScriptName: number;
+                maxSizeScript: number;
+                maxNumberScripts: number;
+                maxNumberRedirects: number;
+            };
+        };
+        accountCapabilities?: Record<string, Record<string, never>>;
+    }[]>;
+    primaryAccounts: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    loadGroupwareConfig: (data: RawGroupwareConfig) => void;
+}, never>, Pick<{
+    version: import("vue").Ref<string, string>;
+    capabilities: import("vue").Ref<string[], string[]>;
+    limits: import("vue").Ref<{
+        maxSizeUpload: number;
+        maxConcurrentUpload: number;
+        maxSizeRequest: number;
+        maxConcurrentRequests: number;
+    }, {
+        maxSizeUpload: number;
+        maxConcurrentUpload: number;
+        maxSizeRequest: number;
+        maxConcurrentRequests: number;
+    }>;
+    accounts: import("vue").Ref<{
+        accountId: string;
+        name: string;
+        isPersonal: boolean;
+        isReadOnly: boolean;
+        identities: {
+            id: string;
+            textSignature: string;
+            htmlSignature: string;
+            name?: string;
+            email?: string;
+            mayDelete?: boolean;
+        }[];
+        capabilities?: {
+            mail?: {
+                maxMailboxDepth: number;
+                maxSizeMailboxName: number;
+                maxMailboxesPerEmail: number;
+                maxSizeAttachmentsPerEmail: number;
+                mayCreateTopLevelMailbox: boolean;
+                maxDelayedSend: number;
+            };
+            sieve?: {
+                maxSizeScriptName: number;
+                maxSizeScript: number;
+                maxNumberScripts: number;
+                maxNumberRedirects: number;
+            };
+        };
+        accountCapabilities?: Record<string, Record<string, never>>;
+    }[], {
+        accountId: string;
+        name: string;
+        isPersonal: boolean;
+        isReadOnly: boolean;
+        identities: {
+            id: string;
+            textSignature: string;
+            htmlSignature: string;
+            name?: string;
+            email?: string;
+            mayDelete?: boolean;
+        }[];
+        capabilities?: {
+            mail?: {
+                maxMailboxDepth: number;
+                maxSizeMailboxName: number;
+                maxMailboxesPerEmail: number;
+                maxSizeAttachmentsPerEmail: number;
+                mayCreateTopLevelMailbox: boolean;
+                maxDelayedSend: number;
+            };
+            sieve?: {
+                maxSizeScriptName: number;
+                maxSizeScript: number;
+                maxNumberScripts: number;
+                maxNumberRedirects: number;
+            };
+        };
+        accountCapabilities?: Record<string, Record<string, never>>;
+    }[] | {
+        accountId: string;
+        name: string;
+        isPersonal: boolean;
+        isReadOnly: boolean;
+        identities: {
+            id: string;
+            textSignature: string;
+            htmlSignature: string;
+            name?: string;
+            email?: string;
+            mayDelete?: boolean;
+        }[];
+        capabilities?: {
+            mail?: {
+                maxMailboxDepth: number;
+                maxSizeMailboxName: number;
+                maxMailboxesPerEmail: number;
+                maxSizeAttachmentsPerEmail: number;
+                mayCreateTopLevelMailbox: boolean;
+                maxDelayedSend: number;
+            };
+            sieve?: {
+                maxSizeScriptName: number;
+                maxSizeScript: number;
+                maxNumberScripts: number;
+                maxNumberRedirects: number;
+            };
+        };
+        accountCapabilities?: Record<string, Record<string, never>>;
+    }[]>;
+    primaryAccounts: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    loadGroupwareConfig: (data: RawGroupwareConfig) => void;
+}, "loadGroupwareConfig">>;
+export type GroupwareConfigStore = ReturnType<typeof useGroupwareConfigStore>;

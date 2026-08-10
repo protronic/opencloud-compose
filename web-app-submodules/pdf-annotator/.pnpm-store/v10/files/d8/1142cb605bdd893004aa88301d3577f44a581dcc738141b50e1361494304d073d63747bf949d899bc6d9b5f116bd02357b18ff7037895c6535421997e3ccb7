@@ -1,0 +1,32 @@
+export declare const useSideBar: import("pinia").StoreDefinition<"sideBar", Pick<{
+    isSideBarOpen: import("vue").WritableComputedRef<boolean, boolean>;
+    sideBarActivePanel: import("vue").Ref<string, string>;
+    focusSidebar: () => Promise<void>;
+    onInitialLoad: () => void;
+    toggleSideBar: () => void;
+    closeSideBar: () => void;
+    openSideBar: () => void;
+    openSideBarPanel: (panelName: string) => void;
+    setActiveSideBarPanel: (panelName: string) => void;
+}, "sideBarActivePanel">, Pick<{
+    isSideBarOpen: import("vue").WritableComputedRef<boolean, boolean>;
+    sideBarActivePanel: import("vue").Ref<string, string>;
+    focusSidebar: () => Promise<void>;
+    onInitialLoad: () => void;
+    toggleSideBar: () => void;
+    closeSideBar: () => void;
+    openSideBar: () => void;
+    openSideBarPanel: (panelName: string) => void;
+    setActiveSideBarPanel: (panelName: string) => void;
+}, "isSideBarOpen">, Pick<{
+    isSideBarOpen: import("vue").WritableComputedRef<boolean, boolean>;
+    sideBarActivePanel: import("vue").Ref<string, string>;
+    focusSidebar: () => Promise<void>;
+    onInitialLoad: () => void;
+    toggleSideBar: () => void;
+    closeSideBar: () => void;
+    openSideBar: () => void;
+    openSideBarPanel: (panelName: string) => void;
+    setActiveSideBarPanel: (panelName: string) => void;
+}, "focusSidebar" | "onInitialLoad" | "toggleSideBar" | "closeSideBar" | "openSideBar" | "openSideBarPanel" | "setActiveSideBarPanel">>;
+export type SideBarStore = ReturnType<typeof useSideBar>;

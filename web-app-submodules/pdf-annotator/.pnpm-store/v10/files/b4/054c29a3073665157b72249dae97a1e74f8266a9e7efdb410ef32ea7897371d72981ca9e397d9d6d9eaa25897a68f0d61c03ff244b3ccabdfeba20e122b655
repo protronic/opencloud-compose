@@ -1,0 +1,2 @@
+import { LoadingService } from '../../services';
+export declare const useLoadingService: () => LoadingService;

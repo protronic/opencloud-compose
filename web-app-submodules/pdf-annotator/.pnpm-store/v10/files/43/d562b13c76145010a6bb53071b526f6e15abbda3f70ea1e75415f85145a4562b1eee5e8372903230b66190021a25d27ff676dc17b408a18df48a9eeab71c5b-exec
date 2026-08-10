@@ -1,0 +1,440 @@
+#!/usr/bin/env node
+
+// scripts/gettext_extract.ts
+import chalk2 from "chalk";
+import commandLineArgs from "command-line-args";
+import { glob } from "glob";
+import path2 from "path";
+import { chmodSync, existsSync, lstatSync, mkdirSync, writeFileSync } from "fs";
+
+// scripts/config.ts
+import { lilconfig } from "lilconfig";
+import path from "path";
+var loadConfig = async (cliArgs) => {
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o;
+  const configSearcher = lilconfig("gettext", {
+    searchPlaces: ["gettext.config.js", "gettext.config.cjs", "gettext.config.mjs", "package.json"]
+  });
+  let configRes;
+  if (cliArgs == null ? void 0 : cliArgs.config) {
+    configRes = await configSearcher.load(cliArgs.config);
+    if (!configRes) {
+      throw new Error(`Config not found: ${cliArgs.config}`);
+    }
+  } else {
+    configRes = await configSearcher.search();
+  }
+  const config = (_a = configRes == null ? void 0 : configRes.config) != null ? _a : {};
+  const languagePath = ((_b = config.output) == null ? void 0 : _b.path) || "./src/language";
+  const joinPath = (inputPath) => path.join(languagePath, inputPath);
+  const joinPathIfRelative = (inputPath) => {
+    if (!inputPath) {
+      return void 0;
+    }
+    return path.isAbsolute(inputPath) ? inputPath : path.join(languagePath, inputPath);
+  };
+  return {
+    input: {
+      path: ((_c = config.input) == null ? void 0 : _c.path) || "./src",
+      include: ((_d = config.input) == null ? void 0 : _d.include) || ["**/*.js", "**/*.ts", "**/*.vue"],
+      exclude: ((_e = config.input) == null ? void 0 : _e.exclude) || [],
+      parserOptions: (_f = config.input) == null ? void 0 : _f.parserOptions
+    },
+    output: {
+      path: languagePath,
+      potPath: joinPathIfRelative((_g = config.output) == null ? void 0 : _g.potPath) || joinPath("./messages.pot"),
+      jsonPath: joinPathIfRelative((_h = config.output) == null ? void 0 : _h.jsonPath) || (((_i = config.output) == null ? void 0 : _i.splitJson) ? joinPath("./") : joinPath("./translations.json")),
+      locales: ((_j = config.output) == null ? void 0 : _j.locales) || ["en"],
+      flat: ((_k = config.output) == null ? void 0 : _k.flat) === void 0 ? true : config.output.flat,
+      linguas: ((_l = config.output) == null ? void 0 : _l.linguas) === void 0 ? true : config.output.linguas,
+      splitJson: ((_m = config.output) == null ? void 0 : _m.splitJson) === void 0 ? false : config.output.splitJson,
+      fuzzyMatching: ((_n = config.output) == null ? void 0 : _n.fuzzyMatching) === void 0 ? true : config.output.fuzzyMatching,
+      locations: ((_o = config.output) == null ? void 0 : _o.locations) === void 0 ? true : config.output.locations
+    }
+  };
+};
+
+// scripts/extract.ts
+import chalk from "chalk";
+import fs from "fs";
+
+// src/extract/parser.ts
+import PO from "pofile";
+
+// src/extract/tokenizer.ts
+function tokenize(mapping, src) {
+  const tokens = [];
+  let idx = -1;
+  let unrecognizedContent = "";
+  const keywords = Object.values(mapping).flat();
+  const maxKeywordLen = keywords.reduce((prev, curr) => {
+    if (curr.length > prev) {
+      return curr.length;
+    }
+    return prev;
+  }, 0);
+  function advance() {
+    idx += 1;
+    return src.charAt(idx);
+  }
+  function addToken(kind, charIndex, value) {
+    if (unrecognizedContent.trim()) {
+      tokens.push({ kind: "Unrecognized" /* Unrecognized */, idx, value: unrecognizedContent });
+      unrecognizedContent = "";
+    }
+    if (value) {
+      tokens.push({ kind, idx: charIndex, value });
+      return;
+    }
+    tokens.push({ kind, idx: charIndex });
+  }
+  function readString(delimiter) {
+    let content = "";
+    let prevChar = delimiter;
+    let c = advance();
+    function advanceChar() {
+      prevChar = c;
+      c = advance();
+    }
+    while (true) {
+      if (c === "") {
+        console.error(`parsing error, string literal is not closed until end of file`);
+        break;
+      }
+      if (prevChar !== "\\") {
+        if (c === "\\") {
+          advanceChar();
+          continue;
+        }
+        if (c === delimiter) {
+          break;
+        }
+      }
+      const backSlashInserted = c === "\\";
+      content += c;
+      advanceChar();
+      if (backSlashInserted) {
+        prevChar = "\\\\";
+      }
+    }
+    return content.replace(/\r\n/g, "\n");
+  }
+  function scanToken() {
+    var _a;
+    const c = advance();
+    switch (c) {
+      case "(":
+        addToken("ParenLeft" /* ParenLeft */, idx);
+        break;
+      case ",":
+        addToken("Comma" /* Comma */, idx);
+        break;
+      case '"':
+      case "'":
+      case "`":
+        const prevTokenKind = (_a = tokens[tokens.length - 1]) == null ? void 0 : _a.kind;
+        if (!unrecognizedContent.trim() && (prevTokenKind === "ParenLeft" /* ParenLeft */ || prevTokenKind === "Comma" /* Comma */)) {
+          addToken("String" /* String */, idx, readString(c));
+          break;
+        }
+      default:
+        if (c.match(/\s\n\r/)) {
+          break;
+        }
+        const possibleKeyword = src.substring(idx, idx + maxKeywordLen);
+        const matchedKeyword = keywords.filter((kw) => possibleKeyword.startsWith(kw)).reduce(
+          (prev, curr) => {
+            var _a2;
+            if (curr.length > ((_a2 = prev == null ? void 0 : prev.length) != null ? _a2 : 0)) {
+              return curr;
+            }
+            return prev;
+          },
+          void 0
+        );
+        if (matchedKeyword) {
+          addToken("Keyword" /* Keyword */, idx, matchedKeyword);
+          idx += matchedKeyword.length - 1;
+          break;
+        }
+        unrecognizedContent += c;
+        break;
+    }
+  }
+  while (idx < src.length) {
+    scanToken();
+  }
+  return tokens;
+}
+
+// src/utilities.ts
+import { inject } from "vue";
+
+// src/typeDefs.ts
+var GetTextSymbol = Symbol("GETTEXT");
+
+// src/utilities.ts
+function assertIsDefined(value) {
+  if (value === void 0 || value === null) {
+    throw new Error(`${value} is not defined`);
+  }
+}
+
+// src/extract/parser.ts
+function parseFunctionCall(mapping, tokens) {
+  var _a;
+  let idx = -1;
+  let t = void 0;
+  function advance() {
+    idx += 1;
+    return tokens[idx];
+  }
+  const msgs = [];
+  while (true) {
+    t = advance();
+    if (!t) {
+      break;
+    }
+    if (t.kind !== "Keyword" /* Keyword */) {
+      continue;
+    }
+    assertIsDefined(t.value);
+    const keyword = t.value;
+    const charIndex = t.idx;
+    if (((_a = tokens[idx + 1]) == null ? void 0 : _a.kind) !== "ParenLeft" /* ParenLeft */) {
+      continue;
+    }
+    t = advance();
+    t = advance();
+    const stringArgs = [];
+    while (true) {
+      if (!t || t.kind !== "String" /* String */) {
+        break;
+      }
+      assertIsDefined(t.value);
+      stringArgs.push(t.value);
+      t = advance();
+      if (!t) {
+        break;
+      }
+      if (t.kind !== "Comma" /* Comma */) {
+        break;
+      }
+      t = advance();
+      if (!t) {
+        break;
+      }
+    }
+    if (stringArgs.length) {
+      msgs.push(getMsgInfo(mapping, keyword, charIndex, stringArgs));
+    }
+  }
+  return msgs;
+}
+function getMsgInfo(mapping, keyword, charIdx, stringArgs) {
+  var _a, _b, _c, _d;
+  if ((_a = mapping.simple) == null ? void 0 : _a.includes(keyword)) {
+    return {
+      message: stringArgs[0],
+      idx: charIdx
+    };
+  }
+  if ((_b = mapping.plural) == null ? void 0 : _b.includes(keyword)) {
+    return {
+      message: stringArgs[0],
+      messagePlural: stringArgs[1],
+      idx: charIdx
+    };
+  }
+  if ((_c = mapping.ctx) == null ? void 0 : _c.includes(keyword)) {
+    return {
+      context: stringArgs[0],
+      message: stringArgs[1],
+      idx: charIdx
+    };
+  }
+  if ((_d = mapping.ctxPlural) == null ? void 0 : _d.includes(keyword)) {
+    return {
+      context: stringArgs[0],
+      message: stringArgs[1],
+      messagePlural: stringArgs[2],
+      idx: charIdx
+    };
+  }
+  throw new Error(`no mapping found for keyword "${keyword}", please report this error`);
+}
+function getKeywords(keywords, overrideDefaults = false) {
+  if (overrideDefaults) {
+    if (!keywords) {
+      throw new Error(`overrideDefaults is enabled but no keywords provided in config`);
+    }
+    return keywords;
+  }
+  return {
+    simple: ["$gettext", ...(keywords == null ? void 0 : keywords.simple) ? keywords == null ? void 0 : keywords.simple : []],
+    plural: ["$ngettext", ...(keywords == null ? void 0 : keywords.plural) ? keywords == null ? void 0 : keywords.plural : []],
+    ctxPlural: ["$npgettext", ...(keywords == null ? void 0 : keywords.ctxPlural) ? keywords == null ? void 0 : keywords.ctxPlural : []],
+    ctx: ["$pgettext", ...(keywords == null ? void 0 : keywords.ctx) ? keywords == null ? void 0 : keywords.ctx : []]
+  };
+}
+function parseSrc(src, options2) {
+  const keywords = getKeywords(options2 == null ? void 0 : options2.mapping, options2 == null ? void 0 : options2.overrideDefaults);
+  const tokens = tokenize(keywords, src);
+  const msgs = parseFunctionCall(keywords, tokens);
+  return msgs.map((info) => {
+    const i = { ...info };
+    delete i.idx;
+    return {
+      ...i,
+      lineNumber: src.substring(0, info.idx).split("\n").length
+    };
+  });
+}
+function makePO(fileName, msgs) {
+  const po = new PO();
+  for (const msg of msgs) {
+    const item = new PO.Item();
+    item.msgid = msg.message;
+    item.msgid_plural = msg.messagePlural;
+    item.msgctxt = msg.context;
+    item.references = [`${fileName}:${msg.lineNumber}`];
+    po.items.push(item);
+  }
+  return po;
+}
+
+// scripts/extract.ts
+import PO2 from "pofile";
+async function extractAndCreatePOT(filePaths, potPath, config) {
+  const fileMsgMap = [];
+  await Promise.all(
+    filePaths.map(async (fp) => {
+      var _a, _b, _c, _d;
+      const buffer = await new Promise(
+        (res, rej) => fs.readFile(fp, "utf-8", (err, data) => {
+          if (err) {
+            rej(err);
+          }
+          res(data);
+        })
+      );
+      const msgs = parseSrc(buffer, {
+        mapping: (_b = (_a = config.input) == null ? void 0 : _a.parserOptions) == null ? void 0 : _b.mapping,
+        overrideDefaults: (_d = (_c = config.input) == null ? void 0 : _c.parserOptions) == null ? void 0 : _d.overrideDefaultKeywords
+      });
+      fileMsgMap.push({ path: fp, msgs });
+    })
+  );
+  const pot = new PO2();
+  pot.headers["Content-Type"] = "text/plain; charset=UTF-8";
+  fileMsgMap.sort((a, b) => a.path.localeCompare(b.path));
+  fileMsgMap.forEach((m) => {
+    const po = makePO(m.path, m.msgs);
+    for (const i of po.items) {
+      const prevItem = pot.items.find(
+        (pi) => pi.msgid === i.msgid && pi.msgid_plural === i.msgid_plural && pi.msgctxt === i.msgctxt
+      );
+      if (prevItem) {
+        prevItem.references.push(...i.references);
+      } else {
+        pot.items.push(i);
+      }
+    }
+  });
+  try {
+    fs.writeFileSync(potPath, pot.toString());
+  } catch (err) {
+    console.error(err);
+  }
+  console.info(`${chalk.green("Extraction successful")}, ${chalk.blueBright(potPath)} created.`);
+}
+
+// scripts/utils.ts
+import { exec } from "child_process";
+function execShellCommand(cmd) {
+  return new Promise((resolve) => {
+    exec(cmd, { env: process.env }, (error, stdout, stderr) => {
+      if (error) {
+        console.warn(error);
+      }
+      resolve(stdout ? stdout : stderr);
+    });
+  });
+}
+
+// scripts/gettext_extract.ts
+var optionDefinitions = [{ name: "config", alias: "c", type: String }];
+var options;
+try {
+  options = commandLineArgs(optionDefinitions);
+} catch (e) {
+  console.error(e);
+  process.exit(1);
+}
+var getFiles = async (config) => {
+  var _a;
+  const allFiles = await Promise.all(
+    (_a = config.input) == null ? void 0 : _a.include.map((pattern) => {
+      const searchPath = path2.join(config.input.path, pattern).replace(/\\/g, "/");
+      console.info(`Searching: ${chalk2.blueBright(searchPath)}`);
+      return glob(searchPath);
+    })
+  );
+  const excludeFiles = await Promise.all(
+    config.input.exclude.map((pattern) => {
+      const searchPath = path2.join(config.input.path, pattern);
+      console.info(`Excluding: ${chalk2.blueBright(searchPath)}`);
+      return glob(searchPath);
+    })
+  );
+  const filesFlat = allFiles.reduce((prev, curr) => [...prev, ...curr], []);
+  const excludeFlat = excludeFiles.reduce((prev, curr) => [...prev, ...curr], []);
+  excludeFlat.forEach((file) => {
+    const index = filesFlat.indexOf(file);
+    if (index !== -1) {
+      filesFlat.splice(index, 1);
+    }
+  });
+  return filesFlat;
+};
+(async () => {
+  const config = await loadConfig(options);
+  console.info(`Input directory: ${chalk2.blueBright(config.input.path)}`);
+  console.info(`Output directory: ${chalk2.blueBright(config.output.path)}`);
+  console.info(`Output POT file: ${chalk2.blueBright(config.output.potPath)}`);
+  console.info(`Locales: ${chalk2.blueBright(config.output.locales)}`);
+  console.info(`Locations: ${chalk2.blueBright(config.output.locations)}`);
+  console.info();
+  const files = await getFiles(config);
+  console.info();
+  files.forEach((f) => console.info(chalk2.grey(f)));
+  console.info();
+  await extractAndCreatePOT(files, config.output.potPath, config);
+  for (const loc of config.output.locales) {
+    const poDir = config.output.flat ? config.output.path : path2.join(config.output.path, loc);
+    const poFile = config.output.flat ? path2.join(poDir, `${loc}.po`) : path2.join(poDir, `app.po`);
+    const noLocation = config.output.locations ? "" : "--no-location";
+    const noFuzzyMatching = config.output.fuzzyMatching ? "" : "--no-fuzzy-matching";
+    mkdirSync(poDir, { recursive: true });
+    const isFile = existsSync(poFile) && lstatSync(poFile).isFile();
+    if (isFile) {
+      await execShellCommand(
+        `msgmerge --lang=${loc} --update ${poFile} ${config.output.potPath} ${noFuzzyMatching} ${noLocation} --backup=off`
+      );
+      console.info(`${chalk2.green("Merged")}: ${chalk2.blueBright(poFile)}`);
+    } else {
+      await execShellCommand(
+        `msginit --no-translator --locale=${loc} --input=${config.output.potPath} --output-file=${poFile}`
+      );
+      chmodSync(poFile, 438);
+      await execShellCommand(`msgattrib --no-wrap --no-obsolete ${noLocation} -o ${poFile} ${poFile}`);
+      console.info(`${chalk2.green("Created")}: ${chalk2.blueBright(poFile)}`);
+    }
+  }
+  if (config.output.linguas === true) {
+    const linguasPath = path2.join(config.output.path, "LINGUAS");
+    writeFileSync(linguasPath, config.output.locales.join(" "));
+    console.info();
+    console.info(`${chalk2.green("Created")}: ${chalk2.blueBright(linguasPath)}`);
+  }
+})();

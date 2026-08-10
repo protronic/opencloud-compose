@@ -1,0 +1,2 @@
+declare const __logger: (v: unknown) => unknown;
+export default __logger;

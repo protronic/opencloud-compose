@@ -1,0 +1,14 @@
+import { SearchResult } from '../../components';
+export declare const useSearch: () => {
+    search: (term: string, searchLimit?: number) => Promise<SearchResult>;
+    buildSearchTerm: ({ term, isTitleOnlySearch, tags, lastModified, mediaType, scope, useScope }: {
+        term: string;
+        isTitleOnlySearch?: boolean;
+        tags?: string;
+        lastModified?: string;
+        mediaType?: string;
+        scope?: string;
+        useScope?: boolean;
+    }) => string;
+};
+export type SearchFunction = ReturnType<typeof useSearch>['search'];

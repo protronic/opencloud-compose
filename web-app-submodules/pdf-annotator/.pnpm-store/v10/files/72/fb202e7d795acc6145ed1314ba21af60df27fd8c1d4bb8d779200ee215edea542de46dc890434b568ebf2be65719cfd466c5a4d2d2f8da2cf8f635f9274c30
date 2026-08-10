@@ -1,0 +1,33 @@
+export declare enum LoadingEventTopics {
+    add = "loading-service.add",
+    remove = "loading-service.remove",
+    setProgress = "loading-service.set-progress"
+}
+export interface LoadingTaskState {
+    total: number;
+    current: number;
+}
+export interface LoadingTask {
+    id: string;
+    active: boolean;
+    state?: LoadingTaskState;
+}
+export interface LoadingTaskCallbackArguments {
+    setProgress: (args: LoadingTaskState) => void;
+}
+export declare class LoadingService {
+    private tasks;
+    get isLoading(): boolean;
+    /**
+     * Get the current progress from 0 to 100.
+     * Returns null if at least one task is indeterminate.
+     */
+    get currentProgress(): number | null;
+    addTask<T>(callback: ({ setProgress }: LoadingTaskCallbackArguments) => Promise<T>, { debounceTime, indeterminate }?: {
+        debounceTime?: number;
+        indeterminate?: boolean;
+    }): Promise<T>;
+    private removeTask;
+    private setProgress;
+    private onBeforeUnload;
+}

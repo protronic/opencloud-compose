@@ -1,0 +1,2 @@
+import { Resource, SpaceResource } from '@opencloud-eu/web-client';
+export declare function renameResource(space: SpaceResource, resource: Resource, newPath: string): Resource;

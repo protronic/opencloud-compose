@@ -1,0 +1,31 @@
+import { SharingLinkType } from '@opencloud-eu/web-client/graph/generated';
+import { ShareRole } from '@opencloud-eu/web-client';
+export declare const useLinkTypes: () => {
+    defaultLinkType: import("vue").ComputedRef<SharingLinkType>;
+    isPasswordEnforcedForLinkType: (type: SharingLinkType) => boolean;
+    getAvailableLinkTypes: ({ isFolder }: {
+        isFolder: boolean;
+    }) => SharingLinkType[];
+    linkShareRoles: ({
+        id: "view";
+        displayName: string;
+        description: string;
+        icon: string;
+    } | {
+        id: "upload";
+        displayName: string;
+        description: string;
+        icon: string;
+    } | {
+        id: "edit";
+        displayName: string;
+        description: string;
+        icon: string;
+    } | {
+        id: "createOnly";
+        displayName: string;
+        description: string;
+        icon: string;
+    })[];
+    getLinkRoleByType: (type: SharingLinkType) => ShareRole;
+};

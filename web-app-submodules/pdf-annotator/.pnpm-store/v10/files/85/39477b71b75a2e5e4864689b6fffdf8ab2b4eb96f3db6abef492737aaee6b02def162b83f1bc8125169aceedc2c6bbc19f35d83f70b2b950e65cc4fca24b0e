@@ -1,0 +1,2 @@
+export declare const blobToArrayBuffer: (blob: Blob) => Promise<string | ArrayBuffer>;
+export declare const canvasToBlob: (canvas: HTMLCanvasElement) => Promise<Blob>;

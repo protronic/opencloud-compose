@@ -1,0 +1,2 @@
+import { ClientService } from '../../services';
+export declare const useClientService: () => ClientService;

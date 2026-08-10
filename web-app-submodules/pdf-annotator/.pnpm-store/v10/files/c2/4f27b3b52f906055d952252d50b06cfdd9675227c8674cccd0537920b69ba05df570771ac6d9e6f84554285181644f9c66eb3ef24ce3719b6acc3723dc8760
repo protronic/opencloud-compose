@@ -1,0 +1,598 @@
+import { Resource } from '@opencloud-eu/web-client';
+import { ClipboardActions } from '../../helpers';
+export declare const useClipboardStore: import("pinia").StoreDefinition<"clipboard", Pick<{
+    action: import("vue").Ref<ClipboardActions, ClipboardActions>;
+    resources: import("vue").Ref<{
+        id: string;
+        fileId?: string;
+        parentFolderId?: string;
+        storageId?: string;
+        readonly nodeId?: string;
+        name?: string;
+        tags?: string[];
+        audio?: {
+            album?: string;
+            albumArtist?: string;
+            artist?: string;
+            bitrate?: number;
+            composers?: string;
+            copyright?: string;
+            disc?: number;
+            discCount?: number;
+            duration?: number;
+            genre?: string;
+            hasDrm?: boolean;
+            isVariableBitrate?: boolean;
+            title?: string;
+            track?: number;
+            trackCount?: number;
+            year?: number;
+        };
+        location?: {
+            altitude?: number;
+            latitude?: number;
+            longitude?: number;
+        };
+        image?: {
+            height?: number;
+            width?: number;
+        };
+        photo?: {
+            cameraMake?: string;
+            cameraModel?: string;
+            exposureDenominator?: number;
+            exposureNumerator?: number;
+            fNumber?: number;
+            focalLength?: number;
+            iso?: number;
+            orientation?: number;
+            takenDateTime?: string;
+        };
+        path: string;
+        webDavPath?: string;
+        downloadURL?: string;
+        type?: string;
+        thumbnail?: string;
+        processing?: boolean;
+        locked?: boolean;
+        lockOwner?: string;
+        lockTime?: string;
+        mimeType?: string;
+        isFolder?: boolean;
+        mdate?: string;
+        size?: number | string;
+        permissions?: string;
+        starred?: boolean;
+        etag?: string;
+        shareTypes?: number[];
+        privateLink?: string;
+        owner?: {
+            displayName: string;
+            id?: string;
+            '@libre.graph.userType'?: string;
+        };
+        extension?: string;
+        extraProps?: Record<string, unknown>;
+        remoteItemId?: string;
+        remoteItemPath?: string;
+        hasPreview?: () => boolean;
+        canCreate?: () => boolean;
+        canUpload?: ({ user }: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+        }) => boolean;
+        canDownload?: () => boolean;
+        canShare?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canRename?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canBeDeleted?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canEditTags?: () => boolean;
+        getDomSelector?: () => string;
+        isReceivedShare?: () => boolean;
+        isShareRoot?: () => boolean;
+        isMounted?: () => boolean;
+    }[], Resource[] | {
+        id: string;
+        fileId?: string;
+        parentFolderId?: string;
+        storageId?: string;
+        readonly nodeId?: string;
+        name?: string;
+        tags?: string[];
+        audio?: {
+            album?: string;
+            albumArtist?: string;
+            artist?: string;
+            bitrate?: number;
+            composers?: string;
+            copyright?: string;
+            disc?: number;
+            discCount?: number;
+            duration?: number;
+            genre?: string;
+            hasDrm?: boolean;
+            isVariableBitrate?: boolean;
+            title?: string;
+            track?: number;
+            trackCount?: number;
+            year?: number;
+        };
+        location?: {
+            altitude?: number;
+            latitude?: number;
+            longitude?: number;
+        };
+        image?: {
+            height?: number;
+            width?: number;
+        };
+        photo?: {
+            cameraMake?: string;
+            cameraModel?: string;
+            exposureDenominator?: number;
+            exposureNumerator?: number;
+            fNumber?: number;
+            focalLength?: number;
+            iso?: number;
+            orientation?: number;
+            takenDateTime?: string;
+        };
+        path: string;
+        webDavPath?: string;
+        downloadURL?: string;
+        type?: string;
+        thumbnail?: string;
+        processing?: boolean;
+        locked?: boolean;
+        lockOwner?: string;
+        lockTime?: string;
+        mimeType?: string;
+        isFolder?: boolean;
+        mdate?: string;
+        size?: number | string;
+        permissions?: string;
+        starred?: boolean;
+        etag?: string;
+        shareTypes?: number[];
+        privateLink?: string;
+        owner?: {
+            displayName: string;
+            id?: string;
+            '@libre.graph.userType'?: string;
+        };
+        extension?: string;
+        extraProps?: Record<string, unknown>;
+        remoteItemId?: string;
+        remoteItemPath?: string;
+        hasPreview?: () => boolean;
+        canCreate?: () => boolean;
+        canUpload?: ({ user }: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+        }) => boolean;
+        canDownload?: () => boolean;
+        canShare?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canRename?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canBeDeleted?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canEditTags?: () => boolean;
+        getDomSelector?: () => string;
+        isReceivedShare?: () => boolean;
+        isShareRoot?: () => boolean;
+        isMounted?: () => boolean;
+    }[]>;
+    copyResources: (r: Resource[]) => void;
+    cutResources: (r: Resource[]) => void;
+    clearClipboard: () => void;
+}, "resources" | "action">, Pick<{
+    action: import("vue").Ref<ClipboardActions, ClipboardActions>;
+    resources: import("vue").Ref<{
+        id: string;
+        fileId?: string;
+        parentFolderId?: string;
+        storageId?: string;
+        readonly nodeId?: string;
+        name?: string;
+        tags?: string[];
+        audio?: {
+            album?: string;
+            albumArtist?: string;
+            artist?: string;
+            bitrate?: number;
+            composers?: string;
+            copyright?: string;
+            disc?: number;
+            discCount?: number;
+            duration?: number;
+            genre?: string;
+            hasDrm?: boolean;
+            isVariableBitrate?: boolean;
+            title?: string;
+            track?: number;
+            trackCount?: number;
+            year?: number;
+        };
+        location?: {
+            altitude?: number;
+            latitude?: number;
+            longitude?: number;
+        };
+        image?: {
+            height?: number;
+            width?: number;
+        };
+        photo?: {
+            cameraMake?: string;
+            cameraModel?: string;
+            exposureDenominator?: number;
+            exposureNumerator?: number;
+            fNumber?: number;
+            focalLength?: number;
+            iso?: number;
+            orientation?: number;
+            takenDateTime?: string;
+        };
+        path: string;
+        webDavPath?: string;
+        downloadURL?: string;
+        type?: string;
+        thumbnail?: string;
+        processing?: boolean;
+        locked?: boolean;
+        lockOwner?: string;
+        lockTime?: string;
+        mimeType?: string;
+        isFolder?: boolean;
+        mdate?: string;
+        size?: number | string;
+        permissions?: string;
+        starred?: boolean;
+        etag?: string;
+        shareTypes?: number[];
+        privateLink?: string;
+        owner?: {
+            displayName: string;
+            id?: string;
+            '@libre.graph.userType'?: string;
+        };
+        extension?: string;
+        extraProps?: Record<string, unknown>;
+        remoteItemId?: string;
+        remoteItemPath?: string;
+        hasPreview?: () => boolean;
+        canCreate?: () => boolean;
+        canUpload?: ({ user }: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+        }) => boolean;
+        canDownload?: () => boolean;
+        canShare?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canRename?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canBeDeleted?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canEditTags?: () => boolean;
+        getDomSelector?: () => string;
+        isReceivedShare?: () => boolean;
+        isShareRoot?: () => boolean;
+        isMounted?: () => boolean;
+    }[], Resource[] | {
+        id: string;
+        fileId?: string;
+        parentFolderId?: string;
+        storageId?: string;
+        readonly nodeId?: string;
+        name?: string;
+        tags?: string[];
+        audio?: {
+            album?: string;
+            albumArtist?: string;
+            artist?: string;
+            bitrate?: number;
+            composers?: string;
+            copyright?: string;
+            disc?: number;
+            discCount?: number;
+            duration?: number;
+            genre?: string;
+            hasDrm?: boolean;
+            isVariableBitrate?: boolean;
+            title?: string;
+            track?: number;
+            trackCount?: number;
+            year?: number;
+        };
+        location?: {
+            altitude?: number;
+            latitude?: number;
+            longitude?: number;
+        };
+        image?: {
+            height?: number;
+            width?: number;
+        };
+        photo?: {
+            cameraMake?: string;
+            cameraModel?: string;
+            exposureDenominator?: number;
+            exposureNumerator?: number;
+            fNumber?: number;
+            focalLength?: number;
+            iso?: number;
+            orientation?: number;
+            takenDateTime?: string;
+        };
+        path: string;
+        webDavPath?: string;
+        downloadURL?: string;
+        type?: string;
+        thumbnail?: string;
+        processing?: boolean;
+        locked?: boolean;
+        lockOwner?: string;
+        lockTime?: string;
+        mimeType?: string;
+        isFolder?: boolean;
+        mdate?: string;
+        size?: number | string;
+        permissions?: string;
+        starred?: boolean;
+        etag?: string;
+        shareTypes?: number[];
+        privateLink?: string;
+        owner?: {
+            displayName: string;
+            id?: string;
+            '@libre.graph.userType'?: string;
+        };
+        extension?: string;
+        extraProps?: Record<string, unknown>;
+        remoteItemId?: string;
+        remoteItemPath?: string;
+        hasPreview?: () => boolean;
+        canCreate?: () => boolean;
+        canUpload?: ({ user }: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+        }) => boolean;
+        canDownload?: () => boolean;
+        canShare?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canRename?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canBeDeleted?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canEditTags?: () => boolean;
+        getDomSelector?: () => string;
+        isReceivedShare?: () => boolean;
+        isShareRoot?: () => boolean;
+        isMounted?: () => boolean;
+    }[]>;
+    copyResources: (r: Resource[]) => void;
+    cutResources: (r: Resource[]) => void;
+    clearClipboard: () => void;
+}, never>, Pick<{
+    action: import("vue").Ref<ClipboardActions, ClipboardActions>;
+    resources: import("vue").Ref<{
+        id: string;
+        fileId?: string;
+        parentFolderId?: string;
+        storageId?: string;
+        readonly nodeId?: string;
+        name?: string;
+        tags?: string[];
+        audio?: {
+            album?: string;
+            albumArtist?: string;
+            artist?: string;
+            bitrate?: number;
+            composers?: string;
+            copyright?: string;
+            disc?: number;
+            discCount?: number;
+            duration?: number;
+            genre?: string;
+            hasDrm?: boolean;
+            isVariableBitrate?: boolean;
+            title?: string;
+            track?: number;
+            trackCount?: number;
+            year?: number;
+        };
+        location?: {
+            altitude?: number;
+            latitude?: number;
+            longitude?: number;
+        };
+        image?: {
+            height?: number;
+            width?: number;
+        };
+        photo?: {
+            cameraMake?: string;
+            cameraModel?: string;
+            exposureDenominator?: number;
+            exposureNumerator?: number;
+            fNumber?: number;
+            focalLength?: number;
+            iso?: number;
+            orientation?: number;
+            takenDateTime?: string;
+        };
+        path: string;
+        webDavPath?: string;
+        downloadURL?: string;
+        type?: string;
+        thumbnail?: string;
+        processing?: boolean;
+        locked?: boolean;
+        lockOwner?: string;
+        lockTime?: string;
+        mimeType?: string;
+        isFolder?: boolean;
+        mdate?: string;
+        size?: number | string;
+        permissions?: string;
+        starred?: boolean;
+        etag?: string;
+        shareTypes?: number[];
+        privateLink?: string;
+        owner?: {
+            displayName: string;
+            id?: string;
+            '@libre.graph.userType'?: string;
+        };
+        extension?: string;
+        extraProps?: Record<string, unknown>;
+        remoteItemId?: string;
+        remoteItemPath?: string;
+        hasPreview?: () => boolean;
+        canCreate?: () => boolean;
+        canUpload?: ({ user }: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+        }) => boolean;
+        canDownload?: () => boolean;
+        canShare?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canRename?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canBeDeleted?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canEditTags?: () => boolean;
+        getDomSelector?: () => string;
+        isReceivedShare?: () => boolean;
+        isShareRoot?: () => boolean;
+        isMounted?: () => boolean;
+    }[], Resource[] | {
+        id: string;
+        fileId?: string;
+        parentFolderId?: string;
+        storageId?: string;
+        readonly nodeId?: string;
+        name?: string;
+        tags?: string[];
+        audio?: {
+            album?: string;
+            albumArtist?: string;
+            artist?: string;
+            bitrate?: number;
+            composers?: string;
+            copyright?: string;
+            disc?: number;
+            discCount?: number;
+            duration?: number;
+            genre?: string;
+            hasDrm?: boolean;
+            isVariableBitrate?: boolean;
+            title?: string;
+            track?: number;
+            trackCount?: number;
+            year?: number;
+        };
+        location?: {
+            altitude?: number;
+            latitude?: number;
+            longitude?: number;
+        };
+        image?: {
+            height?: number;
+            width?: number;
+        };
+        photo?: {
+            cameraMake?: string;
+            cameraModel?: string;
+            exposureDenominator?: number;
+            exposureNumerator?: number;
+            fNumber?: number;
+            focalLength?: number;
+            iso?: number;
+            orientation?: number;
+            takenDateTime?: string;
+        };
+        path: string;
+        webDavPath?: string;
+        downloadURL?: string;
+        type?: string;
+        thumbnail?: string;
+        processing?: boolean;
+        locked?: boolean;
+        lockOwner?: string;
+        lockTime?: string;
+        mimeType?: string;
+        isFolder?: boolean;
+        mdate?: string;
+        size?: number | string;
+        permissions?: string;
+        starred?: boolean;
+        etag?: string;
+        shareTypes?: number[];
+        privateLink?: string;
+        owner?: {
+            displayName: string;
+            id?: string;
+            '@libre.graph.userType'?: string;
+        };
+        extension?: string;
+        extraProps?: Record<string, unknown>;
+        remoteItemId?: string;
+        remoteItemPath?: string;
+        hasPreview?: () => boolean;
+        canCreate?: () => boolean;
+        canUpload?: ({ user }: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+        }) => boolean;
+        canDownload?: () => boolean;
+        canShare?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canRename?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canBeDeleted?: (args?: {
+            user?: import("@opencloud-eu/web-client/graph/generated").User;
+            ability?: import("@opencloud-eu/web-client").Ability;
+        }) => boolean;
+        canEditTags?: () => boolean;
+        getDomSelector?: () => string;
+        isReceivedShare?: () => boolean;
+        isShareRoot?: () => boolean;
+        isMounted?: () => boolean;
+    }[]>;
+    copyResources: (r: Resource[]) => void;
+    cutResources: (r: Resource[]) => void;
+    clearClipboard: () => void;
+}, "copyResources" | "cutResources" | "clearClipboard">>;
+export type ClipboardStore = ReturnType<typeof useClipboardStore>;

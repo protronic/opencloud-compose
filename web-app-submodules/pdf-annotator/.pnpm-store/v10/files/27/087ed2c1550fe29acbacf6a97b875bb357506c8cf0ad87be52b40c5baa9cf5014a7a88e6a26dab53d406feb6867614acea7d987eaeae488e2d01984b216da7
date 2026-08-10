@@ -1,0 +1,3 @@
+import type { GraphFactoryOptions } from './../types';
+import type { GraphUsers } from './types';
+export declare const UsersFactory: ({ axiosClient, config }: GraphFactoryOptions) => GraphUsers;

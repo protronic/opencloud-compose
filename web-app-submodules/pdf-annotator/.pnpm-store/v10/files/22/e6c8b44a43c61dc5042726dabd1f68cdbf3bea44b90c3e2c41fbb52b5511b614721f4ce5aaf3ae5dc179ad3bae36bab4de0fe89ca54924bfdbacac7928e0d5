@@ -1,0 +1,123 @@
+declare interface AbortSignalWithPromise extends AbortSignal {
+    pr: Promise<void>;
+}
+
+declare type DeferredObject<T> = {
+    promise: Promise<T>;
+    resolve: Function;
+    reject: Function;
+};
+
+export declare function getCancelToken<T extends {
+    CancelToken: any;
+}>(axios: T, signal: AbortSignalWithPromise): any;
+
+declare type onFulfilled<T> = ((value: T) => any) | null | undefined;
+
+declare type onRejected = ((reason: any) => any) | null | undefined;
+
+export declare function printTask(task: Task<any, any>): void;
+
+declare type Resolved<T> = T extends PromiseLike<infer U> ? U : T;
+
+export declare type Task<T, U extends any[]> = {
+    isIdle: boolean;
+    isRunning: boolean;
+    isError: boolean;
+    performCount: number;
+    last: TaskInstance<T> | undefined;
+    lastSuccessful: TaskInstance<T> | undefined;
+    firstEnqueued: TaskInstance<T> | undefined;
+    cancelAll: (options?: {
+        force: boolean;
+    }) => void;
+    perform: (...params: U) => TaskInstance<T>;
+    clear: () => void;
+    destroy: () => void;
+    restartable: () => Task<T, U>;
+    drop: () => Task<T, U>;
+    enqueue: () => Task<T, U>;
+    keepLatest: () => Task<T, U>;
+    maxConcurrency: (number: number) => Task<T, U>;
+    _resetModifierFlags: () => void;
+    _maxConcurrency: number;
+    _isRestartable: boolean;
+    _isEnqueuing: boolean;
+    _isDropping: boolean;
+    _isKeepingLatest: boolean;
+    _hasConcurrency: boolean;
+    _instances: TaskInstance<T>[];
+    _successfulInstances: readonly TaskInstance<T>[];
+    _runningInstances: readonly TaskInstance<T>[];
+    _activeInstances: readonly TaskInstance<T>[];
+    _enqueuedInstances: readonly TaskInstance<T>[];
+    _notDroppedInstances: readonly TaskInstance<T>[];
+};
+
+declare type TaskCb<T, U extends any[]> = (signal: AbortSignalWithPromise, ...params: U) => Generator<any, T, any>;
+
+export declare type TaskGroup<U extends Record<string, Task<any, any>>> = TaskState & U;
+
+export declare interface TaskInstance<T> extends PromiseLike<T> {
+    id: number;
+    hasStarted: boolean;
+    isRunning: boolean;
+    isActive: boolean;
+    isFinished: boolean;
+    isError: boolean;
+    isSuccessful: boolean;
+    isCanceling: boolean;
+    isCanceled: boolean;
+    isNotDropped: boolean;
+    status: TaskInstanceStatus;
+    _run: () => void;
+    cancel: (options?: {
+        force: boolean;
+    }) => void;
+    canceledOn: (signal: AbortSignalWithPromise) => TaskInstance<T>;
+    token?: Record<string, any>;
+    isDropped: boolean;
+    isEnqueued: boolean;
+    value: T | null;
+    error: any | null;
+    _shouldThrow: boolean;
+    _canAbort: boolean;
+    _deferredObject: DeferredObject<T>;
+    _handled: boolean;
+    then: (onfulfilled: onFulfilled<T>, onrejected?: onRejected) => Promise<any>;
+    catch: (onrejected?: onRejected) => any;
+    finally: (onfulfilled: () => any) => any;
+}
+
+declare type TaskInstanceStatus = "running" | "enqueued" | "canceled" | "canceling" | "dropped" | "error" | "success";
+
+declare interface TaskState {
+    isRunning: boolean;
+    isIdle: boolean;
+}
+
+export declare function timeout(time: number): Promise<unknown>;
+
+export declare function useAsyncTask<T, U extends any[]>(fn: (signal: AbortSignalWithPromise, ...params: U) => Promise<T>): Task<T, U>;
+
+export declare function useParallelTask(...tasks: Task<any, any>[]): Task<any[], any>;
+
+export declare function usePipeTask<T, U extends any[]>(firstTask: Task<any, U>, ...restTasks: Task<any, any>[]): Task<T, U>;
+
+export declare function useSequentialTask<U extends any[]>(...tasks: Task<any, any>[]): Task<any, U>;
+
+export declare function useSSRPersistance(key: string, task: Task<any, any>): void;
+
+export declare function useTask<T, U extends any[]>(cb: TaskCb<T, U>, options?: {
+    cancelOnUnmount: boolean;
+}): Task<Resolved<T>, U>;
+
+export declare function useTaskGroup<U extends Record<string, Task<any, any>>>(taskMap: U): TaskGroup<U>;
+
+export declare function useTaskPrefetch<T>(key: string, task: Task<T, any>): TaskInstance<T>;
+
+export declare function waitForValue<T = any>(cb: () => T): Promise<T>;
+
+export declare type YieldReturn<T> = T extends Task<infer U, any> ? U : Resolved<ReturnType<T extends (...args: any) => any ? T : any>>;
+
+export { }

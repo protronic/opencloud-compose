@@ -1,0 +1,3 @@
+import { ContentTypeStrategy } from './types';
+import { TextEditorState } from '../../types';
+export declare const useStrategyMarkdown: (editorState: TextEditorState) => ContentTypeStrategy;

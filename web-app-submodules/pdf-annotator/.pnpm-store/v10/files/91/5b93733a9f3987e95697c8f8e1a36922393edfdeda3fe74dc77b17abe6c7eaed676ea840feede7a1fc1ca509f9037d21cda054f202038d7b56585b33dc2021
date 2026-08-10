@@ -1,0 +1,7 @@
+import { FolderLoader, FolderLoaderTask, TaskContext } from '../folderService';
+import { Router } from 'vue-router';
+export declare class FolderLoaderSharedViaLink implements FolderLoader {
+    isEnabled(): boolean;
+    isActive(router: Router): boolean;
+    getTask(context: TaskContext): FolderLoaderTask;
+}

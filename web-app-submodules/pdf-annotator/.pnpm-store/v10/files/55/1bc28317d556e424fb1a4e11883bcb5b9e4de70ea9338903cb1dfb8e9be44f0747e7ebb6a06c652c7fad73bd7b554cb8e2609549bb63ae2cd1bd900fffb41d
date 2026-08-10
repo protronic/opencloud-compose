@@ -1,0 +1,10 @@
+import { ViteUserConfig } from 'vitest/config';
+export interface ExtensionConfigOverrides extends ViteUserConfig {
+    /** Name of the extension, defaults to the package name */
+    name?: string;
+    /** URL of the OpenCloud host web dev server, defaults to 'https://host.docker.internal:9201' */
+    opencloudWebHostUrl?: string;
+}
+export declare function defineConfig(overrides?: ExtensionConfigOverrides): ({ mode }: {
+    mode: string;
+}) => Record<string, any>;

@@ -1,0 +1,433 @@
+import { PropType } from 'vue';
+import { Resource, SpaceResource } from '@opencloud-eu/web-client';
+import { FolderView } from '../../ui/types';
+import { FileAction } from '../../composables';
+import { BreadcrumbItem } from '@opencloud-eu/design-system/helpers';
+import { RouteLocationRaw } from 'vue-router';
+declare const _default: typeof __VLS_export;
+export default _default;
+declare const __VLS_export: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+    viewModeDefault: {
+        type: StringConstructor;
+        required: false;
+        default: () => "resource-tiles";
+    };
+    breadcrumbs: {
+        type: PropType<BreadcrumbItem[]>;
+        default: () => BreadcrumbItem[];
+    };
+    breadcrumbsContextActionsItems: {
+        type: PropType<Resource[]>;
+        default: () => Resource[];
+    };
+    viewModes: {
+        type: PropType<FolderView[]>;
+        default: () => FolderView[];
+    };
+    hasBulkActions: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    hasViewOptions: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    hasHiddenFiles: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    hasFileExtensions: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    hasPagination: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    showActionsOnSelection: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    batchActionsLoading: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    space: {
+        type: PropType<SpaceResource>;
+        required: false;
+        default: any;
+    };
+}>, {
+    router: import("vue-router").Router;
+    hasSharesNavigation: import("vue").ComputedRef<boolean>;
+    batchActions: import("vue").ComputedRef<FileAction[]>;
+    showBreadcrumb: import("vue").ComputedRef<number | false>;
+    showMobileNav: import("vue").ComputedRef<boolean>;
+    breadcrumbMaxWidth: import("vue").Ref<number, number>;
+    breadcrumbTruncationOffset: import("vue").ComputedRef<2 | 3>;
+    fileDroppedBreadcrumb: (data: RouteLocationRaw) => void;
+    pageTitle: import("vue").ComputedRef<string>;
+    selectedResources: import("vue").ComputedRef<Resource[]>;
+    isSticky: import("vue").Ref<boolean, boolean>;
+    isSideBarOpen: import("vue").WritableComputedRef<boolean, boolean>;
+}, {
+    resizeObserver: ResizeObserver;
+    limitedScreenSpace: boolean;
+}, {
+    showContextActions(): boolean;
+    showBatchActions(): boolean;
+    selectedResourcesAnnouncement(): string;
+}, {
+    onResize(): void;
+}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+    viewModeDefault: {
+        type: StringConstructor;
+        required: false;
+        default: () => "resource-tiles";
+    };
+    breadcrumbs: {
+        type: PropType<BreadcrumbItem[]>;
+        default: () => BreadcrumbItem[];
+    };
+    breadcrumbsContextActionsItems: {
+        type: PropType<Resource[]>;
+        default: () => Resource[];
+    };
+    viewModes: {
+        type: PropType<FolderView[]>;
+        default: () => FolderView[];
+    };
+    hasBulkActions: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    hasViewOptions: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    hasHiddenFiles: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    hasFileExtensions: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    hasPagination: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    showActionsOnSelection: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    batchActionsLoading: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+    space: {
+        type: PropType<SpaceResource>;
+        required: false;
+        default: any;
+    };
+}>> & Readonly<{}>, {
+    space: SpaceResource;
+    hasHiddenFiles: boolean;
+    hasFileExtensions: boolean;
+    hasPagination: boolean;
+    viewModeDefault: string;
+    viewModes: FolderView[];
+    breadcrumbs: BreadcrumbItem[];
+    breadcrumbsContextActionsItems: Resource[];
+    hasBulkActions: boolean;
+    hasViewOptions: boolean;
+    showActionsOnSelection: boolean;
+    batchActionsLoading: boolean;
+}, {}, {
+    BatchActions: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+        actions: {
+            type: PropType<import("../../composables").Action[]>;
+            required: true;
+        };
+        actionOptions: {
+            type: PropType<import("../../composables").ActionOptions>;
+            required: true;
+        };
+        limitedScreenSpace: {
+            type: BooleanConstructor;
+            default: boolean;
+            required: false;
+        };
+    }>, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+        actions: {
+            type: PropType<import("../../composables").Action[]>;
+            required: true;
+        };
+        actionOptions: {
+            type: PropType<import("../../composables").ActionOptions>;
+            required: true;
+        };
+        limitedScreenSpace: {
+            type: BooleanConstructor;
+            default: boolean;
+            required: false;
+        };
+    }>> & Readonly<{}>, {
+        limitedScreenSpace: boolean;
+    }, {}, {
+        ActionMenuItem: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+            action: {
+                type: PropType<import("../../composables").Action>;
+                required: true;
+            };
+            actionOptions: {
+                type: PropType<import("../../composables").ActionOptions>;
+                required: true;
+            };
+            size: {
+                type: PropType<"small" | "medium" | "large">;
+                required: false;
+                default: string;
+            };
+            appearance: {
+                type: PropType<import("@opencloud-eu/design-system/helpers").AppearanceType>;
+                default: string;
+            };
+            shortcutHint: {
+                type: BooleanConstructor;
+                default: boolean;
+                required: false;
+            };
+            showTooltip: {
+                type: BooleanConstructor;
+                default: boolean;
+                required: false;
+            };
+            buttonClasses: {
+                type: PropType<string[]>;
+                default: () => string[];
+            };
+        }>, {
+            componentType: import("vue").ComputedRef<"a" | "button" | "router-link">;
+            componentProps: import("vue").ComputedRef<{
+                target: "_blank" | "_self";
+                href: string;
+                to: string | import("vue-router").RouteLocationAsRelativeGeneric | import("vue-router").RouteLocationAsPathGeneric;
+                id: string;
+                disabled: boolean;
+                appearance: import("@opencloud-eu/design-system/helpers").AppearanceType;
+            }>;
+            actionIcon: import("vue").ComputedRef<string>;
+        }, {}, {
+            hasExternalImageIcon(): boolean;
+            componentListeners(): {
+                click?: undefined;
+            } | {
+                click: (event: Event) => void;
+            };
+        }, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+            action: {
+                type: PropType<import("../../composables").Action>;
+                required: true;
+            };
+            actionOptions: {
+                type: PropType<import("../../composables").ActionOptions>;
+                required: true;
+            };
+            size: {
+                type: PropType<"small" | "medium" | "large">;
+                required: false;
+                default: string;
+            };
+            appearance: {
+                type: PropType<import("@opencloud-eu/design-system/helpers").AppearanceType>;
+                default: string;
+            };
+            shortcutHint: {
+                type: BooleanConstructor;
+                default: boolean;
+                required: false;
+            };
+            showTooltip: {
+                type: BooleanConstructor;
+                default: boolean;
+                required: false;
+            };
+            buttonClasses: {
+                type: PropType<string[]>;
+                default: () => string[];
+            };
+        }>> & Readonly<{}>, {
+            size: "small" | "large" | "medium";
+            appearance: import("@opencloud-eu/design-system/helpers").AppearanceType;
+            shortcutHint: boolean;
+            showTooltip: boolean;
+            buttonClasses: string[];
+        }, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+    }, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+    ContextActions: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+        actionOptions: {
+            type: PropType<import("../../composables").FileActionOptions>;
+            required: true;
+        };
+    }>, {
+        menuSections: import("vue").ComputedRef<import("../index.js").MenuSection[]>;
+    }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+        actionOptions: {
+            type: PropType<import("../../composables").FileActionOptions>;
+            required: true;
+        };
+    }>> & Readonly<{}>, {}, {}, {
+        ContextActionMenu: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+            menuSections: {
+                type: PropType<import("../index.js").MenuSection[]>;
+                required: true;
+            };
+            appearance: {
+                type: PropType<import("@opencloud-eu/design-system/helpers").AppearanceType>;
+                default: string;
+            };
+            actionOptions: {
+                type: PropType<import("../../composables").ActionOptions>;
+                required: true;
+            };
+        }>, {}, {}, {}, {
+            getSectionClasses(index: number): string[];
+        }, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+            menuSections: {
+                type: PropType<import("../index.js").MenuSection[]>;
+                required: true;
+            };
+            appearance: {
+                type: PropType<import("@opencloud-eu/design-system/helpers").AppearanceType>;
+                default: string;
+            };
+            actionOptions: {
+                type: PropType<import("../../composables").ActionOptions>;
+                required: true;
+            };
+        }>> & Readonly<{}>, {
+            appearance: import("@opencloud-eu/design-system/helpers").AppearanceType;
+        }, {}, {
+            ActionMenuDropItem: import("vue").DefineComponent<{
+                menuSectionDrop: import("../index.js").MenuSectionDrop;
+                appearance: import("@opencloud-eu/design-system/helpers").AppearanceType;
+                actionOptions: import("../../composables").ActionOptions;
+            }, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<{
+                menuSectionDrop: import("../index.js").MenuSectionDrop;
+                appearance: import("@opencloud-eu/design-system/helpers").AppearanceType;
+                actionOptions: import("../../composables").ActionOptions;
+            }> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+            ActionMenuItem: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+                action: {
+                    type: PropType<import("../../composables").Action>;
+                    required: true;
+                };
+                actionOptions: {
+                    type: PropType<import("../../composables").ActionOptions>;
+                    required: true;
+                };
+                size: {
+                    type: PropType<"small" | "medium" | "large">;
+                    required: false;
+                    default: string;
+                };
+                appearance: {
+                    type: PropType<import("@opencloud-eu/design-system/helpers").AppearanceType>;
+                    default: string;
+                };
+                shortcutHint: {
+                    type: BooleanConstructor;
+                    default: boolean;
+                    required: false;
+                };
+                showTooltip: {
+                    type: BooleanConstructor;
+                    default: boolean;
+                    required: false;
+                };
+                buttonClasses: {
+                    type: PropType<string[]>;
+                    default: () => string[];
+                };
+            }>, {
+                componentType: import("vue").ComputedRef<"a" | "button" | "router-link">;
+                componentProps: import("vue").ComputedRef<{
+                    target: "_blank" | "_self";
+                    href: string;
+                    to: string | import("vue-router").RouteLocationAsRelativeGeneric | import("vue-router").RouteLocationAsPathGeneric;
+                    id: string;
+                    disabled: boolean;
+                    appearance: import("@opencloud-eu/design-system/helpers").AppearanceType;
+                }>;
+                actionIcon: import("vue").ComputedRef<string>;
+            }, {}, {
+                hasExternalImageIcon(): boolean;
+                componentListeners(): {
+                    click?: undefined;
+                } | {
+                    click: (event: Event) => void;
+                };
+            }, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+                action: {
+                    type: PropType<import("../../composables").Action>;
+                    required: true;
+                };
+                actionOptions: {
+                    type: PropType<import("../../composables").ActionOptions>;
+                    required: true;
+                };
+                size: {
+                    type: PropType<"small" | "medium" | "large">;
+                    required: false;
+                    default: string;
+                };
+                appearance: {
+                    type: PropType<import("@opencloud-eu/design-system/helpers").AppearanceType>;
+                    default: string;
+                };
+                shortcutHint: {
+                    type: BooleanConstructor;
+                    default: boolean;
+                    required: false;
+                };
+                showTooltip: {
+                    type: BooleanConstructor;
+                    default: boolean;
+                    required: false;
+                };
+                buttonClasses: {
+                    type: PropType<string[]>;
+                    default: () => string[];
+                };
+            }>> & Readonly<{}>, {
+                size: "small" | "large" | "medium";
+                appearance: import("@opencloud-eu/design-system/helpers").AppearanceType;
+                shortcutHint: boolean;
+                showTooltip: boolean;
+                buttonClasses: string[];
+            }, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+        }, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+    }, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+    ViewOptions: import("vue").DefineComponent<{
+        perPageStoragePrefix: string;
+        hasHiddenFiles?: boolean;
+        hasFileExtensions?: boolean;
+        hasPagination?: boolean;
+        paginationOptions?: string[];
+        perPageQueryName?: string;
+        perPageDefault?: string;
+        viewModeDefault?: string;
+        viewModes?: FolderView[];
+    }, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<{
+        perPageStoragePrefix: string;
+        hasHiddenFiles?: boolean;
+        hasFileExtensions?: boolean;
+        hasPagination?: boolean;
+        paginationOptions?: string[];
+        perPageQueryName?: string;
+        perPageDefault?: string;
+        viewModeDefault?: string;
+        viewModes?: FolderView[];
+    }> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;

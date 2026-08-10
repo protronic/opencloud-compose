@@ -1,0 +1,7 @@
+import { Resource, SpaceResource } from '@opencloud-eu/web-client';
+export declare const useCanListShares: () => {
+    canListShares: ({ space, resource }: {
+        space: SpaceResource;
+        resource: Resource;
+    }) => boolean;
+};

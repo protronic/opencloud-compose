@@ -1,0 +1,6 @@
+import type { Plugin } from 'vite';
+export declare const manifestPath: string;
+/**
+ * Generates manifest.json for OpenCloud app discovery.
+ */
+export declare function manifestPlugin(remoteEntryName: string): Plugin;

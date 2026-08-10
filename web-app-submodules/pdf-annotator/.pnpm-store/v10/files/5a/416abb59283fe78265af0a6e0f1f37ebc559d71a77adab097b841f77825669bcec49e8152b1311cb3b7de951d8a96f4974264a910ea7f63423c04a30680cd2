@@ -1,0 +1,27 @@
+import type { Resource, SpaceResource } from '@opencloud-eu/web-client';
+import { TransferType, type TransferData } from './types';
+import { ConflictDialog } from './conflictDialog';
+import type { ClientService } from '../../../services';
+import { Ref } from 'vue';
+import type { Language } from 'vue3-gettext';
+export declare class ResourceTransfer extends ConflictDialog {
+    private sourceSpace;
+    private resourcesToMove;
+    private targetSpace;
+    private targetFolder;
+    private currentFolder;
+    private clientService;
+    constructor(sourceSpace: SpaceResource, resourcesToMove: Resource[], targetSpace: SpaceResource, targetFolder: Resource, currentFolder: Ref<Resource>, clientService: ClientService, $gettext: Language['$gettext'], $ngettext: Language['$ngettext']);
+    hasRecursion(): boolean;
+    showRecursionErrorMessage(): void;
+    showResultMessage(errors: {
+        resourceName: string;
+        error: Error;
+    }[], movedResources: Array<Resource>, transferType: TransferType): void;
+    /**
+     * Gathers transfer data after resolving all potential conflicts.
+     * This data can then be used to feed the web worker for pasting resources.
+     */
+    getTransferData(transferType: TransferType): Promise<TransferData[]>;
+    isOverwritingParentFolder(resource: Resource, targetFolder: Resource, targetFolderResources: Resource[]): boolean;
+}

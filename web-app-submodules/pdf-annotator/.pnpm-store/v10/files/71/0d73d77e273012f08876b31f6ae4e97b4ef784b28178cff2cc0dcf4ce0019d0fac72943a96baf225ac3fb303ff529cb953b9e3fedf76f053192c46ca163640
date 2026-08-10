@@ -1,0 +1,4850 @@
+import { EVENT_ITEM_DRAGGED as e, EVENT_ITEM_DROPPED as t, EVENT_ITEM_DROPPED_BREADCRUMB as n, EVENT_THEAD_CLICKED as r, EVENT_TROW_CLICKED as i, EVENT_TROW_CONTEXTMENU as a, SortDir as o, extractCellProps as s, generateHashedColorForString as c, getHexFromCssVar as l, getIconUrlPrefix as u, getTailwindGapClass as d, getTailwindJustifyContentClass as f, getTailwindPaddingClass as p, getTailwindXPadding as m, hexToRgb as h, isComposingEvent as g, rgbToHex as _, setDesiredContrastRatio as v, uniqueId as y } from "./design-system/helpers.js";
+import { useBottomDrawer as b, useIsMobile as ee, useIsVisible as te } from "./design-system/composables.js";
+import { useGettext as x } from "vue3-gettext";
+import { Fragment as S, Teleport as ne, Transition as re, computed as C, createBlock as w, createCommentVNode as T, createElementBlock as E, createElementVNode as D, createSlots as ie, createTextVNode as O, createVNode as k, customRef as ae, defineComponent as A, guardReactiveProps as j, mergeModels as M, mergeProps as N, nextTick as P, normalizeClass as F, normalizeProps as I, normalizeStyle as L, onBeforeUnmount as oe, onMounted as se, openBlock as R, ref as z, renderList as B, renderSlot as V, resolveComponent as H, resolveDirective as ce, resolveDynamicComponent as U, toDisplayString as W, toHandlers as le, unref as G, useAttrs as ue, useId as de, useModel as fe, useSlots as pe, useTemplateRef as K, vModelCheckbox as me, vModelDynamic as he, vModelRadio as ge, vModelText as _e, vShow as ve, watch as q, withCtx as J, withDirectives as Y, withKeys as ye, withModifiers as X } from "vue";
+import be from "vue-inline-svg";
+import { FocusTrap as xe } from "focus-trap-vue";
+import { debounce as Se, isEqual as Ce, kebabCase as we } from "lodash-es";
+import { computePosition as Te, flip as Ee, offset as De, shift as Oe, size as ke } from "@floating-ui/dom";
+import { onKeyStroke as Ae } from "@vueuse/core";
+import { storeToRefs as je } from "pinia";
+import { DateTime as Me } from "luxon";
+import Ne from "fuse.js";
+//#region \0rolldown/runtime.js
+var Pe = Object.defineProperty, Fe = (e, t) => {
+	let n = {};
+	for (var r in e) Pe(n, r, {
+		get: e[r],
+		enumerable: !0
+	});
+	return t || Pe(n, Symbol.toStringTag, { value: "Module" }), n;
+}, Z = /* @__PURE__ */ A({
+	__name: "OcIcon",
+	props: {
+		accessibleLabel: { default: "" },
+		color: { default: "" },
+		fillType: { default: "fill" },
+		name: { default: "info" },
+		size: { default: () => void 0 },
+		sizeClass: { default: "size-5" },
+		type: { default: "span" }
+	},
+	emits: ["loaded"],
+	setup(e, { emit: t }) {
+		be.name = "inline-svg";
+		let n = t, r = C(() => y("oc-icon-title-")), i = C(() => {
+			let t = `${u()}icons/`, n = e.fillType.toLowerCase();
+			return n === "none" ? `${t}${e.name}.svg` : `${t}${e.name}-${n}.svg`;
+		}), a = C(() => {
+			let t = (e) => ({
+				"size-3": e === "xsmall",
+				"size-4": e === "small",
+				"size-5": e === "medium",
+				"size-8": e === "large",
+				"size-12": e === "xlarge",
+				"size-22": e === "xxlarge",
+				"size-42": e === "xxxlarge"
+			});
+			return e.size ? t(e.size) : e.sizeClass ? e.sizeClass : t("medium");
+		}), o = (t) => {
+			if (e.accessibleLabel !== "") {
+				let n = document.createElement("title");
+				n.setAttribute("id", r.value), n.appendChild(document.createTextNode(e.accessibleLabel)), t.insertBefore(n, t.firstChild);
+			}
+			return t;
+		};
+		return (t, s) => (R(), w(U(e.type), { class: F([
+			"oc-icon",
+			"box-content",
+			"inline-block",
+			"align-baseline",
+			"[&_svg]:block",
+			a.value,
+			{ "bg-transparent min-h-0": e.type === "button" }
+		]) }, {
+			default: J(() => [k(G(be), {
+				src: i.value,
+				"transform-source": o,
+				"aria-hidden": e.accessibleLabel === "" ? "true" : null,
+				"aria-labelledby": e.accessibleLabel === "" ? null : r.value,
+				focusable: e.accessibleLabel === "" ? "false" : null,
+				style: L(e.color === "" ? {} : { fill: e.color }),
+				class: F(a.value),
+				onLoaded: s[0] ||= (e) => n("loaded")
+			}, null, 8, [
+				"src",
+				"aria-hidden",
+				"aria-labelledby",
+				"focusable",
+				"style",
+				"class"
+			])]),
+			_: 1
+		}, 8, ["class"]));
+	}
+}), Ie = /* @__PURE__ */ A({
+	__name: "OcApplicationIcon",
+	props: {
+		icon: {},
+		colorPrimary: {}
+	},
+	setup(e) {
+		let t = C(() => l(e.colorPrimary || "")), n = C(() => !!e.colorPrimary), r = C(() => {
+			let t = c(e.icon);
+			return _(v(h(t), h("#ffffff"), 4));
+		}), i = C(() => {
+			let e = G(n) ? G(t) : G(r);
+			return { background: G(e) };
+		});
+		return (t, n) => (R(), E("div", {
+			class: "oc-application-icon inline-flex items-center justify-center rounded-sm w-8 h-8",
+			style: L(i.value)
+		}, [k(Z, {
+			name: e.icon,
+			color: "var(--oc-role-on-secondary)",
+			"size-class": "size-5"
+		}, null, 8, ["name"])], 4));
+	}
+}), Le = [
+	"src",
+	"alt",
+	"aria-hidden",
+	"title",
+	"loading"
+], Re = /* @__PURE__ */ A({
+	__name: "OcImage",
+	props: {
+		src: {},
+		alt: { default: "" },
+		loadingType: { default: "eager" },
+		title: {}
+	},
+	setup(e) {
+		let t = C(() => e.alt.length === 0);
+		return (n, r) => (R(), E("img", {
+			src: e.src,
+			alt: e.alt,
+			"aria-hidden": `${t.value}`,
+			title: e.title,
+			loading: e.loadingType
+		}, null, 8, Le));
+	}
+}), ze = (e) => e.split(/[ -]/).map((e) => e.replace(/[^\p{L}\p{Nd}]/giu, "")).filter(Boolean).map((e) => e.charAt(0)).slice(0, 3).join("").toUpperCase(), Be = [
+	"width",
+	"aria-label",
+	"aria-hidden",
+	"focusable",
+	"role",
+	"data-test-user-name"
+], Ve = /* @__PURE__ */ A({
+	__name: "OcAvatar",
+	props: {
+		accessibleLabel: { default: "" },
+		color: { default: "white" },
+		backgroundColor: {},
+		src: { default: "" },
+		userName: { default: "" },
+		width: { default: 50 }
+	},
+	setup(e) {
+		let t = [
+			"#b82015",
+			"#c21c53",
+			"#9C27B0",
+			"#673AB7",
+			"#3F51B5",
+			"#106892",
+			"#055c68",
+			"#208377",
+			"#1a761d",
+			"#476e1a",
+			"#636d0b",
+			"#8e5c11",
+			"#795548",
+			"#465a64"
+		], n = z(!1), r = C(() => !n.value && !!e.src), i = C(() => G(e.backgroundColor) ? e.backgroundColor : r.value ? "" : c(e.userName.length, t)), a = C(() => {
+			let t = {
+				width: `${e.width}px`,
+				height: `${e.width}px`,
+				lineHeight: `${e.width}px`
+			}, n = {
+				backgroundColor: i.value,
+				fontSize: `${Math.floor(e.width / 2.5)}px`,
+				fontFamily: "Helvetica, Arial, sans-serif",
+				color: "white"
+			};
+			return Object.assign(t, n), t;
+		}), o = C(() => r.value ? "" : ze(e.userName)), s = () => {
+			n.value = !0;
+		}, c = (e, t) => t[e % t.length];
+		return (t, n) => (R(), E("span", {
+			class: "vue-avatar--wrapper oc-avatar flex justify-center items-center shrink-0 text-center rounded-[50%] select-none",
+			style: L(a.value),
+			width: e.width,
+			"aria-label": e.accessibleLabel === "" ? null : e.accessibleLabel,
+			"aria-hidden": e.accessibleLabel === "" ? "true" : null,
+			focusable: e.accessibleLabel === "" ? "false" : null,
+			role: e.accessibleLabel === "" ? null : "img",
+			"data-test-user-name": e.userName
+		}, [r.value ? (R(), w(Re, {
+			key: 0,
+			"loading-type": "lazy",
+			class: "avatarImg rounded-[50%] w-full",
+			src: e.src,
+			onError: s
+		}, null, 8, ["src"])) : (R(), E("span", {
+			key: 1,
+			class: "avatar-initials",
+			style: L({ color: e.color })
+		}, W(o.value), 5))], 12, Be));
+	}
+}), He = ["textContent"], Ue = /* @__PURE__ */ A({
+	__name: "OcAvatarCount",
+	props: {
+		count: {},
+		size: { default: 30 }
+	},
+	setup(e) {
+		let t = C(() => Math.floor(e.size / 2.5) + "px");
+		return (n, r) => (R(), E("span", {
+			class: "oc-avatar-count flex justify-center items-center bg-role-secondary text-role-on-secondary rounded-[50%]",
+			style: L({
+				width: e.size + "px",
+				height: e.size + "px",
+				fontSize: t.value
+			}),
+			textContent: W(`+${e.count}`)
+		}, null, 12, He));
+	}
+}), We = [
+	"data-test-item-name",
+	"aria-label",
+	"aria-hidden",
+	"focusable",
+	"role"
+], Ge = /* @__PURE__ */ A({
+	__name: "OcAvatarItem",
+	props: {
+		name: {},
+		accessibleLabel: { default: "" },
+		background: { default: "var(--oc-role-secondary)" },
+		icon: {},
+		iconColor: { default: "var(--oc-role-on-secondary)" },
+		iconFillType: { default: "fill" },
+		iconSize: { default: "small" },
+		width: { default: 30 }
+	},
+	setup(e) {
+		let t = C(() => e.width + "px"), n = C(() => e.icon !== null), r = C(() => e.background || i()), i = () => {
+			let e = [
+				"#b82015",
+				"#c21c53",
+				"#9C27B0",
+				"#673AB7",
+				"#3F51B5",
+				"#106892",
+				"#055c68",
+				"#208377",
+				"#1a761d",
+				"#476e1a",
+				"#636d0b",
+				"#8e5c11",
+				"#795548",
+				"#465a64"
+			];
+			return e[Math.floor(Math.random() * e.length)];
+		};
+		return (i, a) => (R(), E("div", {
+			"data-test-item-name": e.name,
+			"aria-label": e.accessibleLabel === "" ? null : e.accessibleLabel,
+			"aria-hidden": e.accessibleLabel === "" ? "true" : null,
+			focusable: e.accessibleLabel === "" ? "false" : null,
+			role: e.accessibleLabel === "" ? null : "img"
+		}, [D("span", {
+			class: "oc-avatar-item inline-flex items-center justify-center rounded-[50%] bg-center bg-no-repeat bg-size-[18px]",
+			style: L({
+				backgroundColor: r.value,
+				width: t.value,
+				height: t.value
+			})
+		}, [n.value ? (R(), w(Z, {
+			key: 0,
+			name: e.icon,
+			color: e.iconColor,
+			size: e.iconSize,
+			"fill-type": e.iconFillType
+		}, null, 8, [
+			"name",
+			"color",
+			"size",
+			"fill-type"
+		])) : T("", !0)], 4)], 8, We));
+	}
+}), Ke = /* @__PURE__ */ A({
+	__name: "OcAvatarFederated",
+	props: {
+		name: {},
+		accessibleLabel: { default: "" },
+		iconSize: { default: "small" },
+		width: { default: 30 }
+	},
+	setup(e) {
+		return (t, n) => (R(), w(Ge, {
+			width: e.width,
+			"icon-size": e.iconSize,
+			icon: "cloud",
+			"icon-fill-type": "line",
+			"icon-color": "#5AAB9F",
+			name: e.name,
+			"accessible-label": e.accessibleLabel
+		}, null, 8, [
+			"width",
+			"icon-size",
+			"name",
+			"accessible-label"
+		]));
+	}
+}), qe = /* @__PURE__ */ A({
+	__name: "OcAvatarGroup",
+	props: {
+		name: {},
+		accessibleLabel: { default: "" },
+		iconSize: { default: "small" },
+		width: { default: 30 }
+	},
+	setup(e) {
+		return (t, n) => (R(), w(Ge, {
+			width: e.width,
+			"icon-size": e.iconSize,
+			icon: "group",
+			name: e.name,
+			"accessible-label": e.accessibleLabel
+		}, null, 8, [
+			"width",
+			"icon-size",
+			"name",
+			"accessible-label"
+		]));
+	}
+}), Je = /* @__PURE__ */ A({
+	__name: "OcAvatarGuest",
+	props: {
+		name: {},
+		accessibleLabel: { default: "" },
+		iconSize: { default: "small" },
+		width: { default: 30 }
+	},
+	setup(e) {
+		return (t, n) => (R(), w(Ge, {
+			width: e.width,
+			"icon-size": e.iconSize,
+			icon: "global",
+			"icon-fill-type": "line",
+			"icon-color": "#D78841",
+			name: e.name,
+			"accessible-label": e.accessibleLabel
+		}, null, 8, [
+			"width",
+			"icon-size",
+			"name",
+			"accessible-label"
+		]));
+	}
+}), Ye = /* @__PURE__ */ A({
+	__name: "OcAvatarLink",
+	props: {
+		name: {},
+		accessibleLabel: { default: "" },
+		iconSize: { default: "small" },
+		width: { default: 30 }
+	},
+	setup(e) {
+		return (t, n) => (R(), w(Ge, {
+			width: e.width,
+			"icon-size": e.iconSize,
+			icon: "link",
+			name: e.name,
+			"accessible-label": e.accessibleLabel
+		}, null, 8, [
+			"width",
+			"icon-size",
+			"name",
+			"accessible-label"
+		]));
+	}
+}), Xe = ["aria-label"], Ze = ["textContent"], Qe = /* @__PURE__ */ A({
+	__name: "OcAvatars",
+	props: {
+		items: {},
+		accessibleDescription: {},
+		isTooltipDisplayed: {
+			type: Boolean,
+			default: !1
+		},
+		maxDisplayed: {},
+		stacked: {
+			type: Boolean,
+			default: !1
+		},
+		hoverEffect: {
+			type: Boolean,
+			default: !1
+		},
+		gapSize: { default: "xsmall" },
+		iconSize: { default: "small" },
+		width: { default: 30 }
+	},
+	setup(e) {
+		let t = K("avatarsRef"), n = C(() => e.maxDisplayed && e.maxDisplayed < e.items.length), r = C(() => {
+			let t = e.items.filter((e) => e.avatarType === "user");
+			return n.value ? t.slice(0, e.maxDisplayed) : t;
+		}), i = C(() => {
+			let t = e.items.filter((e) => e.avatarType !== "user");
+			return n.value ? e.maxDisplayed <= r.value.length ? [] : t.slice(0, e.maxDisplayed - r.value.length) : t;
+		}), a = C(() => {
+			if (e.isTooltipDisplayed) return o.value;
+			let t = (r.value || []).map((e) => e?.displayName || e?.name || e?.userName).filter(Boolean);
+			return t.length ? t.join(", ") : void 0;
+		}), o = C(() => {
+			if (e.isTooltipDisplayed) {
+				let t = r.value.map((e) => e.displayName);
+				i.value.length > 0 && t.push(...i.value.map((e) => e.name));
+				let a = t.join(", ");
+				return n.value && (a += ` +${e.items.length - e.maxDisplayed}`), a;
+			}
+			return null;
+		}), s = (e) => {
+			switch (e.avatarType) {
+				case "link": return Ye;
+				case "remote": return Ke;
+				case "group": return qe;
+				case "guest": return Je;
+			}
+		}, c = C(() => e.stacked && e.hoverEffect && G(e.items).length > 1);
+		return se(() => {
+			!G(t) || !G(c) || Array.from(G(t).children).forEach((e, t) => {
+				e.style.zIndex = `${900 + t}`;
+			});
+		}), (l, u) => {
+			let f = ce("oc-tooltip");
+			return R(), E("span", null, [Y((R(), E("span", {
+				ref_key: "avatarsRef",
+				ref: t,
+				role: "img",
+				class: F(["oc-avatars inline-flex w-fit flex-nowrap flex-row", {
+					"oc-avatars-stacked [&>*]:not-first:-ml-3": e.stacked,
+					"oc-avatars-hover-effect [&>*]:hover:!z-1000 [&>*]:hover:transform-[scale(1.1)] [&>*]:transition-transform [&>*]:duration-200 [&>*]:ease-out": c.value,
+					...G(d)(e.gapSize)
+				}]),
+				"aria-label": a.value
+			}, [
+				V(l.$slots, "userAvatars", {
+					avatars: r.value,
+					width: e.width
+				}, () => [r.value.length > 0 ? (R(!0), E(S, { key: 0 }, B(r.value, (t) => (R(), w(Ve, {
+					key: t.userName,
+					src: t.avatar,
+					"user-name": t.displayName,
+					width: e.width,
+					"icon-size": e.iconSize
+				}, null, 8, [
+					"src",
+					"user-name",
+					"width",
+					"icon-size"
+				]))), 128)) : T("", !0)]),
+				i.value.length > 0 ? (R(!0), E(S, { key: 0 }, B(i.value, (t, n) => (R(), w(U(s(t)), {
+					key: t.name + n,
+					name: t.name,
+					width: e.width,
+					"icon-size": e.iconSize
+				}, null, 8, [
+					"name",
+					"width",
+					"icon-size"
+				]))), 128)) : T("", !0),
+				n.value ? (R(), w(Ue, {
+					key: 1,
+					count: e.items.length - e.maxDisplayed
+				}, null, 8, ["count"])) : T("", !0)
+			], 10, Xe)), [[f, o.value]]), e.accessibleDescription ? (R(), E("span", {
+				key: 0,
+				class: "sr-only",
+				textContent: W(e.accessibleDescription)
+			}, null, 8, Ze)) : T("", !0)]);
+		};
+	}
+}), $e = ["open"], et = ["id"], tt = /*@__PURE__*/ A({
+	__name: "OcBottomDrawer",
+	props: {
+		id: {},
+		isDrawerActive: {
+			type: Boolean,
+			default: !0
+		},
+		isFocusTrapActive: {
+			type: Boolean,
+			default: !0
+		},
+		hasFullHeight: {
+			type: Boolean,
+			default: !1
+		},
+		maxHeight: { default: "max-h-[66vh]" }
+	},
+	emits: ["clicked"],
+	setup(e) {
+		return q(() => e.isDrawerActive, async () => {
+			e.isDrawerActive && (await P(), document.getElementById(e.id)?.classList.add("active"));
+		}, { immediate: !0 }), (t, n) => (R(), E("dialog", {
+			class: "oc-bottom-drawer fixed inset-0 bg-black/40 size-full",
+			open: e.isDrawerActive,
+			onClick: n[0] ||= (e) => t.$emit("clicked", e)
+		}, [k(G(xe), { active: e.isFocusTrapActive }, {
+			default: J(() => [D("div", {
+				id: e.id,
+				tabindex: "-1",
+				class: F(["fixed inset-x-0 rounded-t-xl w-full overflow-y-auto transition-all duration-200 -bottom-full overflow-x-hidden", [{
+					"[&.active]:bottom-0": e.isDrawerActive,
+					"h-full": e.hasFullHeight
+				}, e.maxHeight]])
+			}, [V(t.$slots, "default", {}, void 0, !0)], 10, et)]),
+			_: 3
+		}, 8, ["active"])], 8, $e));
+	}
+}), Q = (e, t) => {
+	let n = e.__vccOpts || e;
+	for (let [e, r] of t) n[e] = r;
+	return n;
+}, nt = /*#__PURE__*/ Q(tt, [["__scopeId", "data-v-14d2045c"]]), $ = /* @__PURE__ */ A({
+	__name: "OcButton",
+	props: {
+		appearance: { default: "outline" },
+		ariaLabel: {},
+		colorRole: { default: "secondary" },
+		disabled: {
+			type: Boolean,
+			default: !1
+		},
+		gapSize: { default: "medium" },
+		href: {},
+		justifyContent: { default: "center" },
+		showSpinner: {
+			type: Boolean,
+			default: !1
+		},
+		size: { default: "medium" },
+		submit: { default: "button" },
+		target: {},
+		to: {},
+		type: { default: "button" },
+		noHover: {
+			type: Boolean,
+			default: !1
+		}
+	},
+	emits: ["click"],
+	setup(e, { emit: t }) {
+		let n = t, r = C(() => ({
+			...e.href && { href: e.href },
+			...e.target && { target: e.target },
+			...e.to && { to: e.to },
+			...e.type === "button" && { type: e.submit },
+			...e.type === "button" && { disabled: e.disabled }
+		})), i = C(() => ({ ...e.type === "button" && { click: a } })), a = (e) => {
+			n("click", e);
+		};
+		return (t, n) => {
+			let a = H("oc-spinner");
+			return R(), w(U(e.type), N(r.value, {
+				"aria-label": e.ariaLabel,
+				class: [[
+					`oc-button-${G(we)(e.colorRole)}`,
+					`oc-button-${e.appearance}`,
+					`oc-button-${G(we)(e.colorRole)}-${e.appearance}`,
+					{
+						...G(d)(e.gapSize),
+						...G(f)(e.justifyContent),
+						"text-sm min-h-3": e.size === "small",
+						"text-base min-h-4": e.size === "medium",
+						"text-lg min-h-7": e.size === "large",
+						"no-hover": e.noHover
+					}
+				], "oc-button cursor-pointer disabled:opacity-60 disabled:cursor-default"]
+			}, le(i.value)), {
+				default: J(() => [e.showSpinner ? (R(), w(a, {
+					key: 0,
+					size: "small",
+					class: "spinner"
+				})) : T("", !0), V(t.$slots, "default")]),
+				_: 3
+			}, 16, ["aria-label", "class"]);
+		};
+	}
+}), rt = /* @__PURE__ */ A({
+	__name: "OcCard",
+	props: {
+		tag: { default: "div" },
+		title: {},
+		titleTag: { default: "h2" },
+		headerClass: { default: "" },
+		bodyClass: { default: "" },
+		footerClass: { default: "" }
+	},
+	setup(e) {
+		let t = pe(), n = C(() => Object.hasOwn(t, "header") || !!G(e.title)), r = C(() => Object.hasOwn(t, "footer"));
+		return (t, i) => (R(), w(U(e.tag), { class: "oc-card" }, {
+			default: J(() => [
+				n.value ? (R(), E("div", {
+					key: 0,
+					class: F(["oc-card-header", e.headerClass])
+				}, [V(t.$slots, "header", {}, () => [e.title ? (R(), w(U(e.titleTag), {
+					key: 0,
+					class: "mt-0"
+				}, {
+					default: J(() => [O(W(e.title), 1)]),
+					_: 1
+				})) : T("", !0)])], 2)) : T("", !0),
+				D("div", { class: F(["oc-card-body", e.bodyClass]) }, [V(t.$slots, "default")], 2),
+				r.value ? (R(), E("div", {
+					key: 1,
+					class: F(["oc-card-footer", e.footerClass])
+				}, [V(t.$slots, "footer")], 2)) : T("", !0)
+			]),
+			_: 3
+		}));
+	}
+}), it = ["textContent"], at = /* @__PURE__ */ A({
+	__name: "OcMobileDrop",
+	props: {
+		drawerId: {},
+		toggle: { default: "" },
+		closeOnClick: {
+			type: Boolean,
+			default: !1
+		},
+		title: { default: "" },
+		registerClickHandler: {
+			type: Boolean,
+			default: !0
+		}
+	},
+	emits: ["show", "hide"],
+	setup(e, { expose: t, emit: n }) {
+		let r = n, { $gettext: i } = x(), a = b(), { showDrawer: o, closeDrawer: s, closeAllDrawers: c } = a, { drawers: l, currentDrawer: u } = je(a), d = z(null), f = K("bottomDrawerCardBodyRef"), p = C(() => G(l).map(({ id: e }) => e).includes(G(d)?.id)), m = C(() => G(d)?.id && G(u)?.id === G(d).id), h = async () => {
+			d.value = o(), r("show"), await P(), G(f)?.addEventListener("click", _);
+		}, g = () => {
+			s(G(d)?.id), G(f)?.removeEventListener("click", _), r("hide");
+		}, _ = (t) => {
+			let n = t.target.closest("a[href], button");
+			if (n) {
+				if (n.hasAttribute("aria-expanded")) {
+					n.setAttribute("aria-expanded", "true");
+					return;
+				}
+				e.closeOnClick && (g(), c());
+			}
+		}, v = (e) => {
+			e.target === e.currentTarget && y();
+		}, y = () => {
+			c(), r("hide");
+		};
+		return Ae("Escape", (e) => {
+			e.preventDefault(), y();
+		}), se(() => {
+			!G(e.toggle) || !e.registerClickHandler || document.querySelector(e.toggle)?.addEventListener("click", h);
+		}), oe(() => {
+			e.registerClickHandler && document.querySelector(e.toggle)?.removeEventListener("click", h), G(d) && s(G(d).id);
+		}), t({
+			show: h,
+			hide: g
+		}), (t, n) => {
+			let r = H("oc-icon");
+			return p.value ? (R(), w(ne, {
+				key: 0,
+				to: "#app-runtime-bottom-drawer"
+			}, [k(nt, {
+				id: e.drawerId,
+				"is-drawer-active": m.value,
+				"is-focus-trap-active": m.value,
+				class: "oc-mobile-drop z-[calc(var(--z-index-modal)+2)]",
+				onClicked: v
+			}, {
+				default: J(() => [k(rt, {
+					class: "bg-role-surface-container-high overflow-x-hidden rounded-b-none",
+					"header-class": "flex flex-row justify-between items-center"
+				}, {
+					header: J(() => [
+						G(l).length > 1 ? (R(), w($, {
+							key: 0,
+							appearance: "raw",
+							class: "raw-hover-surface oc-bottom-drawer-back-button",
+							"aria-label": G(i)("Open the parent context menu"),
+							onClick: n[0] ||= (e) => g()
+						}, {
+							default: J(() => [k(r, {
+								name: "arrow-left",
+								"fill-type": "line"
+							})]),
+							_: 1
+						}, 8, ["aria-label"])) : T("", !0),
+						D("span", {
+							class: "font-semibold",
+							textContent: W(e.title)
+						}, null, 8, it),
+						k($, {
+							appearance: "raw",
+							class: "raw-hover-surface oc-bottom-drawer-close-button",
+							"aria-label": G(i)("Close the context menu"),
+							onClick: y
+						}, {
+							default: J(() => [k(r, {
+								name: "close",
+								"fill-type": "line"
+							})]),
+							_: 1
+						}, 8, ["aria-label"])
+					]),
+					default: J(() => [D("div", {
+						ref_key: "bottomDrawerCardBodyRef",
+						ref: f
+					}, [V(t.$slots, "default")], 512)]),
+					_: 3
+				})]),
+				_: 3
+			}, 8, [
+				"id",
+				"is-drawer-active",
+				"is-focus-trap-active"
+			])])) : T("", !0);
+		};
+	}
+}), ot = () => {
+	let e = [];
+	return {
+		registerEventListener: (t, n, r, i, a) => {
+			t.addEventListener(n, r, a), e.push({
+				target: t,
+				type: n,
+				handler: r,
+				options: a,
+				category: i
+			});
+		},
+		unregisterEventListeners: (t) => {
+			if (!t) {
+				e.forEach(({ target: e, type: t, handler: n, options: r }) => {
+					e.removeEventListener(t, n, r);
+				}), e.length = 0;
+				return;
+			}
+			e.filter((e) => t.includes(e.category)).forEach(({ target: e, type: t, handler: n, options: r }) => {
+				e.removeEventListener(t, n, r);
+			}), e.splice(0, e.length, ...e.filter((e) => !t.includes(e.category)));
+		}
+	};
+}, st = (e) => Array.from(e.querySelectorAll("a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex=\"-1\"])")).filter((e) => !e.closest("[hidden]")), ct = ["id"], lt = /* @__PURE__ */ A({
+	inheritAttrs: !1,
+	__name: "OcDrop",
+	props: {
+		title: { default: "" },
+		closeOnClick: {
+			type: Boolean,
+			default: !1
+		},
+		dropId: { default: () => y("oc-drop-") },
+		mode: { default: "click" },
+		offset: { default: 5 },
+		paddingSize: { default: "medium" },
+		position: { default: "bottom-start" },
+		toggle: { default: "" },
+		enforceDropOnMobile: {
+			type: Boolean,
+			default: !1
+		},
+		teleport: { default: "" },
+		isMenu: {
+			type: Boolean,
+			default: !0
+		}
+	},
+	emits: ["hideDrop", "showDrop"],
+	setup(e, { expose: t, emit: n }) {
+		let r = n, i = ue(), { registerEventListener: a, unregisterEventListeners: o } = ot(), { isMobile: s } = ee(), c = z(!1), l = C(() => G(s) && !e.enforceDropOnMobile), u = K("bottomDrawerRef"), d = K("drop"), f = C(() => e.toggle ? document.querySelector(e.toggle) : null);
+		t({
+			show: async ({ anchorElement: e = void 0, noFocus: t = !1 } = {}) => {
+				if (G(l)) {
+					G(u).show();
+					return;
+				}
+				G(c) || (g({ anchorElement: e }), t || (await P(), G(d).focus({ preventScroll: !0 })));
+			},
+			hide: () => {
+				if (G(l)) {
+					G(u).hide();
+					return;
+				}
+				_();
+			},
+			update: async ({ anchorElement: t = void 0 } = {}) => {
+				if (!G(c) || !G(d)) return;
+				let n = t || G(f);
+				if (!n) return;
+				let { x: r, y: i } = await Te(n, G(d), {
+					placement: e.position,
+					middleware: [
+						De(e.offset),
+						Ee(),
+						Oe({ padding: 5 }),
+						ke({ apply({ availableWidth: e, availableHeight: t, elements: n }) {
+							Object.assign(n.floating.style, {
+								maxWidth: `${Math.min(400, e - 10)}px`,
+								maxHeight: `${Math.max(0, t - 10)}px`
+							});
+						} })
+					]
+				});
+				Object.assign(G(d).style, {
+					left: `${r}px`,
+					top: `${i}px`
+				});
+			}
+		});
+		let m = (t) => {
+			let n = t.target.closest(".oc-button")?.hasAttribute("aria-expanded");
+			e.closeOnClick && !n && _();
+		}, h = () => new Promise((e) => requestAnimationFrame(e)), g = async ({ anchorElement: t } = {}) => {
+			if (G(c)) {
+				_();
+				return;
+			}
+			let n = t || G(f);
+			if (c.value = !0, await P(), !n) {
+				console.warn("OcDrop cannot be opened: anchor element not found");
+				return;
+			}
+			if (await h(), e.isMenu) {
+				let e = G(d)?.getElementsByTagName("ul");
+				Array.from(e || []).forEach((e) => e.setAttribute("role", "menu"));
+				let t = G(d)?.querySelectorAll("ul li");
+				Array.from(t || []).forEach((e) => e.setAttribute("role", "none"));
+				let n = G(d)?.querySelectorAll("ul li button, ul li a");
+				Array.from(n || []).forEach((e) => {
+					e.setAttribute("role", "menuitem"), e.setAttribute("tabindex", "-1");
+				});
+			}
+			let { x: i, y: o } = await Te(n, G(d), {
+				placement: e.position,
+				middleware: [
+					De(e.offset),
+					Ee(),
+					Oe({ padding: 5 }),
+					ke({ apply({ availableWidth: e, availableHeight: t, elements: n }) {
+						Object.assign(n.floating.style, {
+							maxWidth: `${Math.min(400, e - 10)}px`,
+							maxHeight: `${Math.max(0, t - 10)}px`
+						});
+					} })
+				]
+			});
+			Object.assign(G(d).style, {
+				left: `${i}px`,
+				top: `${o}px`
+			}), G(f)?.setAttribute("aria-expanded", "true"), r("showDrop"), a(document, "click", te, "document", { capture: !0 }), a(document, "contextmenu", te, "document", { capture: !0 }), a(G(d), "keydown", x, "drop"), e.isMenu || a(G(d), "focusout", b, "drop"), e.mode === "hover" && (a(G(d), "mouseenter", O, "drop"), a(G(d), "mouseleave", k, "drop"));
+		}, _ = () => {
+			o(["drop", "document"]), c.value = !1, G(f)?.setAttribute("aria-expanded", "false"), r("hideDrop");
+		}, v = (e) => e instanceof FocusEvent, y = (e) => e instanceof KeyboardEvent, b = (e) => {
+			v(e) && e.relatedTarget && !G(d)?.contains(e.relatedTarget) && _();
+		}, te = async (e) => {
+			let t = e.target;
+			if (G(d) && !G(d).contains(t)) {
+				let e = G(f);
+				e && e.contains(t) || (await h(), _());
+			}
+		}, x = (t) => {
+			if (y(t)) {
+				if (["ArrowLeft", "ArrowRight"].includes(t.code)) {
+					e.mode === "hover" && (_(), G(f)?.focus());
+					return;
+				}
+				if (t.code === "Escape") {
+					t.stopPropagation(), _(), G(f)?.focus();
+					return;
+				}
+				if (t.code === "Space" && t.target instanceof HTMLAnchorElement) {
+					t.target.click();
+					return;
+				}
+				if (e.isMenu) {
+					if (t.stopPropagation(), t.code === "Tab") {
+						_();
+						return;
+					}
+					if (["ArrowDown", "ArrowUp"].includes(t.code)) {
+						t.preventDefault();
+						let e = st(G(d));
+						if (!e.length) return;
+						let n = e.indexOf(document.activeElement);
+						t.code === "ArrowDown" ? e[n === -1 || n === e.length - 1 ? 0 : n + 1].focus() : t.code === "ArrowUp" && e[n <= 0 ? e.length - 1 : n - 1].focus();
+					}
+				}
+			}
+		}, S = async (t) => {
+			if (!y(t)) return;
+			let n = async () => {
+				g(), await P(), st(G(d))[0]?.focus();
+			};
+			if (t.code === "Enter") {
+				t.preventDefault(), await n();
+				return;
+			}
+			e.mode === "hover" && [
+				"ArrowLeft",
+				"ArrowRight",
+				"Space"
+			].includes(t.code) && (t.preventDefault(), await n());
+		}, D = null, ie = () => {
+			D !== null && (clearTimeout(D), D = null);
+		}, O = () => {
+			ie();
+		}, k = () => {
+			D = setTimeout(_, 100);
+		}, ae = async () => {
+			g({}), G(c) && (await P(), G(d).focus({ preventScroll: !0 }));
+		}, A = () => {
+			ie(), G(c) || g({});
+		}, j = () => {
+			D = setTimeout(_, 100);
+		}, M = () => {
+			G(f)?.setAttribute("aria-haspopup", G(l) ? "dialog" : "true"), G(f)?.setAttribute("aria-expanded", "false");
+		}, F = () => {
+			G(f)?.setAttribute("aria-expanded", "true"), r("showDrop");
+		}, I = () => {
+			G(f)?.setAttribute("aria-expanded", "false"), r("hideDrop");
+		}, L = () => {
+			let t = G(f);
+			if (!(!t || G(l))) switch (e.mode) {
+				case "click":
+					a(t, "click", ae, "anchor"), a(t, "keydown", S, "anchor");
+					break;
+				case "hover": a(t, "keydown", S, "anchor"), a(t, "mouseenter", A, "anchor"), a(t, "mouseleave", j, "anchor");
+			}
+		};
+		return q(l, () => {
+			M(), G(l) ? o() : L();
+		}), se(() => {
+			L(), M();
+		}), oe(() => {
+			ie(), o(), G(f)?.removeAttribute("aria-expanded"), G(f)?.removeAttribute("aria-haspopup");
+		}), (t, n) => l.value ? (R(), w(at, {
+			key: 0,
+			ref_key: "bottomDrawerRef",
+			ref: u,
+			"drawer-id": e.dropId,
+			toggle: e.toggle,
+			"close-on-click": e.closeOnClick,
+			title: e.title,
+			"register-click-handler": e.mode !== "manual",
+			onShow: F,
+			onHide: I
+		}, {
+			default: J(() => [V(t.$slots, "default")]),
+			_: 3
+		}, 8, [
+			"drawer-id",
+			"toggle",
+			"close-on-click",
+			"title",
+			"register-click-handler"
+		])) : (R(), w(re, {
+			key: 1,
+			name: "oc-drop"
+		}, {
+			default: J(() => [(R(), w(ne, {
+				disabled: !e.teleport,
+				to: e.teleport ? e.teleport : void 0
+			}, [c.value ? (R(), E("div", N({ key: 0 }, G(i), {
+				id: e.dropId,
+				ref_key: "drop",
+				ref: d,
+				class: ["oc-drop shadow-sm/10 rounded-xl bg-role-surface border border-role-surface-container-highest", G(i)?.class],
+				tabindex: -1,
+				onClick: m
+			}), [t.$slots.default ? (R(), w(rt, {
+				key: 0,
+				"body-class": [G(p)(e.paddingSize)]
+			}, {
+				default: J(() => [V(t.$slots, "default")]),
+				_: 3
+			}, 8, ["body-class"])) : V(t.$slots, "special", {}, void 0, void 0, 1)], 16, ct)) : T("", !0)], 8, ["disabled", "to"]))]),
+			_: 3
+		}));
+	}
+}), ut = ["id", "aria-label"], dt = [
+	"data-key",
+	"data-item-id",
+	"onDragenter",
+	"onDragleave",
+	"onMouseleave",
+	"onDrop"
+], ft = { class: "flex flex-col" }, pt = { class: "hover:underline align-sub truncate inline-block leading-[1.2] max-w-3xs" }, mt = ["textContent"], ht = ["aria-current", "textContent"], gt = ["textContent"], _t = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcBreadcrumb",
+	props: {
+		items: {},
+		contextMenuPadding: { default: "medium" },
+		id: { default: () => y("oc-breadcrumbs-") },
+		maxWidth: { default: () => -1 },
+		mobileBreakpoint: { default: "sm" },
+		showContextActions: {
+			type: Boolean,
+			default: !1
+		},
+		routerLinkComponent: { default: "router-link" },
+		truncationOffset: { default: 2 },
+		variation: { default: "default" }
+	},
+	emits: ["itemDroppedBreadcrumb"],
+	setup(e, { emit: t }) {
+		let r = t, { $gettext: i } = x(), a = z([]), o = z([]), s = (e) => o.value.indexOf(e) !== -1 || e.isTruncationPlaceholder && o.value.length === 0, c = (e) => document.querySelector(`.oc-breadcrumb-list [data-item-id="${e}"]`), l = (e, t) => !(!e.id || t === G(a).length - 1 || e.isTruncationPlaceholder || e.isStaticNav), u = (e, t) => {
+			if (l(e, t) && typeof e.to == "object") {
+				let t = e.to;
+				t.path = t.path || "/", r(n, t);
+			}
+		}, d = () => {
+			let e = 100;
+			return a.value.forEach((t) => {
+				let n = c(t.id)?.getBoundingClientRect()?.width || 0;
+				e += n;
+			}), e;
+		}, f = (t) => {
+			let n = e.maxWidth;
+			if (!n || !(n < d()) || a.value.length <= e.truncationOffset + 1) return;
+			let r = a.value.splice(t, 1);
+			o.value.push(r[0]), f(t);
+		};
+		q([() => e.maxWidth, () => e.items], () => {
+			if (a.value = [...e.items], o.value = [], a.value.length > e.truncationOffset) {
+				let t = {
+					id: y("oc-breadcrumb-truncation-"),
+					text: "...",
+					isTruncationPlaceholder: !0
+				};
+				a.value.splice(e.truncationOffset - 1, 0, t);
+			}
+			P(() => {
+				if (f(e.truncationOffset), o.value.length === 0) {
+					let e = a.value.findIndex((e) => e.isTruncationPlaceholder);
+					e !== -1 && a.value.splice(e, 1);
+				}
+			});
+		}, { immediate: !0 });
+		let p = C(() => {
+			if (!(e.items.length === 0 || !e.items)) return e.items[e.items.length - 1];
+		}), m = C(() => e.items[e.items.length - 2]?.to), h = C(() => i("Show actions for current folder")), g = (t) => e.items.length - 1 === t ? "page" : null, _ = (e, t, n, r) => {
+			if (!l(e, t) || (r.dataTransfer?.types || []).some((e) => e === "Files") || r.currentTarget?.contains(r.relatedTarget)) return;
+			let i = c(e.id).children[0].classList, a = "oc-breadcrumb-item-dragover";
+			n ? i.remove(a) : i.add(a);
+		};
+		return (t, n) => {
+			let r = ce("oc-tooltip");
+			return R(), E(S, null, [D("nav", {
+				id: e.id,
+				class: F(`oc-breadcrumb oc-breadcrumb-${e.variation} overflow-visible`),
+				"aria-label": G(i)("Breadcrumbs")
+			}, [D("ol", { class: F(["oc-breadcrumb-list hidden items-baseline m-0 p-0 flex-nowrap", {
+				"sm:flex": e.mobileBreakpoint === "sm",
+				"md:flex": e.mobileBreakpoint === "md",
+				"lg:flex": e.mobileBreakpoint === "lg"
+			}]) }, [(R(!0), E(S, null, B(a.value, (c, l) => (R(), E("li", {
+				key: l,
+				"data-key": l,
+				"data-item-id": c.id,
+				class: F([
+					"oc-breadcrumb-list-item",
+					"flex",
+					"items-center",
+					{ "sr-only": s(c) }
+				]),
+				onDragover: n[0] ||= X(() => {}, ["prevent"]),
+				onDragenter: X((e) => _(c, l, !1, e), ["prevent"]),
+				onDragleave: X((e) => _(c, l, !0, e), ["prevent"]),
+				onMouseleave: (e) => _(c, l, !0, e),
+				onDrop: (e) => u(c, l)
+			}, [
+				c.isTruncationPlaceholder ? (R(), E(S, { key: 0 }, [k($, {
+					id: "oc-breadcrumb-contextmenu-truncation-trigger",
+					class: "hover:underline",
+					appearance: "raw-inverse",
+					"color-role": "surface",
+					"aria-label": G(i)("Show collapsed breadcrumb items"),
+					"no-hover": ""
+				}, {
+					default: J(() => [...n[1] ||= [O("...", -1)]]),
+					_: 1
+				}, 8, ["aria-label"]), k(lt, {
+					title: G(i)("Collapsed items"),
+					toggle: "#oc-breadcrumb-contextmenu-truncation-trigger",
+					mode: "click",
+					"close-on-click": "",
+					"padding-size": "small"
+				}, {
+					default: J(() => [D("div", ft, [(R(!0), E(S, null, B(o.value, (t) => (R(), w($, {
+						key: t.id,
+						to: t.to,
+						type: e.routerLinkComponent,
+						appearance: "raw-inverse",
+						"color-role": "surface",
+						class: "p-2",
+						"justify-content": "left"
+					}, {
+						default: J(() => [k(Z, {
+							name: "folder",
+							class: "align-middle",
+							"fill-type": "line"
+						}), D("span", null, W(t.text), 1)]),
+						_: 2
+					}, 1032, ["to", "type"]))), 128))])]),
+					_: 1
+				}, 8, ["title"])], 64)) : (R(), E(S, { key: 1 }, [c.to ? (R(), w(U(e.routerLinkComponent), {
+					key: 0,
+					"aria-current": g(l),
+					to: c.to,
+					class: F(["first:text-base text-xl text-role-on-surface h-5 inline-flex items-center", { "font-bold": l === a.value.length - 1 }])
+				}, {
+					default: J(() => [D("span", pt, W(c.text), 1)]),
+					_: 2
+				}, 1032, [
+					"aria-current",
+					"to",
+					"class"
+				])) : c.onClick ? (R(), w($, {
+					key: 1,
+					"aria-current": g(l),
+					appearance: "raw-inverse",
+					"color-role": "surface",
+					class: "inline-flex items-center first:text-base text-xl h-5",
+					"no-hover": "",
+					onClick: c.onClick
+				}, {
+					default: J(() => [D("span", {
+						class: F([
+							"hover:underline",
+							"align-sub",
+							"truncate",
+							"inline-block",
+							"leading-[1.2]",
+							"max-w-3xs",
+							{ "oc-breadcrumb-item-text-last font-bold": l === a.value.length - 1 }
+						]),
+						textContent: W(c.text)
+					}, null, 10, mt)]),
+					_: 2
+				}, 1032, ["aria-current", "onClick"])) : (R(), E("span", {
+					key: 2,
+					class: "first:text-base text-xl align-sub truncate inline-block leading-[1.2] max-w-3xs",
+					"aria-current": g(l),
+					tabindex: "-1",
+					textContent: W(c.text)
+				}, null, 8, ht))], 64)),
+				l === a.value.length - 1 ? T("", !0) : (R(), w(Z, {
+					key: 2,
+					color: "var(--oc-role-on-surface)",
+					name: "arrow-right-s",
+					class: "mx-1 align-sub",
+					"fill-type": "line"
+				})),
+				e.showContextActions && l === a.value.length - 1 ? (R(), E(S, { key: 3 }, [Y((R(), w($, {
+					id: "oc-breadcrumb-contextmenu-trigger",
+					"aria-label": h.value,
+					appearance: "raw",
+					"no-hover": "",
+					class: "mx-1"
+				}, {
+					default: J(() => [k(Z, {
+						name: "more-2",
+						color: "var(--oc-role-on-surface)",
+						class: "align-middle"
+					})]),
+					_: 1
+				}, 8, ["aria-label"])), [[r, h.value]]), k(lt, {
+					"drop-id": "oc-breadcrumb-contextmenu",
+					toggle: "#oc-breadcrumb-contextmenu-trigger",
+					mode: "click",
+					"close-on-click": "",
+					"padding-size": e.contextMenuPadding
+				}, {
+					default: J(() => [V(t.$slots, "contextMenu", {}, void 0, !0)]),
+					_: 3
+				}, 8, ["padding-size"])], 64)) : T("", !0)
+			], 42, dt))), 128))], 2), m.value && a.value.length > 1 ? (R(), w($, {
+				key: 0,
+				appearance: "raw",
+				type: e.routerLinkComponent,
+				"aria-label": G(i)("Navigate one level up"),
+				to: m.value,
+				class: F(["oc-breadcrumb-mobile-navigation flex", {
+					"sm:hidden": e.mobileBreakpoint === "sm",
+					"md:hidden": e.mobileBreakpoint === "md",
+					"lg:hidden": e.mobileBreakpoint === "lg"
+				}])
+			}, {
+				default: J(() => [k(Z, {
+					name: "arrow-left-s",
+					"fill-type": "line",
+					"size-class": "size-8"
+				})]),
+				_: 1
+			}, 8, [
+				"type",
+				"aria-label",
+				"to",
+				"class"
+			])) : T("", !0)], 10, ut), a.value.length ? (R(), E("div", {
+				key: 0,
+				class: F(["oc-breadcrumb-mobile-current flex items-center w-0 flex-1", {
+					"sm:hidden": e.mobileBreakpoint === "sm",
+					"md:hidden": e.mobileBreakpoint === "md",
+					"lg:hidden": e.mobileBreakpoint === "lg",
+					"justify-center": a.value.length > 1
+				}])
+			}, [D("span", {
+				class: "truncate font-bold",
+				"aria-current": "page",
+				textContent: W(p.value.text)
+			}, null, 8, gt)], 2)) : T("", !0)], 64);
+		};
+	}
+}), [["__scopeId", "data-v-5883c35a"]]), vt = [
+	"id",
+	"value",
+	"disabled",
+	"aria-label"
+], yt = ["for", "textContent"], bt = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcCheckbox",
+	props: /*@__PURE__*/ M({
+		label: {},
+		disabled: {
+			type: Boolean,
+			default: !1
+		},
+		id: { default: () => y("oc-checkbox-") },
+		labelHidden: {
+			type: Boolean,
+			default: !1
+		},
+		option: {},
+		size: { default: "medium" }
+	}, {
+		modelValue: { type: Boolean },
+		modelModifiers: {}
+	}),
+	emits: /*@__PURE__*/ M(["click"], ["update:modelValue"]),
+	setup(e, { emit: t }) {
+		let n = t, r = fe(e, "modelValue"), i = C(() => {
+			let t = G(r);
+			return Array.isArray(t) ? t.some((t) => Ce(t, e.option)) : t;
+		}), a = (e) => {
+			r.value = !r.value, n("click", e);
+		};
+		return (t, n) => (R(), E("span", {
+			class: "inline-flex items-center",
+			onClick: n[1] ||= (e) => t.$emit("click", e)
+		}, [Y(D("input", {
+			id: e.id,
+			"onUpdate:modelValue": n[0] ||= (e) => r.value = e,
+			type: "checkbox",
+			name: "checkbox",
+			class: F([
+				"oc-checkbox",
+				"relative",
+				"inline-block",
+				"align-middle",
+				"m-0.5",
+				"border-2",
+				"border-role-outline",
+				"outline-0",
+				"outline-role-secondary",
+				"focus-visible:outline",
+				"rounded-md",
+				"checked:bg-role-primary",
+				"checked:border-role-primary",
+				"indeterminate:bg-white",
+				"bg-transparent",
+				"overflow-hidden",
+				"cursor-pointer",
+				"disabled:opacity-40",
+				"disabled:cursor-default",
+				"disabled:bg-role-surface-container-low",
+				"appearance-none",
+				i.value && "oc-checkbox-checked bg-white",
+				e.size === "small" && "size-3",
+				e.size === "medium" && "size-4",
+				e.size === "large" && "size-5"
+			]),
+			value: e.option,
+			disabled: e.disabled,
+			"aria-label": e.labelHidden ? e.label : null,
+			onKeydown: ye(a, ["enter"])
+		}, null, 42, vt), [[me, r.value]]), e.labelHidden ? T("", !0) : (R(), E("label", {
+			key: 0,
+			for: e.id,
+			class: F([{ "cursor-pointer": !e.disabled }, "ml-1"]),
+			textContent: W(e.label)
+		}, null, 10, yt))]));
+	}
+}), [["__scopeId", "data-v-6366ec88"]]), xt = ["for"], St = {
+	key: 0,
+	class: "text-role-error",
+	"aria-hidden": "true"
+}, Ct = { class: "flex items-center justify-between" }, wt = ["textContent"], Tt = { class: "oc-color-input-wrapper flex" }, Et = [
+	"id",
+	"aria-invalid",
+	"value",
+	"disabled"
+], Dt = ["id", "textContent"], Ot = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	inheritAttrs: !1,
+	__name: "OcColorInput",
+	props: {
+		id: { default: () => y("oc-color-input-") },
+		modelValue: { default: "" },
+		clearButtonEnabled: {
+			type: Boolean,
+			default: !0
+		},
+		disabled: {
+			type: Boolean,
+			default: !1
+		},
+		label: {},
+		errorMessage: {},
+		fixMessageLine: {
+			type: Boolean,
+			default: !1
+		},
+		descriptionMessage: {},
+		requiredMark: {
+			type: Boolean,
+			default: !1
+		}
+	},
+	emits: ["change", "update:modelValue"],
+	setup(e, { emit: t }) {
+		let n = t, r = C(() => e.fixMessageLine || !!e.errorMessage || !!e.descriptionMessage), i = C(() => `${e.id}-message`), a = ue(), o = C(() => {
+			let t = {};
+			(e.errorMessage || e.descriptionMessage) && (t["aria-describedby"] = i.value);
+			let { change: n, input: r, class: o, ...s } = a;
+			return {
+				...s,
+				...t
+			};
+		}), s = C(() => (!!e.errorMessage).toString()), c = C(() => e.errorMessage ? e.errorMessage : e.descriptionMessage), l = C(() => !e.disabled && e.clearButtonEnabled && !!e.modelValue), u = K("colorInputRef");
+		function d() {
+			e.disabled || G(u).click();
+		}
+		function f() {
+			m(""), p(null);
+		}
+		let p = (e) => {
+			n("change", e);
+		}, m = (e) => {
+			n("update:modelValue", e);
+		};
+		return (t, n) => (R(), E("div", { class: F(["min-w-45 w-fit bg-role-surface-container rounded-xl", t.$attrs.class]) }, [V(t.$slots, "preview", { color: e.modelValue }, void 0, !0), D("div", {
+			class: "p-4 cursor-pointer",
+			onClick: d
+		}, [V(t.$slots, "label", {}, () => [D("label", {
+			class: "inline-block mb-2 font-semibold cursor-pointer",
+			for: e.id
+		}, [O(W(e.label) + " ", 1), e.requiredMark ? (R(), E("span", St, "*")) : T("", !0)], 8, xt)], !0), D("div", Ct, [
+			D("span", {
+				class: "text-sm text-role-on-surface-variant uppercase",
+				textContent: W(e.modelValue)
+			}, null, 8, wt),
+			D("div", Tt, [D("input", N({
+				id: e.id,
+				ref_key: "colorInputRef",
+				ref: u
+			}, o.value, {
+				type: "color",
+				"aria-invalid": s.value,
+				class: ["oc-color-input rounded-full w-4 h-4 overflow-hidden pointer-events-none border-2 border-role-outline-variant focus:border focus:border-role-outline focus:outline-2 focus:outline-role-outline", { "oc-color-input-danger text-role-error focus:text-role-error border-role-error": !!e.errorMessage }],
+				value: e.modelValue,
+				disabled: e.disabled,
+				onChange: n[0] ||= (e) => p(e.target.value),
+				onInput: n[1] ||= (e) => m(e.target.value)
+			}), null, 16, Et), l.value ? (R(), w($, {
+				key: 0,
+				class: "oc-color-input-btn-clear ml-1 pointer-events-auto",
+				appearance: "raw",
+				"no-hover": "",
+				onClick: X(f, ["stop"])
+			}, {
+				default: J(() => [k(Z, {
+					name: "close",
+					"size-class": "size-4"
+				})]),
+				_: 1
+			})) : T("", !0)]),
+			r.value ? (R(), E("div", {
+				key: 0,
+				class: F(["oc-color-input-message flex items-center text-sm mt-1 min-h-4.5", {
+					"oc-color-input-description text-role-on-surface-variant relative": !!e.descriptionMessage,
+					"oc-color-input-danger text-role-error focus:text-role-error border-role-error": !!e.errorMessage
+				}])
+			}, [e.errorMessage ? (R(), w(Z, {
+				key: 0,
+				name: "error-warning",
+				"size-class": "size-4",
+				"fill-type": "line",
+				"aria-hidden": "true",
+				class: "mr-1"
+			})) : T("", !0), D("span", {
+				id: i.value,
+				class: F({
+					"oc-color-input-description text-role-on-surface-variant flex items-center": !!e.descriptionMessage,
+					"oc-color-input-danger text-role-error focus:text-role-error border-role-error": !!e.errorMessage
+				}),
+				textContent: W(c.value)
+			}, null, 10, Dt)], 2)) : T("", !0)
+		])])], 2));
+	}
+}), [["__scopeId", "data-v-79306214"]]), kt = { class: "info-drop-content" }, At = { class: "flex justify-between items-center info-header border-b pb-2" }, jt = ["textContent"], Mt = ["textContent"], Nt = {
+	key: 1,
+	class: "info-list mt-2 mb-1 first:mt-0 last:mb-0"
+}, Pt = ["textContent"], Ft = /* @__PURE__ */ A({
+	__name: "OcInfoDrop",
+	props: {
+		title: {},
+		dropId: { default: () => y("oc-info-drop-") },
+		endText: { default: "" },
+		list: { default: () => [] },
+		mode: { default: "click" },
+		readMoreLink: { default: "" },
+		text: { default: "" },
+		toggle: { default: "" }
+	},
+	setup(e) {
+		let t = z(!1), n = C(() => (e.list || []).filter((e) => !!e.text));
+		return (r, i) => (R(), w(lt, {
+			ref: "drop",
+			class: "w-full oc-info-drop inline-block",
+			"drop-id": e.dropId,
+			toggle: e.toggle,
+			mode: e.mode,
+			"close-on-click": "",
+			"enforce-drop-on-mobile": "",
+			"is-menu": !1,
+			onHideDrop: i[0] ||= () => t.value = !1,
+			onShowDrop: i[1] ||= () => t.value = !0
+		}, {
+			default: J(() => [k(G(xe), { active: t.value }, {
+				default: J(() => [D("div", kt, [
+					D("div", At, [D("h4", {
+						class: "m-0 info-title text-lg font-normal",
+						textContent: W(r.$gettext(e.title))
+					}, null, 8, jt), k($, {
+						appearance: "raw",
+						"aria-label": r.$gettext("Close"),
+						class: "align-middle"
+					}, {
+						default: J(() => [k(Z, {
+							name: "close",
+							"fill-type": "line",
+							"size-class": "size-5"
+						})]),
+						_: 1
+					}, 8, ["aria-label"])]),
+					e.text ? (R(), E("p", {
+						key: 0,
+						class: "info-text first:mt-0 last:mb-0",
+						textContent: W(r.$gettext(e.text))
+					}, null, 8, Mt)) : T("", !0),
+					n.value.length ? (R(), E("dl", Nt, [(R(!0), E(S, null, B(n.value, (e, t) => (R(), w(U(e.headline ? "dt" : "dd"), {
+						key: t,
+						class: F({
+							"ml-0": !e.headline,
+							"first:mt-0": e.headline,
+							"font-bold": e.headline
+						})
+					}, {
+						default: J(() => [O(W(r.$gettext(e.text)), 1)]),
+						_: 2
+					}, 1032, ["class"]))), 128))])) : T("", !0),
+					e.endText ? (R(), E("p", {
+						key: 2,
+						class: "info-text-end",
+						textContent: W(r.$gettext(e.endText))
+					}, null, 8, Pt)) : T("", !0),
+					e.readMoreLink ? (R(), w($, {
+						key: 3,
+						type: "a",
+						appearance: "raw",
+						class: "info-more-link",
+						href: e.readMoreLink,
+						target: "_blank"
+					}, {
+						default: J(() => [O(W(r.$gettext("Read more")), 1)]),
+						_: 1
+					}, 8, ["href"])) : T("", !0)
+				])]),
+				_: 1
+			}, 8, ["active"])]),
+			_: 1
+		}, 8, [
+			"drop-id",
+			"toggle",
+			"mode"
+		]));
+	}
+}), It = { class: "oc-contextual-helper inline-block" }, Lt = /* @__PURE__ */ A({
+	__name: "OcContextualHelper",
+	props: {
+		title: {},
+		endText: { default: "" },
+		list: { default: () => [] },
+		readMoreLink: { default: "" },
+		text: { default: "" }
+	},
+	setup(e) {
+		let t = z(y("oc-contextual-helper-")), n = C(() => `${t.value}-button`), r = C(() => `#${n.value}`), i = C(() => ({
+			title: e.title,
+			text: e.text,
+			list: e.list,
+			endText: e.endText,
+			readMoreLink: e.readMoreLink
+		}));
+		return (e, a) => (R(), E("div", It, [k($, {
+			id: n.value,
+			"aria-label": e.$gettext("Show more information"),
+			appearance: "raw",
+			class: "flex items-center",
+			"no-hover": ""
+		}, {
+			default: J(() => [k(Z, {
+				name: "question",
+				"fill-type": "line",
+				"size-class": "size-4"
+			})]),
+			_: 1
+		}, 8, ["id", "aria-label"]), k(Ft, N({
+			"drop-id": t.value,
+			toggle: r.value
+		}, i.value), null, 16, ["drop-id", "toggle"])]));
+	}
+}), Rt = /* @__PURE__ */ A({
+	__name: "OcDatepicker",
+	props: {
+		label: {},
+		currentDate: {},
+		isClearable: {
+			type: Boolean,
+			default: !0
+		},
+		minDate: {},
+		isDark: {
+			type: Boolean,
+			default: !1
+		},
+		requiredMark: {
+			type: Boolean,
+			default: !1
+		}
+	},
+	emits: ["dateChanged"],
+	setup(e, { emit: t }) {
+		let n = t, { $gettext: r, current: i } = x(), a = z(""), o = C(() => {
+			let e = Me.fromISO(G(a)).endOf("day");
+			return e.isValid ? e : null;
+		}), s = C(() => !e.minDate || !G(o) ? !1 : G(o) < e.minDate), c = C(() => G(s) ? r("The date must be after %{date}", { date: e.minDate.minus({ day: 1 }).setLocale(i).toLocaleString(Me.DATE_SHORT) }) : "");
+		return q(() => e.currentDate, () => {
+			if (e.currentDate) {
+				a.value = e.currentDate.toISODate();
+				return;
+			}
+			a.value = void 0;
+		}, { immediate: !0 }), q(o, () => {
+			n("dateChanged", {
+				date: G(o),
+				error: G(s)
+			});
+		}, { deep: !0 }), (t, n) => {
+			let i = H("oc-text-input");
+			return R(), w(i, N({
+				modelValue: a.value,
+				"onUpdate:modelValue": n[0] ||= (e) => a.value = e
+			}, t.$attrs, {
+				label: e.label,
+				type: "date",
+				min: e.minDate?.toISODate(),
+				"fix-message-line": !0,
+				"error-message": c.value,
+				"clear-button-enabled": e.isClearable,
+				"clear-button-accessible-label": G(r)("Clear date"),
+				class: ["oc-date-picker", { "oc-date-picker-dark": e.isDark }],
+				"required-mark": e.requiredMark
+			}), null, 16, [
+				"modelValue",
+				"label",
+				"min",
+				"error-message",
+				"clear-button-enabled",
+				"clear-button-accessible-label",
+				"class",
+				"required-mark"
+			]);
+		};
+	}
+}), zt = { class: "details-list" }, Bt = /* @__PURE__ */ A({
+	__name: "OcDefinitionList",
+	props: { items: {} },
+	setup(e) {
+		return (t, n) => (R(), E("dl", zt, [(R(!0), E(S, null, B(e.items, (e) => (R(), E(S, { key: e.term }, [D("dt", null, W(e.term), 1), D("dd", null, W(e.definition), 1)], 64))), 128))]));
+	}
+}), Vt = { class: "oc-dropzone flex justify-center items-center border-dashed border-role-outline opacity-90 [&_*]:pointer-events-none" }, Ht = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	name: "OcDropzone",
+	__name: "OcDropzone",
+	setup(e) {
+		return (e, t) => (R(), E("div", Vt, [V(e.$slots, "default", {}, void 0, !0)]));
+	}
+}), [["__scopeId", "data-v-cdd61638"]]), Ut = { class: "flex items-center" }, Wt = [
+	"id",
+	"aria-invalid",
+	"multiple",
+	"accept"
+], Gt = { class: "size-16 shrink-0 rounded-full bg-role-surface-container-highest flex items-center justify-center overflow-hidden mr-4" }, Kt = { class: "flex-1 min-w-0" }, qt = ["for"], Jt = {
+	key: 0,
+	class: "text-role-error",
+	"aria-hidden": "true"
+}, Yt = ["id", "textContent"], Xt = ["title"], Zt = /* @__PURE__ */ A({
+	inheritAttrs: !1,
+	__name: "OcFileInput",
+	props: {
+		label: {},
+		id: { default: () => y("oc-fileinput-") },
+		fileTypes: { default: "" },
+		multiple: {
+			type: Boolean,
+			default: !1
+		},
+		modelValue: { default: null },
+		clearButtonEnabled: {
+			type: Boolean,
+			default: !0
+		},
+		disabled: {
+			type: Boolean,
+			default: !1
+		},
+		errorMessage: { default: "" },
+		fixMessageLine: {
+			type: Boolean,
+			default: !1
+		},
+		descriptionMessage: { default: "" },
+		requiredMark: {
+			type: Boolean,
+			default: !1
+		},
+		previewIcon: { default: "file" },
+		previewIconFillType: { default: "line" }
+	},
+	emits: ["update:modelValue", "focus"],
+	setup(e, { emit: t }) {
+		let n = t, r = C(() => e.fixMessageLine || !!e.errorMessage || !!e.descriptionMessage), i = C(() => `${e.id}-message`), a = ue(), o = C(() => {
+			let t = {};
+			(e.errorMessage || e.descriptionMessage) && (t["aria-describedby"] = G(i));
+			let { change: n, input: r, focus: o, class: s, ...c } = a;
+			return {
+				...c,
+				...t
+			};
+		}), s = C(() => (!!e.errorMessage).toString()), c = C(() => e.errorMessage ? e.errorMessage : e.descriptionMessage), l = K("inputRef"), u = K("inputBtnRef"), d = z(""), f = C(() => e.modelValue ? Array.from(e.modelValue).map((e) => e.name).join(", ") : ""), p = C(() => G(d).length > 0), m = (e) => e ? e[0] ?? e.item(0) : null, h = (e) => e ? e.type.startsWith("image/") : !1, g = () => {
+			G(d).length > 0 && (URL.revokeObjectURL(G(d)), d.value = "");
+		};
+		q(() => e.modelValue, (e) => {
+			let t = m(e);
+			if (!h(t)) {
+				g();
+				return;
+			}
+			g(), d.value = URL.createObjectURL(t);
+		}, { immediate: !0 }), oe(() => {
+			g();
+		});
+		let _ = () => {
+			G(l) && G(l).click();
+		}, v = () => {
+			n("update:modelValue", null), G(l).value = null, g();
+		}, y = () => {
+			n("update:modelValue", G(l).files);
+		}, b = async () => {
+			await P(), G(u).focus(), n("focus", G(u));
+		};
+		return (t, n) => (R(), E("div", { class: F(t.$attrs.class) }, [D("div", Ut, [
+			D("input", N({ id: e.id }, o.value, {
+				ref_key: "inputRef",
+				ref: l,
+				"aria-invalid": s.value,
+				class: "invisible oc-file-input p-0 size-0",
+				type: "file",
+				multiple: e.multiple,
+				accept: e.fileTypes,
+				onChange: y,
+				onFocus: b
+			}), null, 16, Wt),
+			D("div", Gt, [p.value ? (R(), w(Re, {
+				key: 0,
+				src: d.value,
+				alt: t.$gettext("Selected image preview"),
+				class: "w-full h-full object-cover"
+			}, null, 8, ["src", "alt"])) : (R(), w(Z, {
+				key: 1,
+				name: e.previewIcon,
+				"fill-type": e.previewIconFillType,
+				"size-class": "size-8",
+				color: "var(--oc-role-on-surface-variant)"
+			}, null, 8, ["name", "fill-type"]))]),
+			D("div", Kt, [
+				V(t.$slots, "label", {}, () => [D("label", {
+					class: "inline-block mb-0.5 font-semibold",
+					for: e.id
+				}, [O(W(e.label) + " ", 1), e.requiredMark ? (R(), E("span", Jt, "*")) : T("", !0)], 8, qt)]),
+				r.value ? (R(), E("div", {
+					key: 0,
+					class: F(["oc-file-input-message flex items-center text-sm min-h-4.5", {
+						"oc-file-input-description text-role-on-surface-variant": !!e.descriptionMessage,
+						"oc-file-input-danger text-role-error focus:text-role-error": !!e.errorMessage
+					}])
+				}, [e.errorMessage ? (R(), w(Z, {
+					key: 0,
+					name: "error-warning",
+					"size-class": "size-4",
+					class: "mr-1",
+					"fill-type": "line",
+					"aria-hidden": "true"
+				})) : T("", !0), D("span", {
+					id: i.value,
+					class: F({
+						"oc-file-input-description text-role-on-surface-variant": !!e.descriptionMessage,
+						"oc-file-input-danger text-role-error focus:text-role-error": !!e.errorMessage
+					}),
+					textContent: W(c.value)
+				}, null, 10, Yt)], 2)) : T("", !0),
+				f.value ? (R(), E("div", {
+					key: 1,
+					class: "oc-file-input-files text-sm text-role-on-surface-variant truncate mt-1 mb-2",
+					title: f.value
+				}, W(f.value), 9, Xt)) : T("", !0),
+				D("div", { class: F(["flex items-center gap-2", { "mt-2": !f.value }]) }, [k($, {
+					ref_key: "inputBtnRef",
+					ref: u,
+					class: F([{ "oc-file-input-danger text-role-error focus:text-role-error": !!e.errorMessage }, "oc-file-input-button oc-text-input-btn"]),
+					disabled: e.disabled,
+					"color-role": "secondary",
+					appearance: "outline",
+					onClick: _
+				}, {
+					default: J(() => [k(Z, {
+						name: "upload-cloud",
+						"fill-type": "line",
+						"size-class": "size-4",
+						class: "mr-1"
+					}), O(" " + W(t.$ngettext("Upload file", "Upload files", e.multiple ? 2 : 1)), 1)]),
+					_: 1
+				}, 8, ["class", "disabled"]), e.clearButtonEnabled && f.value ? (R(), w($, {
+					key: 0,
+					appearance: "outline",
+					class: "oc-file-input-clear p-2",
+					"aria-label": t.$gettext("Clear input"),
+					onClick: v
+				}, {
+					default: J(() => [k(Z, {
+						name: "delete-bin",
+						"fill-type": "line",
+						"size-class": "size-4"
+					})]),
+					_: 1
+				}, 8, ["aria-label"])) : T("", !0)], 2)
+			])
+		])], 2));
+	}
+}), Qt = ["textContent"], $t = ["textContent"], en = /* @__PURE__ */ A({
+	__name: "OcFilterChip",
+	props: {
+		filterLabel: {},
+		closeOnClick: {
+			type: Boolean,
+			default: !1
+		},
+		id: { default: () => y("oc-filter-chip-") },
+		isToggle: {
+			type: Boolean,
+			default: !1
+		},
+		isToggleActive: {
+			type: Boolean,
+			default: !1
+		},
+		raw: {
+			type: Boolean,
+			default: !1
+		},
+		hasActiveState: {
+			type: Boolean,
+			default: !0
+		},
+		selectedItemNames: { default: () => [] },
+		size: { default: "medium" }
+	},
+	emits: [
+		"clearFilter",
+		"hideDrop",
+		"showDrop",
+		"toggleFilter"
+	],
+	setup(e, { expose: t, emit: n }) {
+		let r = n, i = K("dropRef"), a = C(() => e.hasActiveState ? e.isToggle ? e.isToggleActive : !!e.selectedItemNames.length : !1), o = () => {
+			G(i)?.hide();
+		}, s = C(() => G(a) ? "filled" : e.raw ? "raw-inverse" : "outline"), c = C(() => G(a) ? "secondaryContainer" : e.raw ? "surface" : "secondary");
+		return t({ hideDrop: o }), (t, n) => {
+			let o = H("oc-icon"), l = H("oc-button"), u = ce("oc-tooltip");
+			return R(), E("div", { class: F(["oc-filter-chip flex", {
+				"oc-filter-chip-toggle": e.isToggle,
+				"oc-filter-chip-raw": e.raw
+			}]) }, [
+				k(l, {
+					id: e.id,
+					"gap-size": a.value ? "small" : "none",
+					class: F(["oc-filter-chip-button oc-pill py-1 rounded-md h-[32px] max-w-40 focus:z-90 transition-[gap]", {
+						"oc-filter-chip-button-selected rounded-l-md rounded-r-none pr-2 pl-3": a.value,
+						"px-3": !a.value
+					}]),
+					appearance: s.value,
+					"color-role": c.value,
+					"no-hover": a.value || !e.hasActiveState,
+					size: e.size,
+					onClick: n[0] ||= (t) => e.isToggle ? r("toggleFilter") : !1
+				}, {
+					default: J(() => [
+						k(o, {
+							class: F([{
+								"transform-[scale(1)] ease-in": a.value,
+								"transform-[scale(0)] ease-out w-0": !a.value
+							}, "transition-all duration-250"]),
+							name: "check",
+							"size-class": "size-4"
+						}, null, 8, ["class"]),
+						D("span", {
+							class: "truncate oc-filter-chip-label",
+							textContent: W(e.selectedItemNames.length ? e.selectedItemNames[0] : e.filterLabel)
+						}, null, 8, Qt),
+						e.selectedItemNames.length > 1 ? (R(), E("span", {
+							key: 0,
+							textContent: W(` +${e.selectedItemNames.length - 1}`)
+						}, null, 8, $t)) : T("", !0),
+						!a.value && !e.isToggle ? (R(), w(o, {
+							key: 1,
+							name: "arrow-down-s",
+							"size-class": "size-4",
+							"fill-type": "line",
+							class: "ml-1"
+						})) : T("", !0)
+					]),
+					_: 1
+				}, 8, [
+					"id",
+					"gap-size",
+					"class",
+					"appearance",
+					"color-role",
+					"no-hover",
+					"size"
+				]),
+				e.isToggle ? T("", !0) : (R(), w(lt, {
+					key: 0,
+					ref_key: "dropRef",
+					ref: i,
+					toggle: "#" + e.id,
+					title: e.filterLabel,
+					class: "oc-filter-chip-drop",
+					mode: "click",
+					"padding-size": "small",
+					"close-on-click": e.closeOnClick,
+					onHideDrop: n[1] ||= (e) => r("hideDrop"),
+					onShowDrop: n[2] ||= (e) => r("showDrop")
+				}, {
+					default: J(() => [V(t.$slots, "default")]),
+					_: 3
+				}, 8, [
+					"toggle",
+					"title",
+					"close-on-click"
+				])),
+				a.value ? Y((R(), w(l, {
+					key: 1,
+					class: "oc-filter-chip-clear px-1 rounded-l-none rounded-r-md h-[32px] not-[.oc-filter-chip-toggle_.oc-filter-chip-clear]:ml-[1px] focus:z-90",
+					appearance: "filled",
+					"color-role": "secondaryContainer",
+					"aria-label": t.$gettext("Clear filter"),
+					"no-hover": a.value,
+					onClick: n[3] ||= (e) => r("clearFilter")
+				}, {
+					default: J(() => [k(o, {
+						name: "close",
+						"size-class": "size-4"
+					})]),
+					_: 1
+				}, 8, ["aria-label", "no-hover"])), [[u, t.$gettext("Clear filter")]]) : T("", !0)
+			], 2);
+		};
+	}
+}), tn = [
+	"id",
+	"aria-live",
+	"textContent"
+], nn = /* @__PURE__ */ A({
+	__name: "OcHiddenAnnouncer",
+	props: {
+		announcement: {},
+		level: { default: "polite" }
+	},
+	setup(e) {
+		let t = C(() => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
+		return (n, r) => (R(), E("span", {
+			id: t.value,
+			class: "sr-only oc-hidden-announcer",
+			"aria-live": e.level,
+			"aria-atomic": "true",
+			textContent: W(e.announcement)
+		}, null, 8, tn));
+	}
+}), rn = /* @__PURE__ */ A({
+	__name: "OcList",
+	props: { raw: {
+		type: Boolean,
+		default: !1
+	} },
+	setup(e) {
+		return (t, n) => (R(), E("ul", { class: F(["oc-list", { "oc-list-raw": e.raw }]) }, [V(t.$slots, "default")], 2));
+	}
+}), an = ["aria-label"], on = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcLoader",
+	props: {
+		ariaLabel: { default: "Loading" },
+		flat: {
+			type: Boolean,
+			default: !1
+		}
+	},
+	setup(e) {
+		return (t, n) => (R(), E("div", {
+			class: F([
+				"oc-loader",
+				"block",
+				"after:block",
+				"bg-role-surface-container",
+				"after:bg-role-secondary",
+				"w-full",
+				"after:w-0",
+				"after:h-full",
+				"overflow-hidden",
+				"after:animate-loading-bar",
+				{ "oc-loader-flat rounded-none h-1": e.flat },
+				{ "rounded-[500px] h-4": !e.flat }
+			]),
+			"aria-label": e.ariaLabel
+		}, null, 10, an));
+	}
+}), [["__scopeId", "data-v-9c1e88b8"]]), sn = ["type", "disabled"], cn = { class: "flex flex-row flex-wrap text-sm pt-2 gap-x-2" }, ln = ["textContent"], un = "file-copy", dn = /* @__PURE__ */ A({
+	__name: "OcTextInputPassword",
+	props: {
+		disabled: {
+			type: Boolean,
+			default: !1
+		},
+		generatePasswordMethod: { type: Function },
+		hasError: {
+			type: Boolean,
+			default: !1
+		},
+		passwordPolicy: {},
+		teleportId: { default: "" },
+		value: { default: "" }
+	},
+	emits: [
+		"passwordChallengeCompleted",
+		"passwordChallengeFailed",
+		"passwordGenerated"
+	],
+	setup(e, { expose: t, emit: n }) {
+		let r = n, i = K("passwordInput"), { $gettext: a } = x(), o = z(e.value), s = z(!1), c = z(un), l = z(!1), u = C(() => !!Object.keys(e.passwordPolicy?.rules || {}).length), d = C(() => e.passwordPolicy?.missing(G(o))), f = (e) => {
+			let t = {};
+			for (let n = 0; n < e.format.length; n++) t[`param${n + 1}`] = e.format[n]?.toString();
+			return a(e.message, t);
+		}, p = () => {
+			navigator.clipboard.writeText(G(o)), c.value = "check", setTimeout(() => c.value = un, 1500);
+		}, m = () => {
+			let t = e.generatePasswordMethod();
+			o.value = t, r("passwordGenerated", o.value);
+		};
+		return t({
+			focus: () => {
+				G(i).focus();
+			},
+			select: () => {
+				G(i).select();
+			},
+			setSelectionRange: (e, t) => {
+				G(i).setSelectionRange(e, t);
+			}
+		}), q(o, (t) => {
+			if (Object.keys(e.passwordPolicy).length) {
+				if (!e.passwordPolicy.check(t)) return r("passwordChallengeFailed");
+				r("passwordChallengeCompleted");
+			}
+		}), (t, n) => {
+			let r = H("oc-contextual-helper"), h = ce("oc-tooltip");
+			return R(), E(S, null, [D("div", { class: F(["oc-text-input-password-wrapper flex flex-row border rounded-sm", {
+				"oc-text-input-password-wrapper-danger text-role-error focus:text-role-error border-role-error": e.hasError,
+				"border border-role-outline": l.value,
+				"border-role-outline-variant": !l.value
+			}]) }, [
+				Y(D("input", N(t.$attrs, {
+					ref_key: "passwordInput",
+					ref: i,
+					"onUpdate:modelValue": n[0] ||= (e) => o.value = e,
+					class: "grow-2 border-0 focus:border-0 focus:outline-0",
+					type: s.value ? "text" : "password",
+					disabled: e.disabled,
+					onFocus: n[1] ||= (e) => l.value = !0,
+					onBlur: n[2] ||= (e) => l.value = !1
+				}), null, 16, sn), [[he, o.value]]),
+				o.value && !e.disabled ? Y((R(), w($, {
+					key: 0,
+					"aria-label": s.value ? G(a)("Hide password") : G(a)("Show password"),
+					class: "oc-text-input-show-password-toggle px-2",
+					appearance: "raw",
+					size: "small",
+					onClick: n[3] ||= (e) => s.value = !s.value
+				}, {
+					default: J(() => [k(Z, {
+						"size-class": "size-4",
+						name: s.value ? "eye-off" : "eye"
+					}, null, 8, ["name"])]),
+					_: 1
+				}, 8, ["aria-label"])), [[h, s.value ? G(a)("Hide password") : G(a)("Show password")]]) : T("", !0),
+				o.value && !e.disabled ? Y((R(), w($, {
+					key: 1,
+					"aria-label": G(a)("Copy password"),
+					class: "oc-text-input-copy-password-button px-2",
+					appearance: "raw",
+					size: "small",
+					onClick: p
+				}, {
+					default: J(() => [k(Z, {
+						"size-class": "size-4",
+						name: c.value
+					}, null, 8, ["name"])]),
+					_: 1
+				}, 8, ["aria-label"])), [[h, G(a)("Copy password")]]) : T("", !0),
+				e.generatePasswordMethod && !e.disabled ? Y((R(), w($, {
+					key: 2,
+					"aria-label": G(a)("Generate password"),
+					class: "oc-text-input-generate-password-button px-2",
+					appearance: "raw",
+					size: "small",
+					onClick: m
+				}, {
+					default: J(() => [k(Z, {
+						"size-class": "size-4",
+						name: "refresh",
+						"fill-type": "line"
+					})]),
+					_: 1
+				}, 8, ["aria-label"])), [[h, G(a)("Generate password")]]) : T("", !0)
+			], 2), u.value ? (R(), w(ne, {
+				key: 0,
+				defer: "",
+				to: `#${e.teleportId}`
+			}, [D("div", cn, [(R(!0), E(S, null, B(d.value.rules, (e, t) => (R(), E("div", {
+				key: t,
+				class: "flex items-center oc-text-input-password-policy-rule"
+			}, [
+				k(Z, {
+					"size-class": "size-4",
+					class: "mr-1",
+					name: e.verified ? "checkbox-circle" : "close-circle",
+					color: e.verified ? "var(--oc-role-on-surface)" : "var(--oc-role-error)"
+				}, null, 8, ["name", "color"]),
+				D("span", {
+					class: F([{ "oc-text-input-danger": !e.verified }]),
+					textContent: W(f(e))
+				}, null, 10, ln),
+				e.helperMessage ? (R(), w(r, {
+					key: 0,
+					text: e.helperMessage,
+					title: G(a)("Password policy")
+				}, null, 8, ["text", "title"])) : T("", !0)
+			]))), 128))])], 8, ["to"])) : T("", !0)], 64);
+		};
+	}
+}), fn = ["for"], pn = {
+	key: 0,
+	class: "text-role-error",
+	"aria-hidden": "true"
+}, mn = ["id", "textContent"], hn = ["id", "textContent"], gn = ["id"], _n = /* @__PURE__ */ A({
+	inheritAttrs: !1,
+	__name: "OcTextInput",
+	props: {
+		id: { default: () => y("oc-textinput-") },
+		type: { default: "text" },
+		modelValue: { default: "" },
+		selectionRange: {},
+		clearButtonEnabled: {
+			type: Boolean,
+			default: !1
+		},
+		clearButtonAccessibleLabel: { default: "" },
+		defaultValue: {},
+		disabled: {
+			type: Boolean,
+			default: !1
+		},
+		label: {},
+		inlineLabel: {
+			type: Boolean,
+			default: !1
+		},
+		errorMessage: {},
+		errorMessageDebouncedTime: { default: 500 },
+		fixMessageLine: {
+			type: Boolean,
+			default: !1
+		},
+		descriptionMessage: {},
+		readOnly: {
+			type: Boolean,
+			default: !1
+		},
+		requiredMark: {
+			type: Boolean,
+			default: !1
+		},
+		passwordPolicy: { default: () => ({}) },
+		generatePasswordMethod: { type: Function },
+		hasBorder: {
+			type: Boolean,
+			default: !0
+		}
+	},
+	emits: [
+		"change",
+		"update:modelValue",
+		"focus",
+		"passwordChallengeCompleted",
+		"passwordChallengeFailed"
+	],
+	setup(e, { expose: t, emit: n }) {
+		let r = n, i = de(), a = z(!1), o = C(() => !!e.descriptionMessage), s = C(() => e.fixMessageLine || G(a) || G(o)), c = C(() => G(a).toString()), l = C(() => `${e.id}-message`), u = C(() => e.type === "password" ? { passwordGenerated: b } : {}), d = ue(), f = C(() => {
+			let t = {};
+			(G(a) || G(o)) && (t["aria-describedby"] = l.value), e.defaultValue && (t.placeholder = e.defaultValue), e.type === "password" && (t["password-policy"] = e.passwordPolicy, t["generate-password-method"] = e.generatePasswordMethod, t["has-error"] = G(a));
+			let { change: n, input: r, focus: i, class: s, ...c } = d;
+			return {
+				...c,
+				...t
+			};
+		}), p = C(() => !e.disabled && e.clearButtonEnabled && !!e.modelValue), m = C(() => e.clearButtonAccessibleLabel || "Clear input"), h = C(() => e.type === "password" ? dn : "input"), g = K("inputRef"), _ = () => {
+			G(g).focus();
+		};
+		t({ focus: _ });
+		function v() {
+			_(), b(""), y(null);
+		}
+		let y = (e) => {
+			r("change", e);
+		}, b = (e) => {
+			r("update:modelValue", e);
+		}, ee = async (e) => {
+			await P(), G(g).select(), te(), r("focus", e.value);
+		}, te = () => {
+			e.selectionRange && e.selectionRange.length > 1 && G(g).setSelectionRange(e.selectionRange[0], e.selectionRange[1]);
+		};
+		q([() => e.selectionRange, g], async () => {
+			G(g) && (await P(), te());
+		}, { immediate: !0 });
+		let x = Se(() => {
+			a.value = !!e.errorMessage;
+		}, e.errorMessageDebouncedTime);
+		return q(() => e.modelValue, () => {
+			x();
+		}), q(() => e.errorMessage, () => {
+			e.errorMessage ? x() : (a.value = !1, x.cancel?.());
+		}), (t, n) => (R(), E("div", { class: F([{ "flex items-center": e.inlineLabel }, t.$attrs.class]) }, [
+			V(t.$slots, "label", {}, () => [D("label", {
+				class: F(["inline-block", {
+					"mr-2": e.inlineLabel,
+					"mb-0.5": !e.inlineLabel
+				}]),
+				for: e.id
+			}, [O(W(e.label) + " ", 1), e.requiredMark ? (R(), E("span", pn, "*")) : T("", !0)], 10, fn)]),
+			D("div", { class: F(["relative", { "grow-1": e.inlineLabel }]) }, [
+				e.readOnly ? (R(), w(Z, {
+					key: 0,
+					name: "lock",
+					"size-class": "size-4",
+					class: "mt-2 ml-2 absolute"
+				})) : T("", !0),
+				(R(), w(U(h.value), N({ id: e.id }, f.value, {
+					ref_key: "inputRef",
+					ref: g,
+					"aria-invalid": c.value,
+					class: ["oc-text-input oc-input h-9", {
+						"oc-text-input-danger border-role-error": !!a.value,
+						"pl-6": !!e.readOnly,
+						"pr-6": p.value,
+						"border-none outline-none bg-transparent": !e.hasBorder
+					}],
+					type: e.type,
+					value: e.modelValue,
+					disabled: e.disabled || e.readOnly,
+					"teleport-id": G(i)
+				}, le(u.value), {
+					onChange: n[0] ||= (e) => y(e.target.value),
+					onInput: n[1] ||= (e) => b(e.target.value),
+					onPasswordChallengeCompleted: n[2] ||= (e) => t.$emit("passwordChallengeCompleted"),
+					onPasswordChallengeFailed: n[3] ||= (e) => t.$emit("passwordChallengeFailed"),
+					onFocus: n[4] ||= (e) => ee(e.target)
+				}), null, 16, [
+					"id",
+					"aria-invalid",
+					"class",
+					"type",
+					"value",
+					"disabled",
+					"teleport-id"
+				])),
+				p.value ? (R(), w($, {
+					key: 1,
+					"aria-label": m.value,
+					class: "pr-2 absolute top-[50%] transform-[translateY(-50%)] right-0 oc-text-input-btn-clear",
+					appearance: "raw",
+					"no-hover": "",
+					onClick: v
+				}, {
+					default: J(() => [k(Z, {
+						name: "close",
+						"size-class": "size-4"
+					})]),
+					_: 1
+				}, 8, ["aria-label"])) : T("", !0)
+			], 2),
+			s.value ? (R(), E("div", {
+				key: 0,
+				class: F(["oc-text-input-message flex align-center text-sm mt-1 min-h-4.5", {
+					"oc-text-input-description text-role-on-surface-variant relative": o.value,
+					"oc-text-input-danger text-role-error focus:text-role-error border-role-error": a.value
+				}])
+			}, [a.value ? (R(), E(S, { key: 0 }, [a.value ? (R(), w(Z, {
+				key: 0,
+				name: "error-warning",
+				"size-class": "size-4",
+				"fill-type": "line",
+				"aria-hidden": "true",
+				class: "mr-1"
+			})) : T("", !0), a.value ? (R(), E("span", {
+				key: 1,
+				id: l.value,
+				class: "oc-text-input-danger text-role-error focus:text-role-error border-role-error",
+				textContent: W(e.errorMessage)
+			}, null, 8, mn)) : T("", !0)], 64)) : o.value ? (R(), E("span", {
+				key: 1,
+				id: l.value,
+				class: "oc-text-input-description text-role-on-surface-variant flex items-center relative",
+				textContent: W(e.descriptionMessage)
+			}, null, 8, hn)) : T("", !0)], 2)) : T("", !0),
+			D("div", { id: G(i) }, null, 8, gn)
+		], 2));
+	}
+}), vn = { class: "oc-modal-background fixed left-0 top-0 z-[var(--z-index-modal)] bg-black/40 flex items-center justify-center flex-row flex-wrap size-full" }, yn = ["id", "onKeydown"], bn = { class: "oc-modal-title flex items-center flex-row justify-between py-3 px-4 rounded-t-xl" }, xn = ["textContent"], Sn = { class: "flex items-center gap-1" }, Cn = { class: "oc-modal-body px-4 pt-4" }, wn = {
+	key: "modal-slot-content",
+	class: "oc-modal-body-message mt-2 mb-4"
+}, Tn = ["textContent"], En = ["textContent"], Dn = {
+	key: 0,
+	class: "oc-modal-body-actions flex justify-end p-4 text-right"
+}, On = { class: "oc-modal-body-actions-grid grid grid-flow-col auto-cols-1fr" }, kn = /* @__PURE__ */ A({
+	__name: "OcModal",
+	props: {
+		title: {},
+		buttonConfirmDisabled: {
+			type: Boolean,
+			default: !1
+		},
+		buttonConfirmText: { default: "Confirm" },
+		contextualHelperData: {},
+		contextualHelperLabel: { default: "" },
+		elementClass: {},
+		elementId: {},
+		focusTrapInitial: {
+			type: [String, Boolean],
+			default: null
+		},
+		hasInput: {
+			type: Boolean,
+			default: !1
+		},
+		hideActions: {
+			type: Boolean,
+			default: !1
+		},
+		hideCancelButton: {
+			type: Boolean,
+			default: !1
+		},
+		hideConfirmButton: {
+			type: Boolean,
+			default: !1
+		},
+		inputDescription: {},
+		inputRequiredMark: {
+			type: Boolean,
+			default: !1
+		},
+		inputError: {},
+		inputLabel: {},
+		inputSelectionRange: {},
+		inputType: { default: "text" },
+		inputValue: {},
+		isLoading: {
+			type: Boolean,
+			default: !1
+		},
+		message: {}
+	},
+	emits: [
+		"cancel",
+		"confirm",
+		"input"
+	],
+	setup(e, { emit: t }) {
+		let n = t, { $gettext: r } = x(), i = z(!1), a = z(), o = z("filled"), s = K("ocModal"), c = K("ocModalInput"), l = C(() => ({ getShadowRoot: !0 })), u = () => {
+			i.value = !1, o.value = "filled";
+		}, d = () => {
+			i.value = !0, o.value = "outline";
+		}, f = C(() => e.buttonConfirmText || r("Confirm")), p = C(() => r("Cancel"));
+		q(() => e.isLoading, () => {
+			if (!e.isLoading) return u();
+			setTimeout(() => {
+				if (!e.isLoading) return u();
+				d();
+			}, 700);
+		}, { immediate: !0 });
+		let m = C(() => e.focusTrapInitial || e.focusTrapInitial === !1 ? e.focusTrapInitial : () => G(c)?.$el?.querySelector("input") || G(s) || void 0), h = C(() => [
+			"oc-modal",
+			"bg-role-surface",
+			e.elementClass
+		]);
+		q(() => e.inputValue, (e) => {
+			a.value = e;
+		}, { immediate: !0 });
+		let _ = () => {
+			n("cancel");
+		}, v = () => {
+			e.buttonConfirmDisabled || e.inputError || n("confirm", G(a));
+		}, y = (e) => {
+			g(e) || v();
+		}, b = (e) => {
+			n("input", e);
+		};
+		return (t, n) => {
+			let u = H("oc-icon"), d = H("oc-contextual-helper");
+			return R(), E("div", vn, [k(G(xe), {
+				active: !0,
+				"initial-focus": m.value,
+				"tabbable-options": l.value
+			}, {
+				default: J(() => [D("div", {
+					id: e.elementId,
+					ref_key: "ocModal",
+					ref: s,
+					class: F([h.value, "z-[calc(var(--z-index-modal)+1)] rounded-xl focus:outline-0 w-full max-w-xl max-h-[90vh] overflow-auto shadow-2xl border border-role-surface-container-highest"]),
+					tabindex: "0",
+					role: "dialog",
+					"aria-modal": "true",
+					"aria-labelledby": "oc-modal-title",
+					onKeydown: ye(X(_, ["stop"]), ["esc"])
+				}, [
+					D("div", bn, [D("h2", {
+						id: "oc-modal-title",
+						class: "truncate m-0 text-base",
+						textContent: W(e.title)
+					}, null, 8, xn), D("div", Sn, [V(t.$slots, "headerActions"), e.hideCancelButton ? T("", !0) : (R(), w($, {
+						key: 0,
+						appearance: "raw",
+						class: "oc-modal-title-actions-cancel",
+						disabled: e.isLoading,
+						"aria-label": p.value,
+						onClick: _
+					}, {
+						default: J(() => [k(u, { name: "close" })]),
+						_: 1
+					}, 8, ["disabled", "aria-label"]))])]),
+					D("div", Cn, [t.$slots.content ? (R(), E("div", wn, [V(t.$slots, "content")])) : (R(), E(S, { key: 1 }, [
+						e.message ? (R(), E("p", {
+							key: "modal-message",
+							class: F(["oc-modal-body-message mt-0", { "mb-0": !e.hasInput || e.contextualHelperData }]),
+							textContent: W(e.message)
+						}, null, 10, Tn)) : T("", !0),
+						e.contextualHelperData ? (R(), E("div", {
+							key: 1,
+							class: F(["oc-modal-body-contextual-helper mb-4", { "mb-0": !e.hasInput }])
+						}, [D("span", {
+							class: "text",
+							textContent: W(e.contextualHelperLabel)
+						}, null, 8, En), k(d, N({ class: "pl-1" }, e.contextualHelperData), null, 16)], 2)) : T("", !0),
+						e.hasInput ? (R(), w(_n, {
+							key: "modal-input",
+							ref_key: "ocModalInput",
+							ref: c,
+							modelValue: a.value,
+							"onUpdate:modelValue": [n[0] ||= (e) => a.value = e, b],
+							class: "oc-modal-body-input -mb-5 pb-4",
+							"error-message": e.inputError,
+							label: e.inputLabel,
+							type: e.inputType,
+							"description-message": e.inputDescription,
+							"required-mark": e.inputRequiredMark,
+							"fix-message-line": !0,
+							"selection-range": e.inputSelectionRange,
+							onKeydown: ye(X(y, ["prevent"]), ["enter"])
+						}, null, 8, [
+							"modelValue",
+							"error-message",
+							"label",
+							"type",
+							"description-message",
+							"required-mark",
+							"selection-range",
+							"onKeydown"
+						])) : T("", !0)
+					], 64))]),
+					e.hideActions ? T("", !0) : (R(), E("div", Dn, [D("div", On, [e.hideConfirmButton ? T("", !0) : (R(), w($, {
+						key: 0,
+						class: "oc-modal-body-actions-confirm ml-2",
+						appearance: o.value,
+						disabled: e.isLoading || e.buttonConfirmDisabled || !!e.inputError || e.hasInput && e.inputRequiredMark && !a.value,
+						"show-spinner": i.value,
+						onClick: v
+					}, {
+						default: J(() => [O(W(G(r)(f.value)), 1)]),
+						_: 1
+					}, 8, [
+						"appearance",
+						"disabled",
+						"show-spinner"
+					]))])]))
+				], 42, yn)]),
+				_: 3
+			}, 8, ["initial-focus", "tabbable-options"])]);
+		};
+	}
+}), An = { class: "oc-error-log" }, jn = { class: "flex justify-between mt-2" }, Mn = { class: "flex" }, Nn = {
+	key: 0,
+	class: "flex items-center"
+}, Pn = ["textContent"], Fn = /* @__PURE__ */ A({
+	__name: "OcErrorLog",
+	props: { content: {} },
+	setup(e) {
+		let { $gettext: t } = x(), n = z(!1), r = C(() => t("Copy the following information and pass them to technical support to troubleshoot the problem:")), i = () => {
+			navigator.clipboard.writeText(e.content), n.value = !0, setTimeout(() => n.value = !1, 1500);
+		};
+		return (a, o) => {
+			let s = H("oc-textarea"), c = H("oc-icon"), l = H("oc-button");
+			return R(), E("div", An, [k(s, {
+				class: "oc-error-log-textarea mt-2 text-sm resize-none",
+				label: r.value,
+				"model-value": e.content,
+				rows: "4",
+				readonly: ""
+			}, null, 8, ["label", "model-value"]), D("div", jn, [D("div", Mn, [n.value ? (R(), E("div", Nn, [k(c, { name: "checkbox-circle" }), D("p", {
+				class: "oc-error-log-content-copied ml-2 my-0",
+				textContent: W(G(t)("Copied"))
+			}, null, 8, Pn)])) : T("", !0)]), k(l, {
+				size: "small",
+				appearance: "filled",
+				onClick: i
+			}, {
+				default: J(() => [O(W(G(t)("Copy")), 1)]),
+				_: 1
+			})])]);
+		};
+	}
+}), In = ["role", "aria-live"], Ln = { class: "flex items-center justify-between w-full" }, Rn = { class: "flex items-center" }, zn = { class: "oc-notification-message-title text-lg" }, Bn = {
+	key: 0,
+	class: "flex justify-between w-full mt-2"
+}, Vn = ["textContent"], Hn = ["textContent"], Un = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcNotificationMessage",
+	props: {
+		title: {},
+		errorLogContent: {},
+		message: {},
+		status: { default: "passive" },
+		timeout: { default: 5 },
+		showInfoIcon: {
+			type: Boolean,
+			default: !0
+		}
+	},
+	emits: ["close"],
+	setup(e, { emit: t }) {
+		let n = t, r = z(!1), i = C(() => `oc-notification-message-${e.status}`), a = C(() => e.status === "danger"), o = C(() => G(a) ? "alert" : "status"), s = C(() => G(a) ? "assertive" : "polite"), c = () => {
+			n("close");
+		};
+		return se(() => {
+			e.timeout !== 0 && setTimeout(() => {
+				c();
+			}, e.timeout * 1e3);
+		}), (t, n) => (R(), E("div", { class: F(["flex flex-wrap oc-notification-message shadow-sm/10 rounded-xl border break-keep bg-role-surface motion-safe:animate-fade-in relative", i.value]) }, [D("div", {
+			class: "flex flex-wrap items-center flex-1",
+			role: o.value,
+			"aria-live": s.value
+		}, [
+			D("div", Ln, [D("div", Rn, [e.showInfoIcon ? (R(), w(Z, {
+				key: 0,
+				name: "information",
+				"fill-type": "line",
+				class: "mr-2"
+			})) : T("", !0), D("div", zn, W(e.title), 1)]), k($, {
+				appearance: "raw",
+				"aria-label": t.$gettext("Close"),
+				onClick: c
+			}, {
+				default: J(() => [k(Z, { name: "close" })]),
+				_: 1
+			}, 8, ["aria-label"])]),
+			e.message || e.errorLogContent ? (R(), E("div", Bn, [e.message ? (R(), E("span", {
+				key: 0,
+				class: "oc-notification-message-content text-role-on-surface-variant mr-2",
+				textContent: W(e.message)
+			}, null, 8, Vn)) : T("", !0), e.errorLogContent ? (R(), w($, {
+				key: 1,
+				class: "oc-notification-message-error-log-toggle-button break-keep",
+				"gap-size": "none",
+				appearance: "raw",
+				onClick: n[0] ||= (e) => r.value = !r.value
+			}, {
+				default: J(() => [D("span", { textContent: W(t.$gettext("Details")) }, null, 8, Hn), k(Z, { name: r.value ? "arrow-up-s" : "arrow-down-s" }, null, 8, ["name"])]),
+				_: 1
+			})) : T("", !0)])) : T("", !0),
+			V(t.$slots, "actions", {}, void 0, !0),
+			r.value ? (R(), w(Fn, {
+				key: 1,
+				class: "mt-4",
+				content: e.errorLogContent
+			}, null, 8, ["content"])) : T("", !0)
+		], 8, In)], 2));
+	}
+}), [["__scopeId", "data-v-7ded1eb2"]]), Wn = /* @__PURE__ */ A({
+	__name: "OcNotifications",
+	props: { position: { default: "default" } },
+	setup(e) {
+		return (t, n) => (R(), E("div", { class: F(["oc-notification z-1040 w-md max-w-full", {
+			fixed: e.position !== "default",
+			"top-2 left-2": e.position === "top-left",
+			"top-2 inset-x-0 mx-auto": e.position === "top-center",
+			"top-2 right-2": e.position === "top-right"
+		}]) }, [V(t.$slots, "default")], 2));
+	}
+}), Gn = Object.defineProperty, Kn = Object.defineProperties, qn = Object.getOwnPropertyDescriptors, Jn = Object.getOwnPropertySymbols, Yn = Object.prototype.hasOwnProperty, Xn = Object.prototype.propertyIsEnumerable, Zn = (e, t, n) => t in e ? Gn(e, t, {
+	enumerable: !0,
+	configurable: !0,
+	writable: !0,
+	value: n
+}) : e[t] = n, Qn = (e, t) => {
+	for (var n in t ||= {}) Yn.call(t, n) && Zn(e, n, t[n]);
+	if (Jn) for (var n of Jn(t)) Xn.call(t, n) && Zn(e, n, t[n]);
+	return e;
+}, $n = (e, t) => Kn(e, qn(t)), er = {
+	props: { autoscroll: {
+		type: Boolean,
+		default: !0
+	} },
+	watch: {
+		typeAheadPointer() {
+			this.autoscroll && this.maybeAdjustScroll();
+		},
+		open(e) {
+			this.autoscroll && e && this.$nextTick(() => this.maybeAdjustScroll());
+		}
+	},
+	methods: {
+		maybeAdjustScroll() {
+			let e = this.$refs.dropdownMenu?.children[this.typeAheadPointer] || !1;
+			if (e) {
+				let t = this.getDropdownViewport(), { top: n, bottom: r, height: i } = e.getBoundingClientRect();
+				if (n < t.top) return this.$refs.dropdownMenu.scrollTop = e.offsetTop;
+				if (r > t.bottom) return this.$refs.dropdownMenu.scrollTop = e.offsetTop - (t.height - i);
+			}
+		},
+		getDropdownViewport() {
+			return this.$refs.dropdownMenu ? this.$refs.dropdownMenu.getBoundingClientRect() : {
+				height: 0,
+				top: 0,
+				bottom: 0
+			};
+		}
+	}
+}, tr = {
+	data() {
+		return { typeAheadPointer: -1 };
+	},
+	watch: {
+		filteredOptions() {
+			for (let e = 0; e < this.filteredOptions.length; e++) if (this.selectable(this.filteredOptions[e])) {
+				this.typeAheadPointer = e;
+				break;
+			}
+		},
+		open(e) {
+			e && this.typeAheadToLastSelected();
+		},
+		selectedValue() {
+			this.open && this.typeAheadToLastSelected();
+		}
+	},
+	methods: {
+		typeAheadUp() {
+			for (let e = this.typeAheadPointer - 1; e >= 0; e--) if (this.selectable(this.filteredOptions[e])) {
+				this.typeAheadPointer = e;
+				break;
+			}
+		},
+		typeAheadDown() {
+			for (let e = this.typeAheadPointer + 1; e < this.filteredOptions.length; e++) if (this.selectable(this.filteredOptions[e])) {
+				this.typeAheadPointer = e;
+				break;
+			}
+		},
+		typeAheadSelect() {
+			let e = this.filteredOptions[this.typeAheadPointer];
+			e && this.selectable(e) && this.select(e);
+		},
+		typeAheadToLastSelected() {
+			this.typeAheadPointer = this.selectedValue.length === 0 ? -1 : this.filteredOptions.indexOf(this.selectedValue[this.selectedValue.length - 1]);
+		}
+	}
+}, nr = {
+	props: { loading: {
+		type: Boolean,
+		default: !1
+	} },
+	data() {
+		return { mutableLoading: !1 };
+	},
+	watch: {
+		search() {
+			this.$emit("search", this.search, this.toggleLoading);
+		},
+		loading(e) {
+			this.mutableLoading = e;
+		}
+	},
+	methods: { toggleLoading(e = null) {
+		return this.mutableLoading = e ?? !this.mutableLoading;
+	} }
+}, rr = (e, t) => {
+	let n = e.__vccOpts || e;
+	for (let [e, r] of t) n[e] = r;
+	return n;
+}, ir = {}, ar = {
+	xmlns: "http://www.w3.org/2000/svg",
+	width: "10",
+	height: "10"
+}, or = [/* @__PURE__ */ D("path", { d: "M6.895455 5l2.842897-2.842898c.348864-.348863.348864-.914488 0-1.263636L9.106534.261648c-.348864-.348864-.914489-.348864-1.263636 0L5 3.104545 2.157102.261648c-.348863-.348864-.914488-.348864-1.263636 0L.261648.893466c-.348864.348864-.348864.914489 0 1.263636L3.104545 5 .261648 7.842898c-.348864.348863-.348864.914488 0 1.263636l.631818.631818c.348864.348864.914773.348864 1.263636 0L5 6.895455l2.842898 2.842897c.348863.348864.914772.348864 1.263636 0l.631818-.631818c.348864-.348864.348864-.914489 0-1.263636L6.895455 5z" }, null, -1)];
+function sr(e, t) {
+	return R(), E("svg", ar, or);
+}
+var cr = /* @__PURE__ */ rr(ir, [["render", sr]]), lr = {}, ur = {
+	xmlns: "http://www.w3.org/2000/svg",
+	width: "14",
+	height: "10"
+}, dr = [/* @__PURE__ */ D("path", { d: "M9.211364 7.59931l4.48338-4.867229c.407008-.441854.407008-1.158247 0-1.60046l-.73712-.80023c-.407008-.441854-1.066904-.441854-1.474243 0L7 5.198617 2.51662.33139c-.407008-.441853-1.066904-.441853-1.474243 0l-.737121.80023c-.407008.441854-.407008 1.158248 0 1.600461l4.48338 4.867228L7 10l2.211364-2.40069z" }, null, -1)];
+function fr(e, t) {
+	return R(), E("svg", ur, dr);
+}
+var pr = {
+	Deselect: cr,
+	OpenIndicator: /* @__PURE__ */ rr(lr, [["render", fr]])
+}, mr = {
+	mounted(e, { instance: t }) {
+		if (t.appendToBody) {
+			let { height: n, top: r, left: i, width: a } = t.$refs.toggle.getBoundingClientRect(), o = window.scrollX || window.pageXOffset, s = window.scrollY || window.pageYOffset;
+			e.unbindPosition = t.calculatePosition(e, t, {
+				width: a + "px",
+				left: o + i + "px",
+				top: s + r + n + "px"
+			}), document.body.appendChild(e);
+		}
+	},
+	unmounted(e, { instance: t }) {
+		t.appendToBody && (e.unbindPosition && typeof e.unbindPosition == "function" && e.unbindPosition(), e.parentNode && e.parentNode.removeChild(e));
+	}
+};
+function hr(e) {
+	let t = {};
+	return Object.keys(e).sort().forEach((n) => {
+		t[n] = e[n];
+	}), JSON.stringify(t);
+}
+var gr = 0;
+function _r() {
+	return ++gr;
+}
+var vr = {
+	components: Qn({}, pr),
+	directives: { appendToBody: mr },
+	mixins: [
+		er,
+		tr,
+		nr
+	],
+	compatConfig: { MODE: 3 },
+	emits: [
+		"open",
+		"close",
+		"update:modelValue",
+		"search",
+		"search:compositionstart",
+		"search:compositionend",
+		"search:keydown",
+		"search:blur",
+		"search:focus",
+		"search:input",
+		"option:created",
+		"option:selecting",
+		"option:selected",
+		"option:deselecting",
+		"option:deselected"
+	],
+	props: {
+		modelValue: {},
+		components: {
+			type: Object,
+			default: () => ({})
+		},
+		options: {
+			type: Array,
+			default() {
+				return [];
+			}
+		},
+		disabled: {
+			type: Boolean,
+			default: !1
+		},
+		clearable: {
+			type: Boolean,
+			default: !0
+		},
+		deselectFromDropdown: {
+			type: Boolean,
+			default: !1
+		},
+		searchable: {
+			type: Boolean,
+			default: !0
+		},
+		multiple: {
+			type: Boolean,
+			default: !1
+		},
+		placeholder: {
+			type: String,
+			default: ""
+		},
+		transition: {
+			type: String,
+			default: "vs__fade"
+		},
+		clearSearchOnSelect: {
+			type: Boolean,
+			default: !0
+		},
+		closeOnSelect: {
+			type: Boolean,
+			default: !0
+		},
+		label: {
+			type: String,
+			default: "label"
+		},
+		autocomplete: {
+			type: String,
+			default: "off"
+		},
+		reduce: {
+			type: Function,
+			default: (e) => e
+		},
+		selectable: {
+			type: Function,
+			default: (e) => !0
+		},
+		getOptionLabel: {
+			type: Function,
+			default(e) {
+				return typeof e == "object" ? e.hasOwnProperty(this.label) ? e[this.label] : console.warn(`[vue-select warn]: Label key "option.${this.label}" does not exist in options object ${JSON.stringify(e)}.
+https://vue-select.org/api/props.html#getoptionlabel`) : e;
+			}
+		},
+		getOptionKey: {
+			type: Function,
+			default(e) {
+				if (typeof e != "object") return e;
+				try {
+					return e.hasOwnProperty("id") ? e.id : hr(e);
+				} catch (t) {
+					return console.warn("[vue-select warn]: Could not stringify this option to generate unique key. Please provide'getOptionKey' prop to return a unique key for each option.\nhttps://vue-select.org/api/props.html#getoptionkey", e, t);
+				}
+			}
+		},
+		onTab: {
+			type: Function,
+			default: function() {
+				this.selectOnTab && !this.isComposing && this.typeAheadSelect();
+			}
+		},
+		taggable: {
+			type: Boolean,
+			default: !1
+		},
+		tabindex: {
+			type: Number,
+			default: null
+		},
+		pushTags: {
+			type: Boolean,
+			default: !1
+		},
+		filterable: {
+			type: Boolean,
+			default: !0
+		},
+		filterBy: {
+			type: Function,
+			default(e, t, n) {
+				return (t || "").toLocaleLowerCase().indexOf(n.toLocaleLowerCase()) > -1;
+			}
+		},
+		filter: {
+			type: Function,
+			default(e, t) {
+				return e.filter((e) => {
+					let n = this.getOptionLabel(e);
+					return typeof n == "number" && (n = n.toString()), this.filterBy(e, n, t);
+				});
+			}
+		},
+		createOption: {
+			type: Function,
+			default(e) {
+				return typeof this.optionList[0] == "object" ? { [this.label]: e } : e;
+			}
+		},
+		resetOnOptionsChange: {
+			default: !1,
+			validator: (e) => ["function", "boolean"].includes(typeof e)
+		},
+		clearSearchOnBlur: {
+			type: Function,
+			default: function({ clearSearchOnSelect: e, multiple: t }) {
+				return e && !t;
+			}
+		},
+		noDrop: {
+			type: Boolean,
+			default: !1
+		},
+		inputId: { type: String },
+		dir: {
+			type: String,
+			default: "auto"
+		},
+		selectOnTab: {
+			type: Boolean,
+			default: !1
+		},
+		selectOnKeyCodes: {
+			type: Array,
+			default: () => [13]
+		},
+		searchInputQuerySelector: {
+			type: String,
+			default: "[type=search]"
+		},
+		mapKeydown: {
+			type: Function,
+			default: (e, t) => e
+		},
+		appendToBody: {
+			type: Boolean,
+			default: !1
+		},
+		calculatePosition: {
+			type: Function,
+			default(e, t, { width: n, top: r, left: i }) {
+				e.style.top = r, e.style.left = i, e.style.width = n;
+			}
+		},
+		dropdownShouldOpen: {
+			type: Function,
+			default({ noDrop: e, open: t, mutableLoading: n }) {
+				return !e && t && !n;
+			}
+		},
+		uid: {
+			type: [String, Number],
+			default: () => _r()
+		}
+	},
+	data() {
+		return {
+			search: "",
+			open: !1,
+			isComposing: !1,
+			pushedTags: [],
+			_value: [],
+			deselectButtons: []
+		};
+	},
+	computed: {
+		isReducingValues() {
+			return this.$props.reduce !== this.$options.props.reduce.default;
+		},
+		isTrackingValues() {
+			return this.modelValue === void 0 || this.isReducingValues;
+		},
+		selectedValue() {
+			let e = this.modelValue;
+			return this.isTrackingValues && (e = this.$data._value), e != null && e !== "" ? [].concat(e) : [];
+		},
+		optionList() {
+			return this.options.concat(this.pushTags ? this.pushedTags : []);
+		},
+		searchEl() {
+			return this.$slots.search ? this.$refs.selectedOptions.querySelector(this.searchInputQuerySelector) : this.$refs.search;
+		},
+		scope() {
+			let e = {
+				search: this.search,
+				loading: this.loading,
+				searching: this.searching,
+				filteredOptions: this.filteredOptions
+			};
+			return {
+				search: {
+					attributes: Qn({
+						disabled: this.disabled,
+						placeholder: this.searchPlaceholder,
+						tabindex: this.tabindex,
+						readonly: !this.searchable,
+						id: this.inputId,
+						"aria-autocomplete": "list",
+						"aria-labelledby": `vs${this.uid}__combobox`,
+						"aria-controls": `vs${this.uid}__listbox`,
+						ref: "search",
+						type: "search",
+						autocomplete: this.autocomplete,
+						value: this.search
+					}, this.dropdownOpen && this.filteredOptions[this.typeAheadPointer] ? { "aria-activedescendant": `vs${this.uid}__option-${this.typeAheadPointer}` } : {}),
+					events: {
+						compositionstart: () => this.isComposing = !0,
+						compositionend: () => this.isComposing = !1,
+						keydown: this.onSearchKeyDown,
+						blur: this.onSearchBlur,
+						focus: this.onSearchFocus,
+						input: (e) => this.search = e.target.value
+					}
+				},
+				spinner: { loading: this.mutableLoading },
+				noOptions: {
+					search: this.search,
+					loading: this.mutableLoading,
+					searching: this.searching
+				},
+				openIndicator: { attributes: {
+					ref: "openIndicator",
+					role: "presentation",
+					class: "vs__open-indicator"
+				} },
+				listHeader: e,
+				listFooter: e,
+				header: $n(Qn({}, e), { deselect: this.deselect }),
+				footer: $n(Qn({}, e), { deselect: this.deselect })
+			};
+		},
+		childComponents() {
+			return Qn(Qn({}, pr), this.components);
+		},
+		stateClasses() {
+			return {
+				"vs--open": this.dropdownOpen,
+				"vs--single": !this.multiple,
+				"vs--multiple": this.multiple,
+				"vs--searching": this.searching && !this.noDrop,
+				"vs--searchable": this.searchable && !this.noDrop,
+				"vs--unsearchable": !this.searchable,
+				"vs--loading": this.mutableLoading,
+				"vs--disabled": this.disabled
+			};
+		},
+		searching() {
+			return !!this.search;
+		},
+		dropdownOpen() {
+			return this.dropdownShouldOpen(this);
+		},
+		searchPlaceholder() {
+			return this.isValueEmpty && this.placeholder ? this.placeholder : void 0;
+		},
+		filteredOptions() {
+			let e = [].concat(this.optionList);
+			if (!this.filterable && !this.taggable) return e;
+			let t = this.search.length ? this.filter(e, this.search, this) : e;
+			if (this.taggable && this.search.length) {
+				let e = this.createOption(this.search);
+				this.optionExists(e) || t.unshift(e);
+			}
+			return t;
+		},
+		isValueEmpty() {
+			return this.selectedValue.length === 0;
+		},
+		showClearButton() {
+			return !this.multiple && this.clearable && !this.open && !this.isValueEmpty;
+		}
+	},
+	watch: {
+		options(e, t) {
+			!this.taggable && (typeof this.resetOnOptionsChange == "function" ? this.resetOnOptionsChange(e, t, this.selectedValue) : this.resetOnOptionsChange) && this.clearSelection(), this.modelValue && this.isTrackingValues && this.setInternalValueFromOptions(this.modelValue);
+		},
+		modelValue: {
+			immediate: !0,
+			handler(e) {
+				this.isTrackingValues && this.setInternalValueFromOptions(e);
+			}
+		},
+		multiple() {
+			this.clearSelection();
+		},
+		open(e) {
+			this.$emit(e ? "open" : "close");
+		}
+	},
+	created() {
+		this.mutableLoading = this.loading;
+	},
+	methods: {
+		setInternalValueFromOptions(e) {
+			Array.isArray(e) ? this.$data._value = e.map((e) => this.findOptionFromReducedValue(e)) : this.$data._value = this.findOptionFromReducedValue(e);
+		},
+		select(e) {
+			this.$emit("option:selecting", e), this.isOptionSelected(e) ? this.deselectFromDropdown && (this.clearable || this.multiple && this.selectedValue.length > 1) && this.deselect(e) : (this.taggable && !this.optionExists(e) && (this.$emit("option:created", e), this.pushTag(e)), this.multiple && (e = this.selectedValue.concat(e)), this.updateValue(e), this.$emit("option:selected", e)), this.onAfterSelect(e);
+		},
+		deselect(e) {
+			this.$emit("option:deselecting", e), this.updateValue(this.selectedValue.filter((t) => !this.optionComparator(t, e))), this.$emit("option:deselected", e);
+		},
+		clearSelection() {
+			this.updateValue(this.multiple ? [] : null);
+		},
+		onAfterSelect(e) {
+			this.closeOnSelect && (this.open = !this.open, this.searchEl.blur()), this.clearSearchOnSelect && (this.search = "");
+		},
+		updateValue(e) {
+			this.modelValue === void 0 && (this.$data._value = e), e !== null && (e = Array.isArray(e) ? e.map((e) => this.reduce(e)) : this.reduce(e)), this.$emit("update:modelValue", e);
+		},
+		toggleDropdown(e) {
+			let t = e.target !== this.searchEl;
+			t && e.preventDefault();
+			let n = [...this.deselectButtons || [], this.$refs.clearButton];
+			if (this.searchEl === void 0 || n.filter(Boolean).some((t) => t.contains(e.target) || t === e.target)) {
+				e.preventDefault();
+				return;
+			}
+			this.open && t ? this.searchEl.blur() : this.disabled || (this.open = !0, this.searchEl.focus());
+		},
+		isOptionSelected(e) {
+			return this.selectedValue.some((t) => this.optionComparator(t, e));
+		},
+		isOptionDeselectable(e) {
+			return this.isOptionSelected(e) && this.deselectFromDropdown;
+		},
+		optionComparator(e, t) {
+			return this.getOptionKey(e) === this.getOptionKey(t);
+		},
+		findOptionFromReducedValue(e) {
+			let t = (t) => JSON.stringify(this.reduce(t)) === JSON.stringify(e), n = [...this.options, ...this.pushedTags].filter(t);
+			return n.length === 1 ? n[0] : n.find((e) => this.optionComparator(e, this.$data._value)) || e;
+		},
+		closeSearchOptions() {
+			this.open = !1, this.$emit("search:blur");
+		},
+		maybeDeleteValue() {
+			if (!this.searchEl.value.length && this.selectedValue && this.selectedValue.length && this.clearable) {
+				let e = null;
+				this.multiple && (e = [...this.selectedValue.slice(0, this.selectedValue.length - 1)]), this.updateValue(e);
+			}
+		},
+		optionExists(e) {
+			return this.optionList.some((t) => this.optionComparator(t, e));
+		},
+		normalizeOptionForSlot(e) {
+			return typeof e == "object" ? e : { [this.label]: e };
+		},
+		pushTag(e) {
+			this.pushedTags.push(e);
+		},
+		onEscape() {
+			this.search.length ? this.search = "" : this.searchEl.blur();
+		},
+		onSearchBlur() {
+			if (this.mousedown && !this.searching) this.mousedown = !1;
+			else {
+				let { clearSearchOnSelect: e, multiple: t } = this;
+				this.clearSearchOnBlur({
+					clearSearchOnSelect: e,
+					multiple: t
+				}) && (this.search = ""), this.closeSearchOptions();
+				return;
+			}
+			if (this.search.length === 0 && this.options.length === 0) {
+				this.closeSearchOptions();
+				return;
+			}
+		},
+		onSearchFocus() {
+			this.open = !0, this.$emit("search:focus");
+		},
+		onMousedown() {
+			this.mousedown = !0;
+		},
+		onMouseUp() {
+			this.mousedown = !1;
+		},
+		onSearchKeyDown(e) {
+			let t = (e) => (e.preventDefault(), !this.isComposing && this.typeAheadSelect()), n = {
+				8: (e) => this.maybeDeleteValue(),
+				9: (e) => this.onTab(),
+				27: (e) => this.onEscape(),
+				38: (e) => (e.preventDefault(), this.typeAheadUp()),
+				40: (e) => (e.preventDefault(), this.typeAheadDown())
+			};
+			this.selectOnKeyCodes.forEach((e) => n[e] = t);
+			let r = this.mapKeydown(n, this);
+			if (typeof r[e.keyCode] == "function") return r[e.keyCode](e);
+		}
+	}
+}, yr = ["dir"], br = [
+	"id",
+	"aria-expanded",
+	"aria-owns"
+], xr = {
+	ref: "selectedOptions",
+	class: "vs__selected-options"
+}, Sr = [
+	"disabled",
+	"title",
+	"aria-label",
+	"onClick"
+], Cr = {
+	ref: "actions",
+	class: "vs__actions"
+}, wr = ["disabled"], Tr = { class: "vs__spinner" }, Er = ["id"], Dr = [
+	"id",
+	"aria-selected",
+	"onMouseover",
+	"onClick"
+], Or = {
+	key: 0,
+	class: "vs__no-options"
+}, kr = /* @__PURE__ */ O(" Sorry, no matching options. "), Ar = ["id"];
+function jr(e, t, n, r, i, a) {
+	let o = ce("append-to-body");
+	return R(), E("div", {
+		dir: n.dir,
+		class: F(["v-select", a.stateClasses])
+	}, [
+		V(e.$slots, "header", I(j(a.scope.header))),
+		D("div", {
+			id: `vs${n.uid}__combobox`,
+			ref: "toggle",
+			class: "vs__dropdown-toggle",
+			role: "combobox",
+			"aria-expanded": a.dropdownOpen.toString(),
+			"aria-owns": `vs${n.uid}__listbox`,
+			"aria-label": "Search for option",
+			onMousedown: t[1] ||= (e) => a.toggleDropdown(e)
+		}, [D("div", xr, [(R(!0), E(S, null, B(a.selectedValue, (t, r) => V(e.$slots, "selected-option-container", {
+			option: a.normalizeOptionForSlot(t),
+			deselect: a.deselect,
+			multiple: n.multiple,
+			disabled: n.disabled
+		}, () => [(R(), E("span", {
+			key: n.getOptionKey(t),
+			class: "vs__selected"
+		}, [V(e.$slots, "selected-option", I(j(a.normalizeOptionForSlot(t))), () => [O(W(n.getOptionLabel(t)), 1)]), n.multiple ? (R(), E("button", {
+			key: 0,
+			ref_for: !0,
+			ref: (e) => i.deselectButtons[r] = e,
+			disabled: n.disabled,
+			type: "button",
+			class: "vs__deselect",
+			title: `Deselect ${n.getOptionLabel(t)}`,
+			"aria-label": `Deselect ${n.getOptionLabel(t)}`,
+			onClick: (e) => a.deselect(t)
+		}, [(R(), w(U(a.childComponents.Deselect)))], 8, Sr)) : T("", !0)]))])), 256)), V(e.$slots, "search", I(j(a.scope.search)), () => [D("input", N({ class: "vs__search" }, a.scope.search.attributes, le(a.scope.search.events)), null, 16)])], 512), D("div", Cr, [
+			Y(D("button", {
+				ref: "clearButton",
+				disabled: n.disabled,
+				type: "button",
+				class: "vs__clear",
+				title: "Clear Selected",
+				"aria-label": "Clear Selected",
+				onClick: t[0] ||= (...e) => a.clearSelection && a.clearSelection(...e)
+			}, [(R(), w(U(a.childComponents.Deselect)))], 8, wr), [[ve, a.showClearButton]]),
+			V(e.$slots, "open-indicator", I(j(a.scope.openIndicator)), () => [n.noDrop ? T("", !0) : (R(), w(U(a.childComponents.OpenIndicator), I(N({ key: 0 }, a.scope.openIndicator.attributes)), null, 16))]),
+			V(e.$slots, "spinner", I(j(a.scope.spinner)), () => [Y(D("div", Tr, "Loading...", 512), [[ve, e.mutableLoading]])])
+		], 512)], 40, br),
+		k(re, { name: n.transition }, {
+			default: J(() => [a.dropdownOpen ? Y((R(), E("ul", {
+				id: `vs${n.uid}__listbox`,
+				ref: "dropdownMenu",
+				key: `vs${n.uid}__listbox`,
+				class: "vs__dropdown-menu",
+				role: "listbox",
+				tabindex: "-1",
+				onMousedown: t[2] ||= X((...e) => a.onMousedown && a.onMousedown(...e), ["prevent"]),
+				onMouseup: t[3] ||= (...e) => a.onMouseUp && a.onMouseUp(...e)
+			}, [
+				V(e.$slots, "list-header", I(j(a.scope.listHeader))),
+				(R(!0), E(S, null, B(a.filteredOptions, (t, r) => (R(), E("li", {
+					id: `vs${n.uid}__option-${r}`,
+					key: n.getOptionKey(t),
+					role: "option",
+					class: F(["vs__dropdown-option", {
+						"vs__dropdown-option--deselect": a.isOptionDeselectable(t) && r === e.typeAheadPointer,
+						"vs__dropdown-option--selected": a.isOptionSelected(t),
+						"vs__dropdown-option--highlight": r === e.typeAheadPointer,
+						"vs__dropdown-option--disabled": !n.selectable(t)
+					}]),
+					"aria-selected": r === e.typeAheadPointer || null,
+					onMouseover: (i) => n.selectable(t) ? e.typeAheadPointer = r : null,
+					onClick: X((e) => n.selectable(t) ? a.select(t) : null, ["prevent", "stop"])
+				}, [V(e.$slots, "option", I(j(a.normalizeOptionForSlot(t))), () => [O(W(n.getOptionLabel(t)), 1)])], 42, Dr))), 128)),
+				a.filteredOptions.length === 0 ? (R(), E("li", Or, [V(e.$slots, "no-options", I(j(a.scope.noOptions)), () => [kr])])) : T("", !0),
+				V(e.$slots, "list-footer", I(j(a.scope.listFooter)))
+			], 40, Er)), [[o]]) : (R(), E("ul", {
+				key: 1,
+				id: `vs${n.uid}__listbox`,
+				role: "listbox",
+				style: {
+					display: "none",
+					visibility: "hidden"
+				}
+			}, null, 8, Ar))]),
+			_: 3
+		}, 8, ["name"]),
+		V(e.$slots, "footer", I(j(a.scope.footer)))
+	], 10, yr);
+}
+var Mr = /* @__PURE__ */ rr(vr, [["render", jr]]), Nr = ["for"], Pr = {
+	key: 0,
+	class: "text-role-error",
+	"aria-hidden": "true"
+}, Fr = ["textContent"], Ir = {
+	key: 0,
+	class: "flex items-center ml-2 mr-1"
+}, Lr = ["id", "textContent"], Rr = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	components: { VueSelect: Mr },
+	__name: "OcSelect",
+	props: {
+		id: { default: () => y("oc-select-") },
+		filter: {
+			type: Function,
+			default: (e, t, { label: n }) => {
+				if (e.length < 1) return [];
+				let r = new Ne(e, {
+					...n && { keys: [n] },
+					shouldSort: !0,
+					threshold: 0,
+					ignoreLocation: !0,
+					distance: 100,
+					minMatchCharLength: 1
+				});
+				return t.length ? r.search(t).map(({ item: e }) => e) : e;
+			}
+		},
+		disabled: {
+			type: Boolean,
+			default: !1
+		},
+		label: {},
+		inlineLabel: {
+			type: Boolean,
+			default: !1
+		},
+		labelHidden: {
+			type: Boolean,
+			default: !1
+		},
+		contextualHelper: {},
+		optionLabel: { default: "label" },
+		getOptionLabel: {
+			type: Function,
+			default: null
+		},
+		searchable: {
+			type: Boolean,
+			default: !0
+		},
+		clearable: {
+			type: Boolean,
+			default: !1
+		},
+		loading: {
+			type: Boolean,
+			default: !1
+		},
+		errorMessage: {},
+		fixMessageLine: {
+			type: Boolean,
+			default: !1
+		},
+		descriptionMessage: {},
+		multiple: {
+			type: Boolean,
+			default: !1
+		},
+		readOnly: {
+			type: Boolean,
+			default: !1
+		},
+		positionFixed: {
+			type: Boolean,
+			default: !1
+		},
+		requiredMark: {
+			type: Boolean,
+			default: !1
+		},
+		hasBorder: {
+			type: Boolean,
+			default: !0
+		}
+	},
+	emits: ["search:input", "update:modelValue"],
+	setup(e, { emit: t }) {
+		let n = /* @__PURE__ */ function(e) {
+			return e[e.Enter = 13] = "Enter", e[e.ArrowDown = 40] = "ArrowDown", e[e.ArrowUp = 38] = "ArrowUp", e;
+		}({}), r = t, { $gettext: i } = x(), a = K("selectRef"), o = () => {
+			G(a).$el.querySelector("div:first-child")?.setAttribute("aria-label", `${e.label} - ${i("Search for option")}`);
+		}, s = (e) => {
+			r("search:input", e.target.value);
+		}, c = z(!1), l = (e) => {
+			c.value = e;
+		}, u = ({ noDrop: e, open: t, mutableLoading: n }) => !e && t && !n && G(c), d = () => {
+			l(!0);
+		}, f = () => {
+			l(!1);
+		}, p = async () => {
+			let e = G(a).$refs.dropdownMenu.querySelectorAll("li")[G(a).typeAheadPointer];
+			e && (await P(), e.classList.add("outline"), e.classList.add("outline-role-outline-variant"));
+		}, m = (e) => ({
+			...e,
+			[n.Enter]: (t) => {
+				if (!G(c)) {
+					l(!0);
+					return;
+				}
+				e[n.Enter](t), G(a).searchEl.focus();
+			},
+			[n.ArrowDown]: async (e) => {
+				e.preventDefault(), G(a).typeAheadDown(), G(_) && await p();
+			},
+			[n.ArrowUp]: async (e) => {
+				e.preventDefault(), G(a).typeAheadUp(), G(_) && await p();
+			}
+		}), h = async (e) => {
+			if (e.key === "Enter" || e.key === "Tab") {
+				G(_) && await p();
+				return;
+			}
+			l(!0);
+		}, g = () => {
+			let e = G(a).$refs.dropdownMenu;
+			if (!e) return;
+			let t = G(a).$refs.toggle.getBoundingClientRect(), n = Math.min(window.innerHeight - t.bottom - 25, window.innerHeight);
+			e.style.maxHeight = `${n}px`, e.style.width = `${t.width}px`, e.style.top = `${t.top + t.height + 1}px`, e.style.left = `${t.left}px`;
+		}, _ = C(() => G(a)?.dropdownOpen);
+		q(_, async () => {
+			e.positionFixed && G(_) && (await P(), g());
+		});
+		let v = C(() => e.getOptionLabel || ((t) => {
+			if (typeof t == "object") {
+				let n = e.optionLabel || e.label;
+				return Object.hasOwn(t, n) ? t[n] : (console.warn(`[vue-select warn]: Label key "option.${n}" does not exist in options object ${JSON.stringify(t)}.\nhttps://vue-select.org/api/html#getoptionlabel`), "");
+			}
+			return t;
+		}));
+		se(() => {
+			o(), e.positionFixed && window.addEventListener("resize", g);
+		}), oe(() => {
+			e.positionFixed && window.removeEventListener("resize", g);
+		});
+		let y = ue(), b = C(() => {
+			let t = {};
+			return t["input-id"] = e.id, t.getOptionLabel = G(v), t.label = e.optionLabel, {
+				...y,
+				...t
+			};
+		}), ee = C(() => e.fixMessageLine || !!e.errorMessage || !!e.descriptionMessage), te = C(() => e.errorMessage ? e.errorMessage : e.descriptionMessage), S = C(() => `${e.id}-message`);
+		return (t, n) => {
+			let o = H("oc-contextual-helper"), c = H("oc-spinner"), l = H("oc-icon"), p = H("oc-button");
+			return R(), E("div", { class: F({ "flex items-center": e.inlineLabel }) }, [
+				e.labelHidden ? T("", !0) : (R(), E("label", {
+					key: 0,
+					"aria-hidden": !0,
+					for: e.id,
+					class: F(["inline-block", {
+						"mr-2": e.inlineLabel,
+						"mb-0.5": !e.inlineLabel
+					}])
+				}, [O(W(e.label) + " ", 1), e.requiredMark ? (R(), E("span", Pr, "*")) : T("", !0)], 10, Nr)),
+				e.contextualHelper?.isEnabled ? (R(), w(o, N({ key: 1 }, e.contextualHelper?.data, { class: "pl-1" }), null, 16)) : T("", !0),
+				k(G(Mr), N({
+					ref_key: "selectRef",
+					ref: a,
+					disabled: e.disabled || e.readOnly,
+					filter: e.filter,
+					loading: e.loading,
+					searchable: e.searchable,
+					clearable: e.clearable,
+					multiple: e.multiple,
+					class: ["oc-select bg-transparent", {
+						"oc-select-position-fixed": e.positionFixed,
+						"oc-select-no-border": !e.hasBorder
+					}],
+					"dropdown-should-open": u,
+					"map-keydown": m
+				}, b.value, {
+					"onUpdate:modelValue": n[1] ||= (e) => r("update:modelValue", e),
+					onClick: n[2] ||= (e) => d(),
+					"onSearch:blur": n[3] ||= (e) => f(),
+					onKeydown: n[4] ||= (e) => h(e)
+				}), ie({
+					search: J(({ attributes: e, events: t }) => [D("input", N({ class: "vs__search" }, e, { onInput: s }, le(t, !0)), null, 16)]),
+					"no-options": J(() => [D("div", { textContent: W(G(i)("No options available.")) }, null, 8, Fr)]),
+					spinner: J(({ loading: e }) => [e ? (R(), w(c, { key: 0 })) : T("", !0)]),
+					"selected-option-container": J(({ option: r, deselect: a }) => [D("span", { class: F(["vs__selected", { "vs__selected-readonly": r.readonly }]) }, [V(t.$slots, "selected-option", I(j(r)), () => [e.readOnly ? (R(), w(l, {
+						key: 0,
+						name: "lock",
+						class: "mr-1",
+						"size-class": "size-4"
+					})) : T("", !0), O(" " + W(v.value(r)), 1)], !0), e.multiple ? (R(), E("span", Ir, [r.readonly ? (R(), w(l, {
+						key: 0,
+						class: "vs__deselect-lock",
+						name: "lock",
+						"size-class": "size-4"
+					})) : (R(), w(p, {
+						key: 1,
+						appearance: "raw",
+						title: G(i)("Deselect %{label}", { label: v.value(r) }),
+						"aria-label": G(i)("Deselect %{label}", { label: v.value(r) }),
+						class: "vs__deselect mx-0",
+						"no-hover": "",
+						onMousedown: n[0] ||= X(() => {}, ["stop", "prevent"]),
+						onClick: (e) => a(r)
+					}, {
+						default: J(() => [k(l, {
+							name: "close",
+							"size-class": "size-4"
+						})]),
+						_: 1
+					}, 8, [
+						"title",
+						"aria-label",
+						"onClick"
+					]))])) : T("", !0)], 2)]),
+					"open-indicator": J(() => [k(l, {
+						name: "arrow-down-s",
+						"size-class": "size-4"
+					})]),
+					_: 2
+				}, [B(t.$slots, (e, n) => ({
+					name: n,
+					fn: J((e) => [n.toString() === "search" ? T("", !0) : V(t.$slots, n, I(j(e)), void 0, !0, 0)])
+				}))]), 1040, [
+					"disabled",
+					"filter",
+					"loading",
+					"searchable",
+					"clearable",
+					"multiple",
+					"class"
+				]),
+				ee.value ? (R(), E("div", {
+					key: 2,
+					class: F(["oc-text-input-message text-sm", {
+						"oc-text-input-description": !!e.descriptionMessage,
+						"oc-text-input-danger": !!e.errorMessage
+					}])
+				}, [e.errorMessage ? (R(), w(l, {
+					key: 0,
+					name: "error-warning",
+					"size-class": "size-4",
+					"fill-type": "line",
+					"aria-hidden": "true",
+					class: "mr-1"
+				})) : T("", !0), D("span", {
+					id: S.value,
+					class: F({
+						"oc-text-input-description": !!e.descriptionMessage,
+						"oc-text-input-danger": !!e.errorMessage
+					}),
+					textContent: W(te.value)
+				}, null, 10, Lr)], 2)) : T("", !0)
+			], 2);
+		};
+	}
+}), [["__scopeId", "data-v-c909b820"]]), zr = { class: "oc-page-size flex items-center gap-1" }, Br = ["for", "textContent"], Vr = /* @__PURE__ */ A({
+	__name: "OcPageSize",
+	props: {
+		label: {},
+		options: {},
+		selected: {},
+		selectId: { default: () => y("oc-page-size-") }
+	},
+	emits: ["change"],
+	setup(e, { emit: t }) {
+		let n = t, r = (e) => {
+			n("change", e);
+		};
+		return (t, n) => (R(), E("div", zr, [D("label", {
+			class: "oc-page-size-label",
+			for: e.selectId,
+			"data-testid": "oc-page-size-label",
+			"aria-hidden": !0,
+			textContent: W(e.label)
+		}, null, 8, Br), k(Rr, {
+			"input-id": e.selectId,
+			class: "oc-page-size-select min-w-25 [&_.vs\\_\\_dropdown-menu]:!min-w-25",
+			"data-testid": "oc-page-size-select",
+			"model-value": e.selected,
+			label: e.label,
+			"label-hidden": !0,
+			options: e.options,
+			clearable: !1,
+			searchable: !1,
+			"onUpdate:modelValue": r
+		}, null, 8, [
+			"input-id",
+			"model-value",
+			"label",
+			"options"
+		])]));
+	}
+}), Hr = ["aria-label"], Ur = { class: "oc-pagination-list flex items-center flex-wrap m-0 gap-2" }, Wr = {
+	key: 0,
+	class: "oc-pagination-list-item"
+}, Gr = {
+	key: 1,
+	class: "oc-pagination-list-item"
+}, Kr = /* @__PURE__ */ A({
+	__name: "OcPagination",
+	props: {
+		currentPage: {},
+		currentRoute: {},
+		pages: {},
+		maxDisplayed: {},
+		routerLinkComponent: { default: "router-link" }
+	},
+	setup(e) {
+		let { $gettext: t } = x(), n = C(() => {
+			let t = [];
+			for (let n = 0; n < e.pages; n++) t.push(n + 1);
+			if (e.maxDisplayed && e.maxDisplayed + 1 < e.pages) {
+				let n = G(s) - 1, r = Math.floor(e.maxDisplayed / 2);
+				return t = t.slice(Math.max(0, n - r), n + r + 1), G(s) > 2 && (Number(t[0]) > 2 ? t.unshift(1, "...") : t.unshift(1)), G(s) < e.pages - 1 && (Number(t[t.length - 1]) < e.pages - 1 ? t.push("...", e.pages) : t.push(e.pages)), t;
+			}
+			return t;
+		}), r = C(() => G(s) > 1), i = C(() => G(s) < e.pages), a = C(() => p(G(s) - 1)), o = C(() => p(G(s) + 1)), s = C(() => Math.max(1, Math.min(e.currentPage, e.pages))), c = (e) => t("Go to page %{ page }", { page: e.toString() }), l = (e) => G(s) === e, u = (t) => t === "..." || l(t) ? "span" : e.routerLinkComponent, d = (e) => {
+			if (e === "...") return;
+			if (l(e)) return { "aria-current": "page" };
+			let t = p(e);
+			return {
+				"aria-label": c(e),
+				to: t
+			};
+		}, f = (e) => {
+			let t = [];
+			return l(e) ? t.push("oc-pagination-list-item-current", "font-bold", "bg-role-secondary", "text-role-on-secondary") : e === "..." ? t.push("oc-pagination-list-item-ellipsis") : t.push("oc-pagination-list-item-link"), t;
+		}, p = (t) => ({
+			name: e.currentRoute.name,
+			query: {
+				...e.currentRoute.query,
+				page: t
+			},
+			params: e.currentRoute.params
+		});
+		return (s, c) => (R(), E("nav", {
+			class: "oc-pagination",
+			"aria-label": G(t)("Pagination")
+		}, [D("ol", Ur, [
+			r.value ? (R(), E("li", Wr, [(R(), w(U(e.routerLinkComponent), {
+				class: "oc-pagination-list-item-prev flex mr-2 rounded-sm hover:bg-role-secondary hover:text-role-on-secondary [&_svg]:hover:!fill-role-on-secondary",
+				"aria-label": G(t)("Go to the previous page"),
+				to: a.value
+			}, {
+				default: J(() => [k(Z, {
+					name: "arrow-drop-left",
+					"fill-type": "line",
+					color: "var(--oc-role-on-surface)"
+				})]),
+				_: 1
+			}, 8, ["aria-label", "to"]))])) : T("", !0),
+			(R(!0), E(S, null, B(n.value, (e, t) => (R(), E("li", {
+				key: t,
+				class: "oc-pagination-list-item"
+			}, [(R(), w(U(u(e)), N({ class: ["oc-pagination-list-item-page py-1 px-2 rounded-sm hover:bg-role-secondary hover:text-role-on-secondary transition-colors duration-200 ease-in-out", f(e)] }, { ref_for: !0 }, d(e)), {
+				default: J(() => [O(W(e), 1)]),
+				_: 2
+			}, 1040, ["class"]))]))), 128)),
+			i.value ? (R(), E("li", Gr, [(R(), w(U(e.routerLinkComponent), {
+				class: "oc-pagination-list-item-next flex ml-2 rounded-sm hover:bg-role-secondary [&_svg]:hover:!fill-role-on-secondary",
+				"aria-label": G(t)("Go to the next page"),
+				to: o.value
+			}, {
+				default: J(() => [k(Z, {
+					name: "arrow-drop-right",
+					"fill-type": "line",
+					color: "var(--oc-role-on-surface)"
+				})]),
+				_: 1
+			}, 8, ["aria-label", "to"]))])) : T("", !0)
+		])], 8, Hr));
+	}
+}), qr = ["aria-label"], Jr = ["textContent"], Yr = /* @__PURE__ */ A({
+	__name: "OcPaginationInline",
+	props: {
+		currentPage: {},
+		pages: {},
+		label: { default: "" }
+	},
+	emits: ["update:currentPage"],
+	setup(e, { emit: t }) {
+		let n = t, { $gettext: r } = x(), i = C(() => e.label || r("Pagination")), a = C(() => Math.max(1, Math.min(e.currentPage, e.pages))), o = C(() => G(a) > 1), s = C(() => G(a) < e.pages);
+		function c(e) {
+			n("update:currentPage", e);
+		}
+		return (t, n) => e.pages > 1 ? (R(), E("nav", {
+			key: 0,
+			class: "oc-pagination-inline flex items-center gap-2",
+			"aria-label": i.value
+		}, [
+			k($, {
+				class: "oc-pagination-inline-prev",
+				appearance: "raw",
+				"aria-label": G(r)("Go to the previous page"),
+				disabled: !o.value,
+				onClick: n[0] ||= (e) => c(a.value - 1)
+			}, {
+				default: J(() => [k(Z, {
+					name: "arrow-drop-left",
+					"fill-type": "line"
+				})]),
+				_: 1
+			}, 8, ["aria-label", "disabled"]),
+			D("span", {
+				class: "oc-pagination-inline-info text-sm",
+				textContent: W(G(r)("Page %{currentPage} of %{pages}", {
+					currentPage: a.value.toString(),
+					pages: e.pages.toString()
+				}))
+			}, null, 8, Jr),
+			k($, {
+				class: "oc-pagination-inline-next",
+				appearance: "raw",
+				"aria-label": G(r)("Go to the next page"),
+				disabled: !s.value,
+				onClick: n[1] ||= (e) => c(a.value + 1)
+			}, {
+				default: J(() => [k(Z, {
+					name: "arrow-drop-right",
+					"fill-type": "line"
+				})]),
+				_: 1
+			}, 8, ["aria-label", "disabled"])
+		], 8, qr)) : T("", !0);
+	}
+}), Xr = ["aria-valuemax", "aria-valuenow"], Zr = {
+	key: 1,
+	class: "oc-progress-indeterminate"
+}, Qr = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcProgress",
+	props: {
+		color: { default: "var(--oc-role-secondary)" },
+		backgroundColor: { default: "var(--oc-role-surface-container)" },
+		indeterminate: {
+			type: Boolean,
+			default: !1
+		},
+		max: {},
+		size: { default: "default" },
+		value: { default: 0 }
+	},
+	setup(e) {
+		let t = C(() => e.max ? `${e.value / e.max * 100}%` : "-");
+		return (n, r) => (R(), E("div", {
+			class: F(["oc-progress block relative overflow-x-hidden", {
+				"h-4": e.size === "default",
+				"h-1": e.size === "small",
+				"h-0.5": e.size === "xsmall"
+			}]),
+			"aria-valuemax": e.max,
+			"aria-valuenow": e.value,
+			"aria-busy": "true",
+			"aria-valuemin": "0",
+			role: "progressbar",
+			style: L({ backgroundColor: e.backgroundColor })
+		}, [e.indeterminate ? (R(), E("div", Zr, [D("div", {
+			class: "oc-progress-indeterminate-first absolute h-full",
+			style: L({ backgroundColor: e.color })
+		}, null, 4), D("div", {
+			class: "oc-progress-indeterminate-second absolute h-full",
+			style: L({ backgroundColor: e.color })
+		}, null, 4)])) : (R(), E("div", {
+			key: 0,
+			class: "absolute size-full transition-[width] duration-500",
+			style: L({
+				width: t.value,
+				backgroundColor: e.color
+			})
+		}, null, 4))], 14, Xr));
+	}
+}), [["__scopeId", "data-v-3050383a"]]), $r = ["data-fill"], ei = ["textContent"], ti = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcProgressPie",
+	props: {
+		max: { default: 100 },
+		progress: { default: 0 },
+		showLabel: {
+			type: Boolean,
+			default: !1
+		}
+	},
+	setup(e) {
+		let t = C(() => Math.round(100 / e.max * e.progress)), n = C(() => e.max === 100 ? e.progress + "%" : `${e.progress}/${e.max}`);
+		return (r, i) => (R(), E("div", {
+			class: F(["oc-progress-pie relative after:block after:size-full after:content-['']", { "oc-progress-pie-over-half": t.value > 50 }]),
+			"data-fill": t.value,
+			style: L({ "--oc-progress-pie-fill": t.value })
+		}, [i[0] ||= D("div", { class: "oc-progress-pie-container absolute left-0 top-0 after:absolute after:left-0 after:top-0 before:block after:block size-full after:size-full after:content-[''] before:content-['']" }, null, -1), e.showLabel ? (R(), E("label", {
+			key: 0,
+			class: "oc-progress-pie-label absolute top-[50%] left-[50%] text-role-on-surface-variant transform-[translate(-50%, -50%)]",
+			textContent: W(n.value)
+		}, null, 8, ei)) : T("", !0)], 14, $r));
+	}
+}), [["__scopeId", "data-v-9c59c947"]]), ni = [
+	"id",
+	"aria-checked",
+	"value",
+	"disabled"
+], ri = ["for", "textContent"], ii = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcRadio",
+	props: /*@__PURE__*/ M({
+		label: {},
+		disabled: {
+			type: Boolean,
+			default: !1
+		},
+		hideLabel: {
+			type: Boolean,
+			default: !1
+		},
+		id: { default: () => y("oc-radio-") },
+		option: {},
+		size: { default: "medium" }
+	}, {
+		modelValue: { type: Boolean },
+		modelModifiers: {}
+	}),
+	emits: ["update:modelValue"],
+	setup(e) {
+		let t = fe(e, "modelValue");
+		return (n, r) => (R(), E("span", null, [Y(D("input", {
+			id: e.id,
+			"onUpdate:modelValue": r[0] ||= (e) => t.value = e,
+			type: "radio",
+			name: "radio",
+			class: F([{
+				"size-3": e.size === "small",
+				"size-4": e.size === "medium",
+				"size-5": e.size === "large"
+			}, "oc-radio checked:bg-role-secondary-container border rounded-[50%] focus:outline-0 overflow-hidden m-0 inline-block transition-[background] transition-[border] duration-200 ease-in-out not-disabled:cursor-pointer bg-no-repeat bg-center appearance-none"]),
+			"aria-checked": e.option === e.modelValue,
+			value: e.option,
+			disabled: e.disabled
+		}, null, 10, ni), [[ge, t.value]]), D("label", {
+			for: e.id,
+			class: F([{
+				"cursor-pointer": !e.disabled,
+				"sr-only": e.hideLabel
+			}, "ml-1"]),
+			textContent: W(e.label)
+		}, null, 10, ri)]));
+	}
+}), [["__scopeId", "data-v-19762a63"]]), ai = { class: "oc-recipient bg-role-surface-container flex items-center justify-center outline outline-role-outline rounded-md" }, oi = ["textContent"], si = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcRecipient",
+	props: { recipient: {} },
+	setup(e) {
+		return (t, n) => (R(), E("span", ai, [
+			V(t.$slots, "avatar", {}, () => [k(Ge, {
+				width: 16.8,
+				icon: e.recipient.icon.name,
+				name: e.recipient.icon.label,
+				"accessible-label": e.recipient.icon.label,
+				"icon-size": "xsmall",
+				"data-testid": "recipient-icon",
+				"icon-color": "var(--oc-role-on-surface)"
+			}, null, 8, [
+				"icon",
+				"name",
+				"accessible-label"
+			])], !0),
+			D("p", {
+				class: "oc-recipient-name m-0",
+				"data-testid": "recipient-name",
+				textContent: W(e.recipient.name)
+			}, null, 8, oi),
+			V(t.$slots, "append", {}, void 0, !0)
+		]));
+	}
+}), [["__scopeId", "data-v-877f8e1c"]]), ci = [
+	"aria-label",
+	"aria-live",
+	"aria-hidden",
+	"role"
+], li = /* @__PURE__ */ A({
+	__name: "OcSpinner",
+	props: {
+		ariaLabel: { default: () => void 0 },
+		size: { default: "medium" }
+	},
+	setup(e) {
+		return (t, n) => (R(), E("span", {
+			class: F(["oc-spinner inline-block after:block after:bg-transparent after:border after:border-current after:rounded-full after:size-full relative after:relative animate-spin after:content-[''] after:border-b-transparent", {
+				"size-2": e.size === "xsmall",
+				"size-4": e.size === "small",
+				"size-5": e.size === "medium",
+				"size-8": e.size === "large",
+				"size-10": e.size === "xlarge",
+				"size-12": e.size === "xxlarge",
+				"size-16": e.size === "xxxlarge"
+			}]),
+			"aria-label": e.ariaLabel || void 0,
+			"aria-live": e.ariaLabel ? "polite" : void 0,
+			"aria-hidden": e.ariaLabel ? void 0 : "true",
+			tabindex: "-1",
+			role: e.ariaLabel ? "img" : void 0
+		}, null, 10, ci));
+	}
+}), ui = ["role"], di = { class: "flex-1 relative" }, fi = [
+	"aria-label",
+	"disabled",
+	"placeholder"
+], pi = ["textContent"], mi = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcSearchBar",
+	props: /*@__PURE__*/ M({
+		icon: { default: "search" },
+		placeholder: { default: "" },
+		label: {},
+		small: {
+			type: Boolean,
+			default: !1
+		},
+		buttonLabel: { default: "Search" },
+		buttonHidden: {
+			type: Boolean,
+			default: !1
+		},
+		typeAhead: {
+			type: Boolean,
+			default: !1
+		},
+		trimQuery: {
+			type: Boolean,
+			default: !0
+		},
+		loading: {
+			type: Boolean,
+			default: !1
+		},
+		isFilter: {
+			type: Boolean,
+			default: !1
+		},
+		loadingAccessibleLabel: { default: "" },
+		showCancelButton: {
+			type: Boolean,
+			default: !1
+		},
+		cancelButtonAppearance: { default: "raw" },
+		cancelButtonColorRole: { default: "secondary" },
+		isRounded: {
+			type: Boolean,
+			default: !0
+		},
+		cancelHandler: {
+			type: Function,
+			default: () => {}
+		}
+	}, {
+		modelValue: { default: "" },
+		modelModifiers: {}
+	}),
+	emits: /*@__PURE__*/ M([
+		"advancedSearch",
+		"keyup",
+		"search"
+	], ["update:modelValue"]),
+	setup(e, { emit: t }) {
+		let n = fe(e, "modelValue");
+		q(n, () => {
+			e.typeAhead && c();
+		});
+		let r = t, { $gettext: i } = x(), a = `search-input-${de()}`, o = C(() => {
+			let t = [
+				"oc-search-input",
+				"oc-input",
+				"disabled:cursor-not-allowed",
+				"focus:bg-none",
+				"focus:outline focus:outline-offset-2 focus:outline-white"
+			];
+			return e.buttonHidden || t.push("oc-search-input-button", "rounded-r-none"), e.small ? t.push("leading-7", "h-8") : t.push("h-9"), e.isRounded && t.push("rounded-4xl", "p-4"), t;
+		}), s = C(() => e.loadingAccessibleLabel || "Loading results"), c = () => {
+			r("search", e.trimQuery ? G(n).trim() : G(n));
+		}, l = () => {
+			n.value = "", e.typeAhead || c(), e.cancelHandler();
+		};
+		return (t, r) => (R(), E("div", {
+			role: e.isFilter ? void 0 : "search",
+			class: F(["oc-search flex items-center", { "oc-search-small": e.small }])
+		}, [
+			D("div", di, [
+				Y(D("input", {
+					id: a,
+					"onUpdate:modelValue": r[0] ||= (e) => n.value = e,
+					class: F(o.value),
+					"aria-label": e.label,
+					disabled: e.loading,
+					placeholder: e.placeholder,
+					type: "search",
+					onKeydown: ye(c, ["enter"]),
+					onKeyup: r[1] ||= (e) => t.$emit("keyup", e)
+				}, null, 42, fi), [[_e, n.value]]),
+				V(t.$slots, "locationFilter", {}, void 0, !0),
+				e.icon ? (R(), w($, {
+					key: 0,
+					"aria-label": G(i)("Search"),
+					class: "absolute top-[50%] transform-[translateY(-50%)] right-0 mx-4 mb-4 mt-0",
+					appearance: "raw",
+					"no-hover": "",
+					onClick: r[2] ||= X((e) => t.$emit("advancedSearch", e), ["prevent", "stop"])
+				}, {
+					default: J(() => [Y(k(Z, {
+						name: e.icon,
+						"size-class": "size-4",
+						"fill-type": "line"
+					}, null, 8, ["name"]), [[ve, !e.loading]]), Y(k(li, {
+						size: e.small ? "xsmall" : "medium",
+						"aria-label": s.value
+					}, null, 8, ["size", "aria-label"]), [[ve, e.loading]])]),
+					_: 1
+				}, 8, ["aria-label"])) : T("", !0)
+			]),
+			D("div", { class: F(["oc-search-button-wrapper", { "sr-only": e.buttonHidden }]) }, [k($, {
+				class: "oc-search-button z-0 ml-4 rounded-l-none transform-[translateX(-1px)]",
+				appearance: "filled",
+				size: e.small ? "small" : "medium",
+				disabled: e.loading || n.value.length < 1,
+				onClick: c
+			}, {
+				default: J(() => [O(W(e.buttonLabel), 1)]),
+				_: 1
+			}, 8, ["size", "disabled"])], 2),
+			e.showCancelButton ? (R(), w($, {
+				key: 0,
+				appearance: e.cancelButtonAppearance,
+				"color-role": e.cancelButtonColorRole,
+				class: "ml-4",
+				"no-hover": "",
+				onClick: l
+			}, {
+				default: J(() => [D("span", { textContent: W(G(i)("Cancel")) }, null, 8, pi)]),
+				_: 1
+			}, 8, ["appearance", "color-role"])) : T("", !0)
+		], 10, ui));
+	}
+}), [["__scopeId", "data-v-d73f7a8f"]]), hi = { class: "oc-status-indicators flex items-center gap-0.5" }, gi = ["textContent"], _i = ["id", "textContent"], vi = /* @__PURE__ */ A({
+	__name: "OcStatusIndicators",
+	props: {
+		resource: {},
+		indicators: {},
+		disableHandler: {
+			type: Boolean,
+			default: !1
+		}
+	},
+	setup(e) {
+		let { $gettext: t } = x(), n = z({}), r = (e) => Object.hasOwn(e, "handler"), i = (e) => e.accessibleDescription ? (G(n)[e.id] || (G(n)[e.id] = y("oc-indicator-description-")), G(n)[e.id]) : null;
+		return (n, a) => {
+			let o = H("oc-tag"), s = ce("oc-tooltip");
+			return R(), E("div", hi, [(R(!0), E(S, null, B(e.indicators, (n, a) => (R(), E(S, null, [
+				n.kind === "tag" ? (R(), w(o, {
+					id: n.id,
+					key: n.id,
+					class: F([n.class, "border-0 !rounded-sm"]),
+					"aria-describedby": i(n),
+					appearance: "filled",
+					size: "small",
+					"data-testid": n.id,
+					"data-test-indicator-type": n.type,
+					"data-test-indicator-resource-name": e.resource.name,
+					"data-test-indicator-resource-path": e.resource.path
+				}, {
+					default: J(() => [D("span", { textContent: W(n.label) }, null, 8, gi)]),
+					_: 2
+				}, 1032, [
+					"id",
+					"class",
+					"aria-describedby",
+					"data-testid",
+					"data-test-indicator-type",
+					"data-test-indicator-resource-name",
+					"data-test-indicator-resource-path"
+				])) : T("", !0),
+				n.kind === "icon" ? (R(), E(S, { key: 1 }, [r(n) && !e.disableHandler ? Y((R(), w($, {
+					id: n.id,
+					key: `${n.id}-handler`,
+					class: F(["oc-status-indicators-indicator", { "ml-1": a > 0 }]),
+					"aria-label": G(t)(n.label),
+					"aria-describedby": i(n),
+					appearance: "raw",
+					"data-testid": n.id,
+					"data-test-indicator-type": n.type,
+					"data-test-indicator-resource-name": e.resource.name,
+					"data-test-indicator-resource-path": e.resource.path,
+					"no-hover": "",
+					onClick: (t) => n.handler?.(e.resource, t)
+				}, {
+					default: J(() => [k(Z, {
+						name: n.icon,
+						"size-class": "size-4",
+						"fill-type": n.fillType
+					}, null, 8, ["name", "fill-type"])]),
+					_: 2
+				}, 1032, [
+					"id",
+					"class",
+					"aria-label",
+					"aria-describedby",
+					"data-testid",
+					"data-test-indicator-type",
+					"data-test-indicator-resource-name",
+					"data-test-indicator-resource-path",
+					"onClick"
+				])), [[s, G(t)(n.label)]]) : Y((R(), w(Z, {
+					id: n.id,
+					key: n.id,
+					tabindex: "-1",
+					"size-class": "size-4",
+					class: F(["oc-status-indicators-indicator", { "ml-1": a > 0 }]),
+					name: n.icon,
+					"fill-type": n.fillType,
+					"accessible-label": G(t)(n.label),
+					"aria-describedby": i(n),
+					"data-testid": n.id,
+					"data-test-indicator-type": n.type
+				}, null, 8, [
+					"id",
+					"class",
+					"name",
+					"fill-type",
+					"accessible-label",
+					"aria-describedby",
+					"data-testid",
+					"data-test-indicator-type"
+				])), [[s, G(t)(n.label)]])], 64)) : T("", !0),
+				i(n) ? (R(), E("p", {
+					id: i(n),
+					key: i(n),
+					class: "sr-only",
+					textContent: W(G(t)(n.accessibleDescription))
+				}, null, 8, _i)) : T("", !0)
+			], 64))), 256))]);
+		};
+	}
+}), yi = { class: "inline-flex items-center gap-1" }, bi = ["id", "textContent"], xi = [
+	"aria-checked",
+	"aria-labelledby",
+	"disabled"
+], Si = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcSwitch",
+	props: {
+		checked: {
+			type: Boolean,
+			default: !1
+		},
+		label: {},
+		labelId: { default: () => y("oc-switch-label-") },
+		disabled: {
+			type: Boolean,
+			default: !1
+		}
+	},
+	emits: ["update:checked"],
+	setup(e, { emit: t }) {
+		let n = t, r = () => {
+			e.disabled || n("update:checked", !e.checked);
+		};
+		return (t, n) => (R(), E("span", {
+			key: `oc-switch-${e.checked.toString()}`,
+			class: "oc-switch items-center gap-2"
+		}, [D("span", yi, [D("span", {
+			id: e.labelId,
+			textContent: W(e.label),
+			class: F({ "opacity-40": e.disabled })
+		}, null, 10, bi), V(t.$slots, "default", {}, void 0, !0)]), D("button", {
+			"data-testid": "oc-switch-btn",
+			class: F(["oc-switch-btn block relative border border-role-outline rounded-3xl w-8 before:size-3 h-4.5 disabled:cursor-default disabled:opacity-40", { "cursor-pointer": !e.disabled }]),
+			role: "switch",
+			"aria-checked": e.checked,
+			"aria-labelledby": e.labelId,
+			disabled: e.disabled,
+			onClick: r
+		}, null, 10, xi)]));
+	}
+}), [["__scopeId", "data-v-26d75b49"]]), Ci = { class: "oc-thead border-b" }, wi = /* @__PURE__ */ A({
+	name: "OcTableHead",
+	__name: "OcTableHead",
+	setup(e) {
+		return (e, t) => (R(), E("thead", Ci, [V(e.$slots, "default")]));
+	}
+}), Ti = /* @__PURE__ */ A({
+	name: "OcTableBody",
+	__name: "OcTableBody",
+	setup(e) {
+		return (e, t) => (R(), E("tbody", null, [V(e.$slots, "default")]));
+	}
+}), Ei = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcTableCell",
+	props: {
+		alignH: { default: "left" },
+		alignV: { default: "middle" },
+		type: { default: "td" },
+		width: { default: "auto" },
+		wrap: {}
+	},
+	emits: ["click"],
+	setup(e, { emit: t }) {
+		let n = t;
+		return (t, r) => (R(), w(U(e.type), {
+			class: F(["oc-table-cell", {
+				"break-all": e.wrap === "break",
+				"whitespace-nowrap": e.wrap === "nowrap",
+				"overflow-visible max-w-0": e.wrap === "truncate",
+				"text-left": e.alignH === "left",
+				"text-right": e.alignH === "right",
+				"text-center": e.alignH === "center",
+				"align-top": e.alignV === "top",
+				"align-middle": e.alignV === "middle",
+				"align-bottom": e.alignV === "bottom",
+				"w-px": e.width === "shrink",
+				"min-w-38": e.width === "expand"
+			}]),
+			onClick: r[0] ||= (e) => n("click", e)
+		}, {
+			default: J(() => [V(t.$slots, "default", {}, void 0, !0)]),
+			_: 3
+		}, 8, ["class"]));
+	}
+}), [["__scopeId", "data-v-6f929486"]]), Di = /* @__PURE__ */ A({
+	__name: "OcTableTd",
+	props: {
+		alignH: { default: "left" },
+		alignV: { default: "middle" },
+		width: { default: "auto" },
+		wrap: {}
+	},
+	setup(e) {
+		return (t, n) => (R(), w(Ei, {
+			type: "td",
+			"align-h": e.alignH,
+			"align-v": e.alignV,
+			width: e.width,
+			wrap: e.wrap,
+			class: "oc-td"
+		}, {
+			default: J(() => [V(t.$slots, "default")]),
+			_: 3
+		}, 8, [
+			"align-h",
+			"align-v",
+			"width",
+			"wrap"
+		]));
+	}
+}), Oi = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcTableTr",
+	props: { lazy: {} },
+	emits: [
+		"contextmenu",
+		"click",
+		"dragstart",
+		"drop",
+		"dragenter",
+		"dragleave",
+		"dragover",
+		"mouseleave",
+		"itemVisible"
+	],
+	setup(e, { emit: t }) {
+		let n = t, r = ae((e, t) => {
+			let n;
+			return {
+				get() {
+					return e(), n;
+				},
+				set(e) {
+					n = e, t();
+				}
+			};
+		}), i = C(() => e.lazy ? e.lazy.colspan : 1), { isVisible: a } = e.lazy ? te({
+			...e.lazy,
+			target: r,
+			onVisibleCallback: () => n("itemVisible")
+		}) : { isVisible: z(!0) }, o = C(() => !G(a));
+		return e.lazy || n("itemVisible"), (e, t) => (R(), E("tr", {
+			ref_key: "observerTarget",
+			ref: r,
+			onClick: t[0] ||= (t) => e.$emit("click", t),
+			onContextmenu: t[1] ||= (t) => e.$emit("contextmenu", t),
+			onDragstart: t[2] ||= (t) => e.$emit("dragstart", t),
+			onDrop: t[3] ||= (t) => e.$emit("drop", t),
+			onDragenter: t[4] ||= (t) => e.$emit("dragenter", t),
+			onDragleave: t[5] ||= (t) => e.$emit("dragleave", t),
+			onDragover: t[6] ||= (t) => e.$emit("dragover", t),
+			onMouseleave: t[7] ||= (t) => e.$emit("mouseleave", t)
+		}, [o.value ? (R(), w(Di, {
+			key: 0,
+			colspan: i.value
+		}, {
+			default: J(() => [...t[8] ||= [D("span", { class: "shimmer inline-block bg-role-shadow overflow-hidden absolute inset-x-2 inset-y-3 after:absolute after:inset-0 after:transform-[translateX(-100%)] opacity-10 after:animate-shimmer" }, null, -1)]]),
+			_: 1
+		}, 8, ["colspan"])) : V(e.$slots, "default", {}, void 0, !0, 1)], 544));
+	}
+}), [["__scopeId", "data-v-acf2d072"]]), ki = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcTableTh",
+	props: {
+		alignH: { default: "left" },
+		alignV: { default: "middle" },
+		width: { default: "auto" },
+		wrap: {}
+	},
+	emits: ["click"],
+	setup(e) {
+		return (t, n) => (R(), w(Ei, {
+			type: "th",
+			"align-h": e.alignH,
+			"align-v": e.alignV,
+			width: e.width,
+			wrap: e.wrap,
+			class: "oc-th aria-[sort]:cursor-pointer",
+			onClick: n[0] ||= (e) => t.$emit("click", e)
+		}, {
+			default: J(() => [V(t.$slots, "default", {}, void 0, !0)]),
+			_: 3
+		}, 8, [
+			"align-h",
+			"align-v",
+			"width",
+			"wrap"
+		]));
+	}
+}), [["__scopeId", "data-v-4cc5ed0f"]]), Ai = /* @__PURE__ */ A({
+	__name: "OcTableRow",
+	props: {
+		item: {},
+		fields: {},
+		domSelector: {},
+		isHighlighted: { type: Function },
+		isDisabled: { type: Function },
+		idKey: { default: "id" },
+		lazy: {
+			type: Boolean,
+			default: !1
+		},
+		dragDrop: {
+			type: Boolean,
+			default: !1
+		},
+		paddingX: { default: "small" }
+	},
+	emits: [
+		"click",
+		"contextmenu",
+		"dragstart",
+		"drop",
+		"dragenter",
+		"dragleave",
+		"itemVisible"
+	],
+	setup(e) {
+		let t = C(() => e.isHighlighted(e.item)), n = C(() => e.isDisabled(e.item)), r = C(() => e.fields.length), i = C(() => [
+			`oc-tbody-tr-${e.domSelector}`,
+			t.value ? "oc-table-highlighted" : void 0,
+			...n.value ? [
+				"oc-table-disabled",
+				"opacity-70",
+				"pointer-events-none",
+				"grayscale-60"
+			] : []
+		].filter(Boolean)), a = (e) => e.type === "slot", o = (e) => ["callback", "function"].indexOf(e.type) >= 0, c = (t, n, r) => {
+			let i = s(t);
+			return i.class = `oc-table-data-cell oc-table-data-cell-${t.name}`, Object.prototype.hasOwnProperty.call(t, "tdClass") && (i.class += ` ${t.tdClass}`), Object.prototype.hasOwnProperty.call(t, "wrap") && (i.wrap = t.wrap), n === 0 && (i.class += ` ${m(e.paddingX, "left")} `), n === e.fields.length - 1 && (i.class += ` ${m(e.paddingX, "right")}`), Object.prototype.hasOwnProperty.call(t, "accessibleLabelCallback") && (i["aria-label"] = t.accessibleLabelCallback(r)), i;
+		}, l = (t, n, r) => {
+			let i = [r[e.idKey], n + 1].filter(Boolean);
+			return a(t) ? [...i, t.name].join("-") : o(t) ? [...i, t.callback(r[t.name])].join("-") : [...i, r[t.name]].join("-");
+		};
+		return (n, s) => (R(), w(Oi, {
+			lazy: e.lazy ? { colspan: r.value } : void 0,
+			"data-item-id": e.item[e.idKey],
+			draggable: e.dragDrop,
+			class: F(["oc-tbody-tr border-t h-10.5", i.value]),
+			onClick: s[0] ||= (e) => n.$emit("click", e),
+			onContextmenu: s[1] ||= (e) => n.$emit("contextmenu", e),
+			onDragstart: s[2] ||= (e) => n.$emit("dragstart", e),
+			onDrop: s[3] ||= (e) => n.$emit("drop", e),
+			onDragenter: s[4] ||= X((e) => n.$emit("dragenter", e), ["prevent"]),
+			onDragleave: s[5] ||= X((e) => n.$emit("dragleave", e), ["prevent"]),
+			onDragover: s[6] ||= X(() => {}, ["prevent"]),
+			onItemVisible: s[7] ||= (e) => n.$emit("itemVisible")
+		}, {
+			default: J(() => [(R(!0), E(S, null, B(e.fields, (r, i) => (R(), w(Di, N({ key: "oc-tbody-td-" + l(r, i, e.item) }, { ref_for: !0 }, c(r, i, e.item)), {
+				default: J(() => [a(r) ? V(n.$slots, r.name, {
+					item: e.item,
+					highlighted: t.value
+				}, void 0, void 0, 0) : o(r) ? (R(), E(S, { key: 1 }, [O(W(r.callback(e.item[r.name])), 1)], 64)) : (R(), E(S, { key: 2 }, [O(W(e.item[r.name]), 1)], 64))]),
+				_: 2
+			}, 1040))), 128))]),
+			_: 3
+		}, 8, [
+			"lazy",
+			"data-item-id",
+			"draggable",
+			"class"
+		]));
+	}
+}), ji = {
+	key: 0,
+	class: "oc-table-thead-content inline-table align-middle"
+}, Mi = ["textContent"], Ni = { key: 1 }, Pi = {
+	key: 0,
+	class: "oc-table-thead-content inline-table align-middle"
+}, Fi = ["textContent"], Ii = {
+	key: 1,
+	class: "oc-table-footer border-t"
+}, Li = { class: "oc-table-footer-row h-10.5" }, Ri = ["colspan"], zi = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcTable",
+	props: {
+		data: {},
+		fields: {},
+		disabled: { default: () => [] },
+		dragDrop: {
+			type: Boolean,
+			default: !1
+		},
+		hasHeader: {
+			type: Boolean,
+			default: !0
+		},
+		headerPosition: { default: 0 },
+		highlighted: { default: () => void 0 },
+		isHighlighted: {
+			type: Function,
+			default: void 0
+		},
+		isDisabled: {
+			type: Function,
+			default: void 0
+		},
+		hover: {
+			type: Boolean,
+			default: !1
+		},
+		idKey: { default: "id" },
+		itemDomSelector: { type: Function },
+		lazy: {
+			type: Boolean,
+			default: !1
+		},
+		paddingX: { default: "small" },
+		sortBy: {},
+		sortDir: {},
+		sticky: {
+			type: Boolean,
+			default: !1
+		}
+	},
+	emits: [
+		"itemDropped",
+		"itemDragged",
+		"theadClicked",
+		"highlight",
+		"contextmenuClicked",
+		"sort",
+		"dropRowStyling",
+		"itemVisible"
+	],
+	setup(n, { emit: c }) {
+		let l = c, u = {
+			EVENT_THEAD_CLICKED: r,
+			EVENT_TROW_CLICKED: i,
+			EVENT_TROW_CONTEXTMENU: a
+		}, { $gettext: d } = x(), f = (e) => n.itemDomSelector ? n.itemDomSelector(e) : e[n.idKey], p = C(() => {
+			let e = ["oc-table"];
+			return n.hover && e.push("oc-table-hover"), n.sticky && e.push("oc-table-sticky"), e;
+		}), h = C(() => n.fields.length), g = (t, n) => {
+			l(e, [t, n]);
+		}, _ = (e, n) => {
+			l(t, [e, n]);
+		}, v = (e, t, n) => {
+			l("dropRowStyling", e, t, n);
+		}, y = (e) => Object.prototype.hasOwnProperty.call(e, "title") ? e.title : e.name, b = () => ({ class: p.value }), ee = (e, t) => {
+			let r = s(e);
+			return r.class = `oc-table-header-cell oc-table-header-cell-${e.name}`, Object.prototype.hasOwnProperty.call(e, "thClass") && (r.class += ` ${e.thClass}`), n.sticky && (r.style = `top: ${n.headerPosition}px;`, r.class += " z-10"), t === 0 && (r.class += ` ${m(n.paddingX, "left")} `), t === n.fields.length - 1 && (r.class += ` ${m(n.paddingX, "right")}`), A(r, e), r;
+		}, te = C(() => new Set(n.highlighted)), ne = C(() => new Set(n.disabled)), re = (e) => te.value.has(e[n.idKey]), O = (e) => ne.value.has(e[n.idKey]), ae = (e) => d("Sort by %{ name }", { name: e }), A = (e, t) => {
+			if (!j(t)) return;
+			let r = "none";
+			n.sortBy === t.name && (r = n.sortDir === o.Asc ? "ascending" : "descending"), e["aria-sort"] = r;
+		}, j = ({ sortable: e }) => !!e, M = (e) => {
+			if (!j(e)) return;
+			let t = n.sortDir;
+			n.sortBy === e.name && n.sortDir !== void 0 && (t = n.sortDir === o.Desc ? o.Asc : o.Desc), (n.sortBy !== e.name || n.sortDir === void 0) && (t = e.sortDir || o.Desc), l("sort", {
+				sortBy: e.name,
+				sortDir: t
+			});
+		};
+		return (e, t) => {
+			let r = H("oc-icon");
+			return R(), E("table", N(b(), { class: "has-item-context-menu" }), [
+				n.hasHeader ? (R(), w(wi, { key: 0 }, {
+					default: J(() => [k(Oi, { class: "oc-table-header-row h-10.5" }, {
+						default: J(() => [(R(!0), E(S, null, B(n.fields, (t, i) => (R(), w(ki, N({ key: `oc-thead-${t.name}` }, { ref_for: !0 }, ee(t, i)), {
+							default: J(() => [t.sortable ? (R(), w($, {
+								key: 0,
+								"aria-label": ae(t.name),
+								appearance: "raw",
+								"justify-content": "left",
+								class: "oc-button-sort w-full hover:underline",
+								"gap-size": "small",
+								"no-hover": "",
+								onClick: (e) => M(t)
+							}, {
+								default: J(() => [t.headerType === "slot" ? (R(), E("span", ji, [V(e.$slots, t.name + "Header", {}, void 0, !0)])) : (R(), E("span", {
+									key: 1,
+									class: "oc-table-thead-content inline-table align-middle header-text",
+									textContent: W(y(t))
+								}, null, 8, Mi)), k(r, {
+									name: n.sortDir === "asc" ? "arrow-down" : "arrow-up",
+									"fill-type": "line",
+									class: F([{ "sr-only": n.sortBy !== t.name }, "p-1 rounded-sm"]),
+									"size-class": "size-4"
+								}, null, 8, ["name", "class"])]),
+								_: 2
+							}, 1032, ["aria-label", "onClick"])) : (R(), E("div", Ni, [t.headerType === "slot" ? (R(), E("span", Pi, [V(e.$slots, t.name + "Header", {}, void 0, !0)])) : (R(), E("span", {
+								key: 1,
+								class: "oc-table-thead-content inline-table align-middle header-text",
+								textContent: W(y(t))
+							}, null, 8, Fi))]))]),
+							_: 2
+						}, 1040))), 128))]),
+						_: 3
+					})]),
+					_: 3
+				})) : T("", !0),
+				k(Ti, { class: "has-item-context-menu" }, {
+					default: J(() => [(R(!0), E(S, null, B(n.data, (t, r) => (R(), w(Ai, {
+						key: `oc-tbody-tr-${f(t) || r}`,
+						ref_for: !0,
+						ref: `row-${r}`,
+						item: t,
+						fields: n.fields,
+						"id-key": n.idKey,
+						"dom-selector": f(t) || r,
+						"padding-x": n.paddingX,
+						lazy: n.lazy,
+						"drag-drop": n.dragDrop,
+						"is-highlighted": n.isHighlighted ?? re,
+						"is-disabled": n.isDisabled ?? O,
+						onClick: (n) => e.$emit(u.EVENT_TROW_CLICKED, [t, n]),
+						onContextmenu: (n) => e.$emit(u.EVENT_TROW_CONTEXTMENU, e.$refs[`row-${r}`][0], n, t),
+						onDragstart: (e) => g(t, e),
+						onDrop: (e) => _(t, e),
+						onDragenter: (e) => v(t, !1, e),
+						onDragleave: (e) => v(t, !0, e),
+						onItemVisible: (n) => e.$emit("itemVisible", t)
+					}, ie({ _: 2 }, [B(e.$slots, (t, n) => ({
+						name: n,
+						fn: J((t) => [V(e.$slots, n, N({ ref_for: !0 }, t), void 0, !0)])
+					}))]), 1032, [
+						"item",
+						"fields",
+						"id-key",
+						"dom-selector",
+						"padding-x",
+						"lazy",
+						"drag-drop",
+						"is-highlighted",
+						"is-disabled",
+						"onClick",
+						"onContextmenu",
+						"onDragstart",
+						"onDrop",
+						"onDragenter",
+						"onDragleave",
+						"onItemVisible"
+					]))), 128))]),
+					_: 3
+				}),
+				e.$slots.footer ? (R(), E("tfoot", Ii, [D("tr", Li, [D("td", {
+					colspan: h.value,
+					class: "oc-table-footer-cell p-1 text-sm text-role-on-surface-variant"
+				}, [V(e.$slots, "footer", {}, void 0, !0)], 8, Ri)])])) : T("", !0)
+			], 16);
+		};
+	}
+}), [["__scopeId", "data-v-d35043da"]]), Bi = /* @__PURE__ */ A({
+	name: "OcTableFoot",
+	__name: "OcTableFoot",
+	setup(e) {
+		return (e, t) => (R(), E("tfoot", null, [V(e.$slots, "default")]));
+	}
+}), Vi = /*#__PURE__*/ Q(/* @__PURE__ */ A({
+	__name: "OcTableSimple",
+	props: { hover: {
+		type: Boolean,
+		default: !1
+	} },
+	setup(e) {
+		let t = C(() => {
+			let t = ["oc-table-simple"];
+			return e.hover && t.push("oc-table-simple-hover"), t;
+		});
+		return (e, n) => (R(), E("table", { class: F(t.value) }, [V(e.$slots, "default", {}, void 0, !0)], 2));
+	}
+}), [["__scopeId", "data-v-eb3aa432"]]), Hi = /* @__PURE__ */ A({
+	__name: "OcTag",
+	props: {
+		type: { default: "span" },
+		to: { default: "" },
+		size: { default: "medium" },
+		rounded: {
+			type: Boolean,
+			default: !1
+		},
+		color: { default: "secondary" },
+		appearance: { default: "outline" }
+	},
+	emits: ["click"],
+	setup(e, { emit: t }) {
+		let n = t, r = C(() => {
+			let t = [];
+			if (e.appearance === "outline") {
+				switch (t.push("bg-role-surface"), e.color) {
+					case "primary":
+						t.push("text-role-primary", "border-role-primary");
+						break;
+					case "secondary":
+						t.push("text-role-secondary", "border-role-secondary");
+						break;
+					case "tertiary": t.push("text-role-tertiary", "border-role-tertiary");
+				}
+				return t;
+			}
+			switch (e.color) {
+				case "primary":
+					t.push("bg-role-primary", "text-role-on-primary", "border-role-primary");
+					break;
+				case "secondary":
+					t.push("bg-role-secondary", "text-role-on-secondary", "border-role-secondary");
+					break;
+				case "tertiary": t.push("bg-role-tertiary", "text-role-on-tertiary", "border-role-tertiary");
+			}
+			return t;
+		});
+		function i(e) {
+			n("click", e);
+		}
+		return (t, n) => (R(), w(U(e.type), {
+			class: F(["oc-tag inline-flex items-center border gap-1", [...r.value, {
+				"rounded-full px-2": e.rounded,
+				"rounded-lg": !e.rounded,
+				"p-1 text-xs": e.size === "small",
+				"py-1 px-2 text-sm min-h-6": e.size === "medium",
+				"py-2 px-4 text-lg min-h-8": e.size === "large",
+				"ease-in-out duration-200 transition-colors [&_svg]:ease-in-out [&_svg]:duration-200 [&_svg]:transition-colors": ["link", "button"].includes(e.type)
+			}]]),
+			to: e.to,
+			onClick: i
+		}, {
+			default: J(() => [V(t.$slots, "default")]),
+			_: 3
+		}, 8, ["class", "to"]));
+	}
+}), Ui = ["for", "textContent"], Wi = ["id", "aria-invalid"], Gi = {
+	key: 0,
+	class: "oc-textarea-message flex items-center mt-1 min-h-4.5"
+}, Ki = ["id", "textContent"], qi = /* @__PURE__ */ A({
+	__name: "OcTextarea",
+	props: /*@__PURE__*/ M({
+		id: { default: () => y("oc-textarea-") },
+		label: {},
+		errorMessage: {},
+		descriptionMessage: {},
+		fixMessageLine: {
+			type: Boolean,
+			default: !1
+		}
+	}, {
+		modelValue: { default: "" },
+		modelModifiers: {}
+	}),
+	emits: ["update:modelValue"],
+	setup(e, { expose: t }) {
+		let n = fe(e, "modelValue"), r = C(() => e.fixMessageLine || !!e.errorMessage || !!e.descriptionMessage), i = C(() => `${e.id}-message`), a = ue(), o = C(() => {
+			let t = {};
+			return (e.errorMessage || e.descriptionMessage) && (t["aria-describedby"] = i.value), {
+				...a,
+				...t
+			};
+		}), s = C(() => (!!e.errorMessage).toString()), c = C(() => e.errorMessage ? e.errorMessage : e.descriptionMessage), l = K("textareaRef");
+		return t({ focus: () => {
+			G(l).focus();
+		} }), (t, a) => (R(), E("div", null, [
+			D("label", {
+				class: "inline-block mb-0.5",
+				for: e.id,
+				textContent: W(e.label)
+			}, null, 8, Ui),
+			Y(D("textarea", N({ id: e.id }, o.value, {
+				ref_key: "textareaRef",
+				ref: l,
+				"onUpdate:modelValue": a[0] ||= (e) => n.value = e,
+				class: ["oc-textarea", { "oc-textarea-danger text-role-error focus:text-role-error border-role-error": !!e.errorMessage }],
+				"aria-invalid": s.value
+			}), null, 16, Wi), [[_e, n.value]]),
+			r.value ? (R(), E("div", Gi, [D("span", {
+				id: i.value,
+				class: F({
+					"oc-textarea-description text-role-on-surface-variant": !!e.descriptionMessage,
+					"oc-textarea-danger text-role-error focus:text-role-error border-role-error": !!e.errorMessage
+				}),
+				textContent: W(c.value)
+			}, null, 10, Ki)])) : T("", !0)
+		]));
+	}
+}), Ji = { class: "min-w-[352px]" }, Yi = {
+	key: 0,
+	class: "flex justify-center"
+}, Xi = /* @__PURE__ */ A({
+	__name: "OcEmojiPicker",
+	props: { theme: { default: "light" } },
+	emits: ["emojiSelect", "clickOutside"],
+	setup(e, { emit: t }) {
+		let n = t, r = x(), { $gettext: i } = r, a = K("emojiPickerRef"), o = z(!0);
+		return q([() => e.theme, r.current], async () => {
+			o.value = !0, await P();
+			let t = {
+				onEmojiSelect: (e) => n("emojiSelect", e.native),
+				onClickOutside: () => n("clickOutside"),
+				i18n: {
+					search: i("Search"),
+					search_no_results_1: i("Oh no!"),
+					search_no_results_2: i("That emoji couldn’t be found"),
+					pick: i("Pick an emoji…"),
+					add_custom: i("Add custom emoji"),
+					categories: {
+						activity: i("Activity"),
+						custom: i("Custom"),
+						flags: i("Flags"),
+						foods: i("Food & Drink"),
+						frequent: i("Frequently used"),
+						nature: i("Animals & Nature"),
+						objects: i("Objects"),
+						people: i("Smileys & People"),
+						places: i("Travel & Places"),
+						search: i("Search Results"),
+						symbols: i("Symbols")
+					},
+					skins: {
+						choose: i("Choose default skin tone"),
+						1: i("Default"),
+						2: i("Light"),
+						3: i("Medium-Light"),
+						4: i("Medium"),
+						5: i("Medium-Dark"),
+						6: i("Dark")
+					}
+				},
+				data: (await import("@emoji-mart/data")).default,
+				autoFocus: !0,
+				theme: e.theme
+			}, { Picker: r } = await import("emoji-mart"), s = new r(t);
+			o.value = !1, await P(), G(a).innerHTML = "", G(a).appendChild(s);
+		}, { immediate: !0 }), (e, t) => {
+			let n = H("oc-spinner");
+			return R(), E("div", Ji, [o.value ? (R(), E("div", Yi, [k(n, { size: "large" })])) : (R(), E("div", {
+				key: 1,
+				ref_key: "emojiPickerRef",
+				ref: a
+			}, null, 512))]);
+		};
+	}
+}), Zi = { class: "fixed flex flex-col items-end bottom-[20px] right-[20px] z-[calc(var(--z-index-modal)-1)]" }, Qi = ["textContent"], $i = /* @__PURE__ */ A({
+	__name: "OcFloatingActionButton",
+	props: {
+		buttonId: { default: "" },
+		ariaLabel: { default: "" },
+		colorRole: { default: "secondary" },
+		mode: { default: "menu" },
+		to: { default: null },
+		handler: {
+			type: Function,
+			default: null
+		},
+		items: { default: () => [] },
+		routerLinkComponent: { default: "router-link" }
+	},
+	setup(e) {
+		let { $gettext: t } = x(), n = z(!1), r = C(() => e.ariaLabel ? e.ariaLabel : t("Open actions menu")), i = () => {
+			if (e.mode === "action") {
+				e.handler?.();
+				return;
+			}
+			n.value = !G(n);
+		}, a = (e) => {
+			e.handler?.(), n.value = !1;
+		};
+		return (t, o) => {
+			let s = H("oc-icon"), c = H("oc-button");
+			return R(), E("div", Zi, [n.value ? (R(!0), E(S, { key: 0 }, B(e.items, (t) => (R(), w(c, {
+				key: t.label,
+				class: "mb-2 rounded-full",
+				appearance: "filled",
+				"color-role": e.colorRole,
+				type: t.to ? e.routerLinkComponent : "button",
+				to: t.to,
+				onClick: (e) => a(t)
+			}, {
+				default: J(() => [k(s, { name: t.icon }, null, 8, ["name"]), D("span", { textContent: W(t.label) }, null, 8, Qi)]),
+				_: 2
+			}, 1032, [
+				"color-role",
+				"type",
+				"to",
+				"onClick"
+			]))), 128)) : T("", !0), k(c, {
+				id: e.buttonId,
+				class: "rounded-full size-14",
+				appearance: "filled",
+				"color-role": e.colorRole,
+				"aria-label": r.value,
+				type: e.mode === "action" && e.to ? e.routerLinkComponent : "button",
+				to: e.to,
+				onClick: i
+			}, {
+				default: J(() => [k(s, {
+					name: n.value ? "close" : "add",
+					"fill-type": "line"
+				}, null, 8, ["name"])]),
+				_: 1
+			}, 8, [
+				"id",
+				"color-role",
+				"aria-label",
+				"type",
+				"to"
+			])]);
+		};
+	}
+}), ea = /* @__PURE__ */ Fe({
+	OcApplicationIcon: () => Ie,
+	OcAvatar: () => Ve,
+	OcAvatarCount: () => Ue,
+	OcAvatarFederated: () => Ke,
+	OcAvatarGroup: () => qe,
+	OcAvatarGuest: () => Je,
+	OcAvatarItem: () => Ge,
+	OcAvatarLink: () => Ye,
+	OcAvatars: () => Qe,
+	OcBottomDrawer: () => nt,
+	OcBreadcrumb: () => _t,
+	OcButton: () => $,
+	OcCard: () => rt,
+	OcCheckbox: () => bt,
+	OcColorInput: () => Ot,
+	OcContextualHelper: () => Lt,
+	OcDatepicker: () => Rt,
+	OcDefinitionList: () => Bt,
+	OcDrop: () => lt,
+	OcDropzone: () => Ht,
+	OcEmojiPicker: () => Xi,
+	OcErrorLog: () => Fn,
+	OcFileInput: () => Zt,
+	OcFilterChip: () => en,
+	OcFloatingActionButton: () => $i,
+	OcHiddenAnnouncer: () => nn,
+	OcIcon: () => Z,
+	OcImage: () => Re,
+	OcInfoDrop: () => Ft,
+	OcList: () => rn,
+	OcLoader: () => on,
+	OcModal: () => kn,
+	OcNotificationMessage: () => Un,
+	OcNotifications: () => Wn,
+	OcPageSize: () => Vr,
+	OcPagination: () => Kr,
+	OcPaginationInline: () => Yr,
+	OcProgress: () => Qr,
+	OcProgressPie: () => ti,
+	OcRadio: () => ii,
+	OcRecipient: () => si,
+	OcSearchBar: () => mi,
+	OcSelect: () => Rr,
+	OcSpinner: () => li,
+	OcStatusIndicators: () => vi,
+	OcSwitch: () => Si,
+	OcTable: () => zi,
+	OcTableBody: () => Ti,
+	OcTableFoot: () => Bi,
+	OcTableHead: () => wi,
+	OcTableRow: () => Ai,
+	OcTableSimple: () => Vi,
+	OcTableTd: () => Di,
+	OcTableTh: () => ki,
+	OcTableTr: () => Oi,
+	OcTag: () => Hi,
+	OcTextInput: () => _n,
+	OcTextarea: () => qi
+});
+//#endregion
+export { Ke as $, kn as A, Lt as B, Yr as C, Wn as D, Rr as E, en as F, lt as G, Ot as H, Zt as I, nt as J, rt as K, Ht as L, on as M, rn as N, Un as O, nn as P, qe as Q, Bt as R, Qr as S, Vr as T, bt as U, Ft as V, _t as W, Ye as X, Qe as Y, Je as Z, mi as _, Hi as a, Z as at, ii as b, zi as c, Oi as d, Ge as et, Di as f, vi as g, Si as h, qi as i, Ie as it, _n as j, Fn as k, Ai as l, wi as m, $i as n, Ve as nt, Vi as o, Fe as ot, Ti as p, $ as q, Xi as r, Re as rt, Bi as s, ea as t, Ue as tt, ki as u, li as v, Kr as w, ti as x, si as y, Rt as z };

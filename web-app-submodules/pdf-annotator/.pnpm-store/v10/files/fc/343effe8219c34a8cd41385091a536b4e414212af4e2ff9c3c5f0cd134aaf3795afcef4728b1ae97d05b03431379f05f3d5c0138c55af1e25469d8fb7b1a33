@@ -1,0 +1,3317 @@
+import { t as e } from "./axios-DAxu7d04.js";
+//#region src/graph/generated/base.ts
+var t = "https://localhost:9200/graph".replace(/\/+$/, ""), n = {
+	csv: ",",
+	ssv: " ",
+	tsv: "	",
+	pipes: "|"
+}, r = class {
+	configuration;
+	constructor(n, r = t, i = e) {
+		this.basePath = r, this.axios = i, n && (this.configuration = n, this.basePath = n.basePath ?? r);
+	}
+}, i = class extends Error {
+	constructor(e, t) {
+		super(t), this.field = e, this.name = "RequiredError";
+	}
+}, a = {}, o = "https://example.com", s = function(e, t, n) {
+	if (n == null) throw new i(t, `Required parameter ${t} was null or undefined when calling ${e}.`);
+}, c = function(e, t) {
+	t && (t.username || t.password) && (e.auth = {
+		username: t.username,
+		password: t.password
+	});
+}, l = async function(e, t) {
+	t && t.accessToken && (e.Authorization = "Bearer " + (typeof t.accessToken == "function" ? await t.accessToken() : await t.accessToken));
+};
+function u(e, t, n = "") {
+	t != null && (typeof t == "object" ? Array.isArray(t) || t instanceof Set ? t.forEach((t) => u(e, t, n)) : Object.keys(t).forEach((r) => u(e, t[r], `${n}${n === "" ? "" : "."}${r}`)) : e.has(n) ? e.append(n, t) : e.set(n, t));
+}
+var d = function(e, ...t) {
+	let n = new URLSearchParams(e.search);
+	u(n, t), e.search = n.toString();
+}, f = function(e, t) {
+	return t instanceof Set ? Array.from(t) : t;
+}, p = function(e, t, n) {
+	let r = typeof e != "string";
+	return (r && n && n.isJsonMime ? n.isJsonMime(t.headers["Content-Type"]) : r) ? JSON.stringify(e === void 0 ? {} : e, f) : e || "";
+}, m = function(e) {
+	return e.pathname + e.search + e.hash;
+}, h = function(e, t, n, r) {
+	return (i = t, a = n) => {
+		let o = {
+			...e.options,
+			url: (i.defaults.baseURL ? "" : r?.basePath ?? a) + e.url
+		};
+		return i.request(o);
+	};
+}, g = {
+	Class: "class",
+	Course: "course"
+}, _ = {
+	Internal: "internal",
+	View: "view",
+	Upload: "upload",
+	Edit: "edit",
+	CreateOnly: "createOnly",
+	BlocksDownload: "blocksDownload"
+}, v = function(e) {
+	return { getActivities: async (t, n = {}) => {
+		let r = new URL("/v1beta1/extensions/org.libregraph/activities", o), i;
+		e && (i = e.baseOptions);
+		let a = {
+			method: "GET",
+			...i,
+			...n
+		}, s = {}, l = {};
+		c(a, e), t !== void 0 && (l.kql = t), s.Accept = "application/json", d(r, l);
+		let u = i && i.headers ? i.headers : {};
+		return a.headers = {
+			...s,
+			...u,
+			...n.headers
+		}, {
+			url: m(r),
+			options: a
+		};
+	} };
+}, y = function(n) {
+	let r = v(n);
+	return { async getActivities(i, o) {
+		let s = await r.getActivities(i, o), c = n?.serverIndex ?? 0, l = a["ActivitiesApi.getActivities"]?.[c]?.url;
+		return (r, i) => h(s, e, t, n)(r, l || i);
+	} };
+}, ee = function(e, t, n) {
+	let r = y(e);
+	return { getActivities(e, i) {
+		return r.getActivities(e, i).then((e) => e(n, t));
+	} };
+}, te = class extends r {
+	getActivities(e, t) {
+		return y(this.configuration).getActivities(e, t).then((e) => e(this.axios, this.basePath));
+	}
+}, ne = function(e) {
+	return {
+		getApplication: async (t, n = {}) => {
+			s("getApplication", "applicationId", t);
+			let r = "/v1.0/applications/{application-id}".replace("{application-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let l = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			c(l, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return l.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: l
+			};
+		},
+		listApplications: async (t = {}) => {
+			let n = new URL("/v1.0/applications", o), r;
+			e && (r = e.baseOptions);
+			let i = {
+				method: "GET",
+				...r,
+				...t
+			}, a = {};
+			c(i, e), a.Accept = "application/json", d(n, {});
+			let s = r && r.headers ? r.headers : {};
+			return i.headers = {
+				...a,
+				...s,
+				...t.headers
+			}, {
+				url: m(n),
+				options: i
+			};
+		}
+	};
+}, b = function(n) {
+	let r = ne(n);
+	return {
+		async getApplication(i, o) {
+			let s = await r.getApplication(i, o), c = n?.serverIndex ?? 0, l = a["ApplicationsApi.getApplication"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async listApplications(i) {
+			let o = await r.listApplications(i), s = n?.serverIndex ?? 0, c = a["ApplicationsApi.listApplications"]?.[s]?.url;
+			return (r, i) => h(o, e, t, n)(r, c || i);
+		}
+	};
+}, re = function(e, t, n) {
+	let r = b(e);
+	return {
+		getApplication(e, i) {
+			return r.getApplication(e, i).then((e) => e(n, t));
+		},
+		listApplications(e) {
+			return r.listApplications(e).then((e) => e(n, t));
+		}
+	};
+}, ie = class extends r {
+	getApplication(e, t) {
+		return b(this.configuration).getApplication(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	listApplications(e) {
+		return b(this.configuration).listApplications(e).then((e) => e(this.axios, this.basePath));
+	}
+}, x = function(e) {
+	return {
+		deleteDriveItem: async (t, n, r = {}) => {
+			s("deleteDriveItem", "driveId", t), s("deleteDriveItem", "itemId", n);
+			let i = "/v1beta1/drives/{drive-id}/items/{item-id}".replace("{drive-id}", encodeURIComponent(String(t))).replace("{item-id}", encodeURIComponent(String(n))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "DELETE",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f.Accept = "application/json", d(a, {});
+			let p = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...p,
+				...r.headers
+			}, {
+				url: m(a),
+				options: u
+			};
+		},
+		getDriveItem: async (t, n, r = {}) => {
+			s("getDriveItem", "driveId", t), s("getDriveItem", "itemId", n);
+			let i = "/v1beta1/drives/{drive-id}/items/{item-id}".replace("{drive-id}", encodeURIComponent(String(t))).replace("{item-id}", encodeURIComponent(String(n))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "GET",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f.Accept = "application/json", d(a, {});
+			let p = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...p,
+				...r.headers
+			}, {
+				url: m(a),
+				options: u
+			};
+		},
+		updateDriveItem: async (t, n, r, i = {}) => {
+			s("updateDriveItem", "driveId", t), s("updateDriveItem", "itemId", n), s("updateDriveItem", "driveItem", r);
+			let a = "/v1beta1/drives/{drive-id}/items/{item-id}".replace("{drive-id}", encodeURIComponent(String(t))).replace("{item-id}", encodeURIComponent(String(n))), l = new URL(a, o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "PATCH",
+				...u,
+				...i
+			}, h = {};
+			c(f, e), h["Content-Type"] = "application/json", h.Accept = "application/json", d(l, {});
+			let g = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...h,
+				...g,
+				...i.headers
+			}, f.data = p(r, f, e), {
+				url: m(l),
+				options: f
+			};
+		}
+	};
+}, S = function(n) {
+	let r = x(n);
+	return {
+		async deleteDriveItem(i, o, s) {
+			let c = await r.deleteDriveItem(i, o, s), l = n?.serverIndex ?? 0, u = a["DriveItemApi.deleteDriveItem"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async getDriveItem(i, o, s) {
+			let c = await r.getDriveItem(i, o, s), l = n?.serverIndex ?? 0, u = a["DriveItemApi.getDriveItem"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async updateDriveItem(i, o, s, c) {
+			let l = await r.updateDriveItem(i, o, s, c), u = n?.serverIndex ?? 0, d = a["DriveItemApi.updateDriveItem"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		}
+	};
+}, ae = function(e, t, n) {
+	let r = S(e);
+	return {
+		deleteDriveItem(e, i, a) {
+			return r.deleteDriveItem(e, i, a).then((e) => e(n, t));
+		},
+		getDriveItem(e, i, a) {
+			return r.getDriveItem(e, i, a).then((e) => e(n, t));
+		},
+		updateDriveItem(e, i, a, o) {
+			return r.updateDriveItem(e, i, a, o).then((e) => e(n, t));
+		}
+	};
+}, oe = class extends r {
+	deleteDriveItem(e, t, n) {
+		return S(this.configuration).deleteDriveItem(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	getDriveItem(e, t, n) {
+		return S(this.configuration).getDriveItem(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	updateDriveItem(e, t, n, r) {
+		return S(this.configuration).updateDriveItem(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+}, se = function(e) {
+	return {
+		createDrive: async (t, n = {}) => {
+			s("createDrive", "drive", t);
+			let r = new URL("/v1.0/drives", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "POST",
+				...i,
+				...n
+			}, l = {};
+			c(a, e), l["Content-Type"] = "application/json", l.Accept = "application/json", d(r, {});
+			let u = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...l,
+				...u,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		},
+		deleteDrive: async (t, n, r = {}) => {
+			s("deleteDrive", "driveId", t);
+			let i = "/v1.0/drives/{drive-id}".replace("{drive-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "DELETE",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f.Accept = "application/json", n != null && (f["If-Match"] = String(n)), d(a, {});
+			let p = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...p,
+				...r.headers
+			}, {
+				url: m(a),
+				options: u
+			};
+		},
+		getDrive: async (t, r, i = {}) => {
+			s("getDrive", "driveId", t);
+			let a = "/v1.0/drives/{drive-id}".replace("{drive-id}", encodeURIComponent(String(t))), l = new URL(a, o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "GET",
+				...u,
+				...i
+			}, p = {}, h = {};
+			c(f, e), r && (h.$select = Array.from(r).join(n.csv)), p.Accept = "application/json", d(l, h);
+			let g = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...p,
+				...g,
+				...i.headers
+			}, {
+				url: m(l),
+				options: f
+			};
+		},
+		updateDrive: async (t, n, r = {}) => {
+			s("updateDrive", "driveId", t), s("updateDrive", "driveUpdate", n);
+			let i = "/v1.0/drives/{drive-id}".replace("{drive-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "PATCH",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		}
+	};
+}, C = function(n) {
+	let r = se(n);
+	return {
+		async createDrive(i, o) {
+			let s = await r.createDrive(i, o), c = n?.serverIndex ?? 0, l = a["DrivesApi.createDrive"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async deleteDrive(i, o, s) {
+			let c = await r.deleteDrive(i, o, s), l = n?.serverIndex ?? 0, u = a["DrivesApi.deleteDrive"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async getDrive(i, o, s) {
+			let c = await r.getDrive(i, o, s), l = n?.serverIndex ?? 0, u = a["DrivesApi.getDrive"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async updateDrive(i, o, s) {
+			let c = await r.updateDrive(i, o, s), l = n?.serverIndex ?? 0, u = a["DrivesApi.updateDrive"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		}
+	};
+}, ce = function(e, t, n) {
+	let r = C(e);
+	return {
+		createDrive(e, i) {
+			return r.createDrive(e, i).then((e) => e(n, t));
+		},
+		deleteDrive(e, i, a) {
+			return r.deleteDrive(e, i, a).then((e) => e(n, t));
+		},
+		getDrive(e, i, a) {
+			return r.getDrive(e, i, a).then((e) => e(n, t));
+		},
+		updateDrive(e, i, a) {
+			return r.updateDrive(e, i, a).then((e) => e(n, t));
+		}
+	};
+}, le = class extends r {
+	createDrive(e, t) {
+		return C(this.configuration).createDrive(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	deleteDrive(e, t, n) {
+		return C(this.configuration).deleteDrive(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	getDrive(e, t, n) {
+		return C(this.configuration).getDrive(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	updateDrive(e, t, n) {
+		return C(this.configuration).updateDrive(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+}, ue = { LibreGraphHasTrashedItems: "@libre.graph.hasTrashedItems" }, de = function(e) {
+	return {
+		listAllDrives: async (t, n, r = {}) => {
+			let i = new URL("/v1.0/drives", o), a;
+			e && (a = e.baseOptions);
+			let s = {
+				method: "GET",
+				...a,
+				...r
+			}, l = {}, u = {};
+			c(s, e), t !== void 0 && (u.$orderby = t), n !== void 0 && (u.$filter = n), l.Accept = "application/json", d(i, u);
+			let f = a && a.headers ? a.headers : {};
+			return s.headers = {
+				...l,
+				...f,
+				...r.headers
+			}, {
+				url: m(i),
+				options: s
+			};
+		},
+		listAllDrivesBeta: async (t, r, i, a, s = {}) => {
+			let l = new URL("/v1beta1/drives", o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "GET",
+				...u,
+				...s
+			}, p = {}, h = {};
+			c(f, e), t !== void 0 && (h.$orderby = t), r !== void 0 && (h.$filter = r), i !== void 0 && (h.$expand = i), a && (h.$select = Array.from(a).join(n.csv)), p.Accept = "application/json", d(l, h);
+			let g = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...p,
+				...g,
+				...s.headers
+			}, {
+				url: m(l),
+				options: f
+			};
+		}
+	};
+}, w = function(n) {
+	let r = de(n);
+	return {
+		async listAllDrives(i, o, s) {
+			let c = await r.listAllDrives(i, o, s), l = n?.serverIndex ?? 0, u = a["DrivesGetDrivesApi.listAllDrives"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async listAllDrivesBeta(i, o, s, c, l) {
+			let u = await r.listAllDrivesBeta(i, o, s, c, l), d = n?.serverIndex ?? 0, f = a["DrivesGetDrivesApi.listAllDrivesBeta"]?.[d]?.url;
+			return (r, i) => h(u, e, t, n)(r, f || i);
+		}
+	};
+}, fe = function(e, t, n) {
+	let r = w(e);
+	return {
+		listAllDrives(e, i, a) {
+			return r.listAllDrives(e, i, a).then((e) => e(n, t));
+		},
+		listAllDrivesBeta(e, i, a, o, s) {
+			return r.listAllDrivesBeta(e, i, a, o, s).then((e) => e(n, t));
+		}
+	};
+}, pe = class extends r {
+	listAllDrives(e, t, n) {
+		return w(this.configuration).listAllDrives(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	listAllDrivesBeta(e, t, n, r, i) {
+		return w(this.configuration).listAllDrivesBeta(e, t, n, r, i).then((e) => e(this.axios, this.basePath));
+	}
+}, me = { LibreGraphHasTrashedItems: "@libre.graph.hasTrashedItems" }, he = function(e) {
+	return {
+		createLink: async (t, n, r, i = {}) => {
+			s("createLink", "driveId", t), s("createLink", "itemId", n);
+			let a = "/v1beta1/drives/{drive-id}/items/{item-id}/createLink".replace("{drive-id}", encodeURIComponent(String(t))).replace("{item-id}", encodeURIComponent(String(n))), l = new URL(a, o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "POST",
+				...u,
+				...i
+			}, h = {};
+			c(f, e), h["Content-Type"] = "application/json", h.Accept = "application/json", d(l, {});
+			let g = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...h,
+				...g,
+				...i.headers
+			}, f.data = p(r, f, e), {
+				url: m(l),
+				options: f
+			};
+		},
+		deletePermission: async (t, n, r, i = {}) => {
+			s("deletePermission", "driveId", t), s("deletePermission", "itemId", n), s("deletePermission", "permId", r);
+			let a = "/v1beta1/drives/{drive-id}/items/{item-id}/permissions/{perm-id}".replace("{drive-id}", encodeURIComponent(String(t))).replace("{item-id}", encodeURIComponent(String(n))).replace("{perm-id}", encodeURIComponent(String(r))), l = new URL(a, o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "DELETE",
+				...u,
+				...i
+			}, p = {};
+			c(f, e), p.Accept = "application/json", d(l, {});
+			let h = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...p,
+				...h,
+				...i.headers
+			}, {
+				url: m(l),
+				options: f
+			};
+		},
+		getPermission: async (t, n, r, i = {}) => {
+			s("getPermission", "driveId", t), s("getPermission", "itemId", n), s("getPermission", "permId", r);
+			let a = "/v1beta1/drives/{drive-id}/items/{item-id}/permissions/{perm-id}".replace("{drive-id}", encodeURIComponent(String(t))).replace("{item-id}", encodeURIComponent(String(n))).replace("{perm-id}", encodeURIComponent(String(r))), l = new URL(a, o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "GET",
+				...u,
+				...i
+			}, p = {};
+			c(f, e), p.Accept = "application/json", d(l, {});
+			let h = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...p,
+				...h,
+				...i.headers
+			}, {
+				url: m(l),
+				options: f
+			};
+		},
+		invite: async (t, n, r, i = {}) => {
+			s("invite", "driveId", t), s("invite", "itemId", n);
+			let a = "/v1beta1/drives/{drive-id}/items/{item-id}/invite".replace("{drive-id}", encodeURIComponent(String(t))).replace("{item-id}", encodeURIComponent(String(n))), l = new URL(a, o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "POST",
+				...u,
+				...i
+			}, h = {};
+			c(f, e), h["Content-Type"] = "application/json", h.Accept = "application/json", d(l, {});
+			let g = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...h,
+				...g,
+				...i.headers
+			}, f.data = p(r, f, e), {
+				url: m(l),
+				options: f
+			};
+		},
+		listPermissions: async (t, r, i, a, l, u, f = {}) => {
+			s("listPermissions", "driveId", t), s("listPermissions", "itemId", r);
+			let p = "/v1beta1/drives/{drive-id}/items/{item-id}/permissions".replace("{drive-id}", encodeURIComponent(String(t))).replace("{item-id}", encodeURIComponent(String(r))), h = new URL(p, o), g;
+			e && (g = e.baseOptions);
+			let _ = {
+				method: "GET",
+				...g,
+				...f
+			}, v = {}, y = {};
+			c(_, e), i !== void 0 && (y.$filter = i), a && (y.$select = Array.from(a).join(n.csv)), l !== void 0 && (y.$count = l), u !== void 0 && (y.$top = u), v.Accept = "application/json", d(h, y);
+			let ee = g && g.headers ? g.headers : {};
+			return _.headers = {
+				...v,
+				...ee,
+				...f.headers
+			}, {
+				url: m(h),
+				options: _
+			};
+		},
+		setPermissionPassword: async (t, n, r, i, a = {}) => {
+			s("setPermissionPassword", "driveId", t), s("setPermissionPassword", "itemId", n), s("setPermissionPassword", "permId", r), s("setPermissionPassword", "sharingLinkPassword", i);
+			let l = "/v1beta1/drives/{drive-id}/items/{item-id}/permissions/{perm-id}/setPassword".replace("{drive-id}", encodeURIComponent(String(t))).replace("{item-id}", encodeURIComponent(String(n))).replace("{perm-id}", encodeURIComponent(String(r))), u = new URL(l, o), f;
+			e && (f = e.baseOptions);
+			let h = {
+				method: "POST",
+				...f,
+				...a
+			}, g = {};
+			c(h, e), g["Content-Type"] = "application/json", g.Accept = "application/json", d(u, {});
+			let _ = f && f.headers ? f.headers : {};
+			return h.headers = {
+				...g,
+				..._,
+				...a.headers
+			}, h.data = p(i, h, e), {
+				url: m(u),
+				options: h
+			};
+		},
+		updatePermission: async (t, n, r, i, a = {}) => {
+			s("updatePermission", "driveId", t), s("updatePermission", "itemId", n), s("updatePermission", "permId", r), s("updatePermission", "permission", i);
+			let l = "/v1beta1/drives/{drive-id}/items/{item-id}/permissions/{perm-id}".replace("{drive-id}", encodeURIComponent(String(t))).replace("{item-id}", encodeURIComponent(String(n))).replace("{perm-id}", encodeURIComponent(String(r))), u = new URL(l, o), f;
+			e && (f = e.baseOptions);
+			let h = {
+				method: "PATCH",
+				...f,
+				...a
+			}, g = {};
+			c(h, e), g["Content-Type"] = "application/json", g.Accept = "application/json", d(u, {});
+			let _ = f && f.headers ? f.headers : {};
+			return h.headers = {
+				...g,
+				..._,
+				...a.headers
+			}, h.data = p(i, h, e), {
+				url: m(u),
+				options: h
+			};
+		}
+	};
+}, T = function(n) {
+	let r = he(n);
+	return {
+		async createLink(i, o, s, c) {
+			let l = await r.createLink(i, o, s, c), u = n?.serverIndex ?? 0, d = a["DrivesPermissionsApi.createLink"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		},
+		async deletePermission(i, o, s, c) {
+			let l = await r.deletePermission(i, o, s, c), u = n?.serverIndex ?? 0, d = a["DrivesPermissionsApi.deletePermission"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		},
+		async getPermission(i, o, s, c) {
+			let l = await r.getPermission(i, o, s, c), u = n?.serverIndex ?? 0, d = a["DrivesPermissionsApi.getPermission"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		},
+		async invite(i, o, s, c) {
+			let l = await r.invite(i, o, s, c), u = n?.serverIndex ?? 0, d = a["DrivesPermissionsApi.invite"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		},
+		async listPermissions(i, o, s, c, l, u, d) {
+			let f = await r.listPermissions(i, o, s, c, l, u, d), p = n?.serverIndex ?? 0, m = a["DrivesPermissionsApi.listPermissions"]?.[p]?.url;
+			return (r, i) => h(f, e, t, n)(r, m || i);
+		},
+		async setPermissionPassword(i, o, s, c, l) {
+			let u = await r.setPermissionPassword(i, o, s, c, l), d = n?.serverIndex ?? 0, f = a["DrivesPermissionsApi.setPermissionPassword"]?.[d]?.url;
+			return (r, i) => h(u, e, t, n)(r, f || i);
+		},
+		async updatePermission(i, o, s, c, l) {
+			let u = await r.updatePermission(i, o, s, c, l), d = n?.serverIndex ?? 0, f = a["DrivesPermissionsApi.updatePermission"]?.[d]?.url;
+			return (r, i) => h(u, e, t, n)(r, f || i);
+		}
+	};
+}, ge = function(e, t, n) {
+	let r = T(e);
+	return {
+		createLink(e, i, a, o) {
+			return r.createLink(e, i, a, o).then((e) => e(n, t));
+		},
+		deletePermission(e, i, a, o) {
+			return r.deletePermission(e, i, a, o).then((e) => e(n, t));
+		},
+		getPermission(e, i, a, o) {
+			return r.getPermission(e, i, a, o).then((e) => e(n, t));
+		},
+		invite(e, i, a, o) {
+			return r.invite(e, i, a, o).then((e) => e(n, t));
+		},
+		listPermissions(e, i, a, o, s, c, l) {
+			return r.listPermissions(e, i, a, o, s, c, l).then((e) => e(n, t));
+		},
+		setPermissionPassword(e, i, a, o, s) {
+			return r.setPermissionPassword(e, i, a, o, s).then((e) => e(n, t));
+		},
+		updatePermission(e, i, a, o, s) {
+			return r.updatePermission(e, i, a, o, s).then((e) => e(n, t));
+		}
+	};
+}, _e = class extends r {
+	createLink(e, t, n, r) {
+		return T(this.configuration).createLink(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+	deletePermission(e, t, n, r) {
+		return T(this.configuration).deletePermission(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+	getPermission(e, t, n, r) {
+		return T(this.configuration).getPermission(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+	invite(e, t, n, r) {
+		return T(this.configuration).invite(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+	listPermissions(e, t, n, r, i, a, o) {
+		return T(this.configuration).listPermissions(e, t, n, r, i, a, o).then((e) => e(this.axios, this.basePath));
+	}
+	setPermissionPassword(e, t, n, r, i) {
+		return T(this.configuration).setPermissionPassword(e, t, n, r, i).then((e) => e(this.axios, this.basePath));
+	}
+	updatePermission(e, t, n, r, i) {
+		return T(this.configuration).updatePermission(e, t, n, r, i).then((e) => e(this.axios, this.basePath));
+	}
+}, ve = {
+	LibreGraphPermissionsActionsAllowedValues: "@libre.graph.permissions.actions.allowedValues",
+	LibreGraphPermissionsRolesAllowedValues: "@libre.graph.permissions.roles.allowedValues",
+	Value: "value"
+}, ye = function(e) {
+	return {
+		createDriveItem: async (t, n, r = {}) => {
+			s("createDriveItem", "driveId", t);
+			let i = "/v1beta1/drives/{drive-id}/root/children".replace("{drive-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "POST",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		},
+		createLinkSpaceRoot: async (t, n, r = {}) => {
+			s("createLinkSpaceRoot", "driveId", t);
+			let i = "/v1beta1/drives/{drive-id}/root/createLink".replace("{drive-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "POST",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		},
+		deletePermissionSpaceRoot: async (t, n, r = {}) => {
+			s("deletePermissionSpaceRoot", "driveId", t), s("deletePermissionSpaceRoot", "permId", n);
+			let i = "/v1beta1/drives/{drive-id}/root/permissions/{perm-id}".replace("{drive-id}", encodeURIComponent(String(t))).replace("{perm-id}", encodeURIComponent(String(n))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "DELETE",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f.Accept = "application/json", d(a, {});
+			let p = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...p,
+				...r.headers
+			}, {
+				url: m(a),
+				options: u
+			};
+		},
+		getPermissionSpaceRoot: async (t, n, r = {}) => {
+			s("getPermissionSpaceRoot", "driveId", t), s("getPermissionSpaceRoot", "permId", n);
+			let i = "/v1beta1/drives/{drive-id}/root/permissions/{perm-id}".replace("{drive-id}", encodeURIComponent(String(t))).replace("{perm-id}", encodeURIComponent(String(n))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "GET",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f.Accept = "application/json", d(a, {});
+			let p = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...p,
+				...r.headers
+			}, {
+				url: m(a),
+				options: u
+			};
+		},
+		getRoot: async (t, n = {}) => {
+			s("getRoot", "driveId", t);
+			let r = "/v1.0/drives/{drive-id}/root".replace("{drive-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let l = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			c(l, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return l.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: l
+			};
+		},
+		inviteSpaceRoot: async (t, n, r = {}) => {
+			s("inviteSpaceRoot", "driveId", t);
+			let i = "/v1beta1/drives/{drive-id}/root/invite".replace("{drive-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "POST",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		},
+		listPermissionsSpaceRoot: async (t, r, i, a, l, u = {}) => {
+			s("listPermissionsSpaceRoot", "driveId", t);
+			let f = "/v1beta1/drives/{drive-id}/root/permissions".replace("{drive-id}", encodeURIComponent(String(t))), p = new URL(f, o), h;
+			e && (h = e.baseOptions);
+			let g = {
+				method: "GET",
+				...h,
+				...u
+			}, _ = {}, v = {};
+			c(g, e), r !== void 0 && (v.$filter = r), i && (v.$select = Array.from(i).join(n.csv)), a !== void 0 && (v.$count = a), l !== void 0 && (v.$top = l), _.Accept = "application/json", d(p, v);
+			let y = h && h.headers ? h.headers : {};
+			return g.headers = {
+				..._,
+				...y,
+				...u.headers
+			}, {
+				url: m(p),
+				options: g
+			};
+		},
+		setPermissionPasswordSpaceRoot: async (t, n, r, i = {}) => {
+			s("setPermissionPasswordSpaceRoot", "driveId", t), s("setPermissionPasswordSpaceRoot", "permId", n), s("setPermissionPasswordSpaceRoot", "sharingLinkPassword", r);
+			let a = "/v1beta1/drives/{drive-id}/root/permissions/{perm-id}/setPassword".replace("{drive-id}", encodeURIComponent(String(t))).replace("{perm-id}", encodeURIComponent(String(n))), l = new URL(a, o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "POST",
+				...u,
+				...i
+			}, h = {};
+			c(f, e), h["Content-Type"] = "application/json", h.Accept = "application/json", d(l, {});
+			let g = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...h,
+				...g,
+				...i.headers
+			}, f.data = p(r, f, e), {
+				url: m(l),
+				options: f
+			};
+		},
+		updatePermissionSpaceRoot: async (t, n, r, i = {}) => {
+			s("updatePermissionSpaceRoot", "driveId", t), s("updatePermissionSpaceRoot", "permId", n), s("updatePermissionSpaceRoot", "permission", r);
+			let a = "/v1beta1/drives/{drive-id}/root/permissions/{perm-id}".replace("{drive-id}", encodeURIComponent(String(t))).replace("{perm-id}", encodeURIComponent(String(n))), l = new URL(a, o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "PATCH",
+				...u,
+				...i
+			}, h = {};
+			c(f, e), h["Content-Type"] = "application/json", h.Accept = "application/json", d(l, {});
+			let g = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...h,
+				...g,
+				...i.headers
+			}, f.data = p(r, f, e), {
+				url: m(l),
+				options: f
+			};
+		}
+	};
+}, E = function(n) {
+	let r = ye(n);
+	return {
+		async createDriveItem(i, o, s) {
+			let c = await r.createDriveItem(i, o, s), l = n?.serverIndex ?? 0, u = a["DrivesRootApi.createDriveItem"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async createLinkSpaceRoot(i, o, s) {
+			let c = await r.createLinkSpaceRoot(i, o, s), l = n?.serverIndex ?? 0, u = a["DrivesRootApi.createLinkSpaceRoot"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async deletePermissionSpaceRoot(i, o, s) {
+			let c = await r.deletePermissionSpaceRoot(i, o, s), l = n?.serverIndex ?? 0, u = a["DrivesRootApi.deletePermissionSpaceRoot"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async getPermissionSpaceRoot(i, o, s) {
+			let c = await r.getPermissionSpaceRoot(i, o, s), l = n?.serverIndex ?? 0, u = a["DrivesRootApi.getPermissionSpaceRoot"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async getRoot(i, o) {
+			let s = await r.getRoot(i, o), c = n?.serverIndex ?? 0, l = a["DrivesRootApi.getRoot"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async inviteSpaceRoot(i, o, s) {
+			let c = await r.inviteSpaceRoot(i, o, s), l = n?.serverIndex ?? 0, u = a["DrivesRootApi.inviteSpaceRoot"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async listPermissionsSpaceRoot(i, o, s, c, l, u) {
+			let d = await r.listPermissionsSpaceRoot(i, o, s, c, l, u), f = n?.serverIndex ?? 0, p = a["DrivesRootApi.listPermissionsSpaceRoot"]?.[f]?.url;
+			return (r, i) => h(d, e, t, n)(r, p || i);
+		},
+		async setPermissionPasswordSpaceRoot(i, o, s, c) {
+			let l = await r.setPermissionPasswordSpaceRoot(i, o, s, c), u = n?.serverIndex ?? 0, d = a["DrivesRootApi.setPermissionPasswordSpaceRoot"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		},
+		async updatePermissionSpaceRoot(i, o, s, c) {
+			let l = await r.updatePermissionSpaceRoot(i, o, s, c), u = n?.serverIndex ?? 0, d = a["DrivesRootApi.updatePermissionSpaceRoot"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		}
+	};
+}, be = function(e, t, n) {
+	let r = E(e);
+	return {
+		createDriveItem(e, i, a) {
+			return r.createDriveItem(e, i, a).then((e) => e(n, t));
+		},
+		createLinkSpaceRoot(e, i, a) {
+			return r.createLinkSpaceRoot(e, i, a).then((e) => e(n, t));
+		},
+		deletePermissionSpaceRoot(e, i, a) {
+			return r.deletePermissionSpaceRoot(e, i, a).then((e) => e(n, t));
+		},
+		getPermissionSpaceRoot(e, i, a) {
+			return r.getPermissionSpaceRoot(e, i, a).then((e) => e(n, t));
+		},
+		getRoot(e, i) {
+			return r.getRoot(e, i).then((e) => e(n, t));
+		},
+		inviteSpaceRoot(e, i, a) {
+			return r.inviteSpaceRoot(e, i, a).then((e) => e(n, t));
+		},
+		listPermissionsSpaceRoot(e, i, a, o, s, c) {
+			return r.listPermissionsSpaceRoot(e, i, a, o, s, c).then((e) => e(n, t));
+		},
+		setPermissionPasswordSpaceRoot(e, i, a, o) {
+			return r.setPermissionPasswordSpaceRoot(e, i, a, o).then((e) => e(n, t));
+		},
+		updatePermissionSpaceRoot(e, i, a, o) {
+			return r.updatePermissionSpaceRoot(e, i, a, o).then((e) => e(n, t));
+		}
+	};
+}, xe = class extends r {
+	createDriveItem(e, t, n) {
+		return E(this.configuration).createDriveItem(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	createLinkSpaceRoot(e, t, n) {
+		return E(this.configuration).createLinkSpaceRoot(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	deletePermissionSpaceRoot(e, t, n) {
+		return E(this.configuration).deletePermissionSpaceRoot(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	getPermissionSpaceRoot(e, t, n) {
+		return E(this.configuration).getPermissionSpaceRoot(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	getRoot(e, t) {
+		return E(this.configuration).getRoot(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	inviteSpaceRoot(e, t, n) {
+		return E(this.configuration).inviteSpaceRoot(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	listPermissionsSpaceRoot(e, t, n, r, i, a) {
+		return E(this.configuration).listPermissionsSpaceRoot(e, t, n, r, i, a).then((e) => e(this.axios, this.basePath));
+	}
+	setPermissionPasswordSpaceRoot(e, t, n, r) {
+		return E(this.configuration).setPermissionPasswordSpaceRoot(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+	updatePermissionSpaceRoot(e, t, n, r) {
+		return E(this.configuration).updatePermissionSpaceRoot(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+}, Se = {
+	LibreGraphPermissionsActionsAllowedValues: "@libre.graph.permissions.actions.allowedValues",
+	LibreGraphPermissionsRolesAllowedValues: "@libre.graph.permissions.roles.allowedValues",
+	Value: "value"
+}, D = function(e) {
+	return {
+		addUserToClass: async (t, n, r = {}) => {
+			s("addUserToClass", "classId", t), s("addUserToClass", "classMemberReference", n);
+			let i = "/v1.0/education/classes/{class-id}/members/$ref".replace("{class-id}", encodeURIComponent(String(t))), a = new URL(i, o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "POST",
+				...c,
+				...r
+			}, f = {};
+			await l(f, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		},
+		createClass: async (t, n = {}) => {
+			s("createClass", "educationClass", t);
+			let r = new URL("/v1.0/education/classes", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "POST",
+				...i,
+				...n
+			}, c = {};
+			await l(c, e), c["Content-Type"] = "application/json", c.Accept = "application/json", d(r, {});
+			let u = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...c,
+				...u,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		},
+		deleteClass: async (t, n = {}) => {
+			s("deleteClass", "classId", t);
+			let r = "/v1.0/education/classes/{class-id}".replace("{class-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let c = {
+				method: "DELETE",
+				...a,
+				...n
+			}, u = {};
+			await l(u, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return c.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: c
+			};
+		},
+		deleteUserFromClass: async (t, n, r = {}) => {
+			s("deleteUserFromClass", "classId", t), s("deleteUserFromClass", "userId", n);
+			let i = "/v1.0/education/classes/{class-id}/members/{user-id}/$ref".replace("{class-id}", encodeURIComponent(String(t))).replace("{user-id}", encodeURIComponent(String(n))), a = new URL(i, o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "DELETE",
+				...c,
+				...r
+			}, f = {};
+			await l(f, e), f.Accept = "application/json", d(a, {});
+			let p = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...p,
+				...r.headers
+			}, {
+				url: m(a),
+				options: u
+			};
+		},
+		getClass: async (t, n = {}) => {
+			s("getClass", "classId", t);
+			let r = "/v1.0/education/classes/{class-id}".replace("{class-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let c = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			await l(u, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return c.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: c
+			};
+		},
+		listClassMembers: async (t, n = {}) => {
+			s("listClassMembers", "classId", t);
+			let r = "/v1.0/education/classes/{class-id}/members".replace("{class-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let c = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			await l(u, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return c.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: c
+			};
+		},
+		listClasses: async (t = {}) => {
+			let n = new URL("/v1.0/education/classes", o), r;
+			e && (r = e.baseOptions);
+			let i = {
+				method: "GET",
+				...r,
+				...t
+			}, a = {};
+			await l(a, e), a.Accept = "application/json", d(n, {});
+			let s = r && r.headers ? r.headers : {};
+			return i.headers = {
+				...a,
+				...s,
+				...t.headers
+			}, {
+				url: m(n),
+				options: i
+			};
+		},
+		updateClass: async (t, n, r = {}) => {
+			s("updateClass", "classId", t), s("updateClass", "educationClass", n);
+			let i = "/v1.0/education/classes/{class-id}".replace("{class-id}", encodeURIComponent(String(t))), a = new URL(i, o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "PATCH",
+				...c,
+				...r
+			}, f = {};
+			await l(f, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		}
+	};
+}, O = function(n) {
+	let r = D(n);
+	return {
+		async addUserToClass(i, o, s) {
+			let c = await r.addUserToClass(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationClassApi.addUserToClass"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async createClass(i, o) {
+			let s = await r.createClass(i, o), c = n?.serverIndex ?? 0, l = a["EducationClassApi.createClass"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async deleteClass(i, o) {
+			let s = await r.deleteClass(i, o), c = n?.serverIndex ?? 0, l = a["EducationClassApi.deleteClass"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async deleteUserFromClass(i, o, s) {
+			let c = await r.deleteUserFromClass(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationClassApi.deleteUserFromClass"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async getClass(i, o) {
+			let s = await r.getClass(i, o), c = n?.serverIndex ?? 0, l = a["EducationClassApi.getClass"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async listClassMembers(i, o) {
+			let s = await r.listClassMembers(i, o), c = n?.serverIndex ?? 0, l = a["EducationClassApi.listClassMembers"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async listClasses(i) {
+			let o = await r.listClasses(i), s = n?.serverIndex ?? 0, c = a["EducationClassApi.listClasses"]?.[s]?.url;
+			return (r, i) => h(o, e, t, n)(r, c || i);
+		},
+		async updateClass(i, o, s) {
+			let c = await r.updateClass(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationClassApi.updateClass"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		}
+	};
+}, Ce = function(e, t, n) {
+	let r = O(e);
+	return {
+		addUserToClass(e, i, a) {
+			return r.addUserToClass(e, i, a).then((e) => e(n, t));
+		},
+		createClass(e, i) {
+			return r.createClass(e, i).then((e) => e(n, t));
+		},
+		deleteClass(e, i) {
+			return r.deleteClass(e, i).then((e) => e(n, t));
+		},
+		deleteUserFromClass(e, i, a) {
+			return r.deleteUserFromClass(e, i, a).then((e) => e(n, t));
+		},
+		getClass(e, i) {
+			return r.getClass(e, i).then((e) => e(n, t));
+		},
+		listClassMembers(e, i) {
+			return r.listClassMembers(e, i).then((e) => e(n, t));
+		},
+		listClasses(e) {
+			return r.listClasses(e).then((e) => e(n, t));
+		},
+		updateClass(e, i, a) {
+			return r.updateClass(e, i, a).then((e) => e(n, t));
+		}
+	};
+}, we = class extends r {
+	addUserToClass(e, t, n) {
+		return O(this.configuration).addUserToClass(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	createClass(e, t) {
+		return O(this.configuration).createClass(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	deleteClass(e, t) {
+		return O(this.configuration).deleteClass(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	deleteUserFromClass(e, t, n) {
+		return O(this.configuration).deleteUserFromClass(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	getClass(e, t) {
+		return O(this.configuration).getClass(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	listClassMembers(e, t) {
+		return O(this.configuration).listClassMembers(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	listClasses(e) {
+		return O(this.configuration).listClasses(e).then((e) => e(this.axios, this.basePath));
+	}
+	updateClass(e, t, n) {
+		return O(this.configuration).updateClass(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+}, k = function(e) {
+	return {
+		addTeacherToClass: async (t, n, r = {}) => {
+			s("addTeacherToClass", "classId", t), s("addTeacherToClass", "classTeacherReference", n);
+			let i = "/v1.0/education/classes/{class-id}/teachers/$ref".replace("{class-id}", encodeURIComponent(String(t))), a = new URL(i, o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "POST",
+				...c,
+				...r
+			}, f = {};
+			await l(f, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		},
+		deleteTeacherFromClass: async (t, n, r = {}) => {
+			s("deleteTeacherFromClass", "classId", t), s("deleteTeacherFromClass", "userId", n);
+			let i = "/v1.0/education/classes/{class-id}/teachers/{user-id}/$ref".replace("{class-id}", encodeURIComponent(String(t))).replace("{user-id}", encodeURIComponent(String(n))), a = new URL(i, o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "DELETE",
+				...c,
+				...r
+			}, f = {};
+			await l(f, e), f.Accept = "application/json", d(a, {});
+			let p = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...p,
+				...r.headers
+			}, {
+				url: m(a),
+				options: u
+			};
+		},
+		getTeachers: async (t, n = {}) => {
+			s("getTeachers", "classId", t);
+			let r = "/v1.0/education/classes/{class-id}/teachers".replace("{class-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let c = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			await l(u, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return c.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: c
+			};
+		}
+	};
+}, A = function(n) {
+	let r = k(n);
+	return {
+		async addTeacherToClass(i, o, s) {
+			let c = await r.addTeacherToClass(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationClassTeachersApi.addTeacherToClass"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async deleteTeacherFromClass(i, o, s) {
+			let c = await r.deleteTeacherFromClass(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationClassTeachersApi.deleteTeacherFromClass"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async getTeachers(i, o) {
+			let s = await r.getTeachers(i, o), c = n?.serverIndex ?? 0, l = a["EducationClassTeachersApi.getTeachers"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		}
+	};
+}, Te = function(e, t, n) {
+	let r = A(e);
+	return {
+		addTeacherToClass(e, i, a) {
+			return r.addTeacherToClass(e, i, a).then((e) => e(n, t));
+		},
+		deleteTeacherFromClass(e, i, a) {
+			return r.deleteTeacherFromClass(e, i, a).then((e) => e(n, t));
+		},
+		getTeachers(e, i) {
+			return r.getTeachers(e, i).then((e) => e(n, t));
+		}
+	};
+}, Ee = class extends r {
+	addTeacherToClass(e, t, n) {
+		return A(this.configuration).addTeacherToClass(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	deleteTeacherFromClass(e, t, n) {
+		return A(this.configuration).deleteTeacherFromClass(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	getTeachers(e, t) {
+		return A(this.configuration).getTeachers(e, t).then((e) => e(this.axios, this.basePath));
+	}
+}, j = function(e) {
+	return {
+		addClassToSchool: async (t, n, r = {}) => {
+			s("addClassToSchool", "schoolId", t), s("addClassToSchool", "classReference", n);
+			let i = "/v1.0/education/schools/{school-id}/classes/$ref".replace("{school-id}", encodeURIComponent(String(t))), a = new URL(i, o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "POST",
+				...c,
+				...r
+			}, f = {};
+			await l(f, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		},
+		addUserToSchool: async (t, n, r = {}) => {
+			s("addUserToSchool", "schoolId", t), s("addUserToSchool", "educationUserReference", n);
+			let i = "/v1.0/education/schools/{school-id}/users/$ref".replace("{school-id}", encodeURIComponent(String(t))), a = new URL(i, o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "POST",
+				...c,
+				...r
+			}, f = {};
+			await l(f, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		},
+		createSchool: async (t, n = {}) => {
+			s("createSchool", "educationSchool", t);
+			let r = new URL("/v1.0/education/schools", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "POST",
+				...i,
+				...n
+			}, c = {};
+			await l(c, e), c["Content-Type"] = "application/json", c.Accept = "application/json", d(r, {});
+			let u = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...c,
+				...u,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		},
+		deleteClassFromSchool: async (t, n, r = {}) => {
+			s("deleteClassFromSchool", "schoolId", t), s("deleteClassFromSchool", "classId", n);
+			let i = "/v1.0/education/schools/{school-id}/classes/{class-id}/$ref".replace("{school-id}", encodeURIComponent(String(t))).replace("{class-id}", encodeURIComponent(String(n))), a = new URL(i, o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "DELETE",
+				...c,
+				...r
+			}, f = {};
+			await l(f, e), f.Accept = "application/json", d(a, {});
+			let p = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...p,
+				...r.headers
+			}, {
+				url: m(a),
+				options: u
+			};
+		},
+		deleteSchool: async (t, n = {}) => {
+			s("deleteSchool", "schoolId", t);
+			let r = "/v1.0/education/schools/{school-id}".replace("{school-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let c = {
+				method: "DELETE",
+				...a,
+				...n
+			}, u = {};
+			await l(u, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return c.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: c
+			};
+		},
+		deleteUserFromSchool: async (t, n, r = {}) => {
+			s("deleteUserFromSchool", "schoolId", t), s("deleteUserFromSchool", "userId", n);
+			let i = "/v1.0/education/schools/{school-id}/users/{user-id}/$ref".replace("{school-id}", encodeURIComponent(String(t))).replace("{user-id}", encodeURIComponent(String(n))), a = new URL(i, o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "DELETE",
+				...c,
+				...r
+			}, f = {};
+			await l(f, e), f.Accept = "application/json", d(a, {});
+			let p = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...p,
+				...r.headers
+			}, {
+				url: m(a),
+				options: u
+			};
+		},
+		getSchool: async (t, n = {}) => {
+			s("getSchool", "schoolId", t);
+			let r = "/v1.0/education/schools/{school-id}".replace("{school-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let c = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			await l(u, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return c.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: c
+			};
+		},
+		listSchoolClasses: async (t, n = {}) => {
+			s("listSchoolClasses", "schoolId", t);
+			let r = "/v1.0/education/schools/{school-id}/classes".replace("{school-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let c = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			await l(u, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return c.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: c
+			};
+		},
+		listSchoolUsers: async (t, n = {}) => {
+			s("listSchoolUsers", "schoolId", t);
+			let r = "/v1.0/education/schools/{school-id}/users".replace("{school-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let c = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			await l(u, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return c.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: c
+			};
+		},
+		listSchools: async (t, n = {}) => {
+			let r = new URL("/v1.0/education/schools", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "GET",
+				...i,
+				...n
+			}, s = {}, c = {};
+			await l(s, e), t !== void 0 && (c.$filter = t), s.Accept = "application/json", d(r, c);
+			let u = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...s,
+				...u,
+				...n.headers
+			}, {
+				url: m(r),
+				options: a
+			};
+		},
+		updateSchool: async (t, n, r = {}) => {
+			s("updateSchool", "schoolId", t), s("updateSchool", "educationSchool", n);
+			let i = "/v1.0/education/schools/{school-id}".replace("{school-id}", encodeURIComponent(String(t))), a = new URL(i, o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "PATCH",
+				...c,
+				...r
+			}, f = {};
+			await l(f, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		}
+	};
+}, M = function(n) {
+	let r = j(n);
+	return {
+		async addClassToSchool(i, o, s) {
+			let c = await r.addClassToSchool(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationSchoolApi.addClassToSchool"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async addUserToSchool(i, o, s) {
+			let c = await r.addUserToSchool(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationSchoolApi.addUserToSchool"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async createSchool(i, o) {
+			let s = await r.createSchool(i, o), c = n?.serverIndex ?? 0, l = a["EducationSchoolApi.createSchool"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async deleteClassFromSchool(i, o, s) {
+			let c = await r.deleteClassFromSchool(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationSchoolApi.deleteClassFromSchool"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async deleteSchool(i, o) {
+			let s = await r.deleteSchool(i, o), c = n?.serverIndex ?? 0, l = a["EducationSchoolApi.deleteSchool"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async deleteUserFromSchool(i, o, s) {
+			let c = await r.deleteUserFromSchool(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationSchoolApi.deleteUserFromSchool"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async getSchool(i, o) {
+			let s = await r.getSchool(i, o), c = n?.serverIndex ?? 0, l = a["EducationSchoolApi.getSchool"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async listSchoolClasses(i, o) {
+			let s = await r.listSchoolClasses(i, o), c = n?.serverIndex ?? 0, l = a["EducationSchoolApi.listSchoolClasses"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async listSchoolUsers(i, o) {
+			let s = await r.listSchoolUsers(i, o), c = n?.serverIndex ?? 0, l = a["EducationSchoolApi.listSchoolUsers"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async listSchools(i, o) {
+			let s = await r.listSchools(i, o), c = n?.serverIndex ?? 0, l = a["EducationSchoolApi.listSchools"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async updateSchool(i, o, s) {
+			let c = await r.updateSchool(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationSchoolApi.updateSchool"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		}
+	};
+}, De = function(e, t, n) {
+	let r = M(e);
+	return {
+		addClassToSchool(e, i, a) {
+			return r.addClassToSchool(e, i, a).then((e) => e(n, t));
+		},
+		addUserToSchool(e, i, a) {
+			return r.addUserToSchool(e, i, a).then((e) => e(n, t));
+		},
+		createSchool(e, i) {
+			return r.createSchool(e, i).then((e) => e(n, t));
+		},
+		deleteClassFromSchool(e, i, a) {
+			return r.deleteClassFromSchool(e, i, a).then((e) => e(n, t));
+		},
+		deleteSchool(e, i) {
+			return r.deleteSchool(e, i).then((e) => e(n, t));
+		},
+		deleteUserFromSchool(e, i, a) {
+			return r.deleteUserFromSchool(e, i, a).then((e) => e(n, t));
+		},
+		getSchool(e, i) {
+			return r.getSchool(e, i).then((e) => e(n, t));
+		},
+		listSchoolClasses(e, i) {
+			return r.listSchoolClasses(e, i).then((e) => e(n, t));
+		},
+		listSchoolUsers(e, i) {
+			return r.listSchoolUsers(e, i).then((e) => e(n, t));
+		},
+		listSchools(e, i) {
+			return r.listSchools(e, i).then((e) => e(n, t));
+		},
+		updateSchool(e, i, a) {
+			return r.updateSchool(e, i, a).then((e) => e(n, t));
+		}
+	};
+}, Oe = class extends r {
+	addClassToSchool(e, t, n) {
+		return M(this.configuration).addClassToSchool(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	addUserToSchool(e, t, n) {
+		return M(this.configuration).addUserToSchool(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	createSchool(e, t) {
+		return M(this.configuration).createSchool(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	deleteClassFromSchool(e, t, n) {
+		return M(this.configuration).deleteClassFromSchool(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	deleteSchool(e, t) {
+		return M(this.configuration).deleteSchool(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	deleteUserFromSchool(e, t, n) {
+		return M(this.configuration).deleteUserFromSchool(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	getSchool(e, t) {
+		return M(this.configuration).getSchool(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	listSchoolClasses(e, t) {
+		return M(this.configuration).listSchoolClasses(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	listSchoolUsers(e, t) {
+		return M(this.configuration).listSchoolUsers(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	listSchools(e, t) {
+		return M(this.configuration).listSchools(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	updateSchool(e, t, n) {
+		return M(this.configuration).updateSchool(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+}, N = function(e) {
+	return {
+		createEducationUser: async (t, n = {}) => {
+			s("createEducationUser", "educationUser", t);
+			let r = new URL("/v1.0/education/users", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "POST",
+				...i,
+				...n
+			}, c = {};
+			await l(c, e), c["Content-Type"] = "application/json", c.Accept = "application/json", d(r, {});
+			let u = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...c,
+				...u,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		},
+		deleteEducationUser: async (t, n = {}) => {
+			s("deleteEducationUser", "userId", t);
+			let r = "/v1.0/education/users/{user-id}".replace("{user-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let c = {
+				method: "DELETE",
+				...a,
+				...n
+			}, u = {};
+			await l(u, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return c.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: c
+			};
+		},
+		getEducationUser: async (t, r, i = {}) => {
+			s("getEducationUser", "userId", t);
+			let a = "/v1.0/education/users/{user-id}".replace("{user-id}", encodeURIComponent(String(t))), c = new URL(a, o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "GET",
+				...u,
+				...i
+			}, p = {}, h = {};
+			await l(p, e), r && (h.$expand = Array.from(r).join(n.csv)), p.Accept = "application/json", d(c, h);
+			let g = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...p,
+				...g,
+				...i.headers
+			}, {
+				url: m(c),
+				options: f
+			};
+		},
+		listEducationUsers: async (t, r, i, a = {}) => {
+			let s = new URL("/v1.0/education/users", o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "GET",
+				...c,
+				...a
+			}, f = {}, p = {};
+			await l(f, e), t !== void 0 && (p.$filter = t), r && (p.$orderby = Array.from(r).join(n.csv)), i && (p.$expand = Array.from(i).join(n.csv)), f.Accept = "application/json", d(s, p);
+			let h = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...a.headers
+			}, {
+				url: m(s),
+				options: u
+			};
+		},
+		updateEducationUser: async (t, n, r = {}) => {
+			s("updateEducationUser", "userId", t), s("updateEducationUser", "educationUser", n);
+			let i = "/v1.0/education/users/{user-id}".replace("{user-id}", encodeURIComponent(String(t))), a = new URL(i, o), c;
+			e && (c = e.baseOptions);
+			let u = {
+				method: "PATCH",
+				...c,
+				...r
+			}, f = {};
+			await l(f, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = c && c.headers ? c.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		}
+	};
+}, P = function(n) {
+	let r = N(n);
+	return {
+		async createEducationUser(i, o) {
+			let s = await r.createEducationUser(i, o), c = n?.serverIndex ?? 0, l = a["EducationUserApi.createEducationUser"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async deleteEducationUser(i, o) {
+			let s = await r.deleteEducationUser(i, o), c = n?.serverIndex ?? 0, l = a["EducationUserApi.deleteEducationUser"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async getEducationUser(i, o, s) {
+			let c = await r.getEducationUser(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationUserApi.getEducationUser"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async listEducationUsers(i, o, s, c) {
+			let l = await r.listEducationUsers(i, o, s, c), u = n?.serverIndex ?? 0, d = a["EducationUserApi.listEducationUsers"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		},
+		async updateEducationUser(i, o, s) {
+			let c = await r.updateEducationUser(i, o, s), l = n?.serverIndex ?? 0, u = a["EducationUserApi.updateEducationUser"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		}
+	};
+}, ke = function(e, t, n) {
+	let r = P(e);
+	return {
+		createEducationUser(e, i) {
+			return r.createEducationUser(e, i).then((e) => e(n, t));
+		},
+		deleteEducationUser(e, i) {
+			return r.deleteEducationUser(e, i).then((e) => e(n, t));
+		},
+		getEducationUser(e, i, a) {
+			return r.getEducationUser(e, i, a).then((e) => e(n, t));
+		},
+		listEducationUsers(e, i, a, o) {
+			return r.listEducationUsers(e, i, a, o).then((e) => e(n, t));
+		},
+		updateEducationUser(e, i, a) {
+			return r.updateEducationUser(e, i, a).then((e) => e(n, t));
+		}
+	};
+}, Ae = class extends r {
+	createEducationUser(e, t) {
+		return P(this.configuration).createEducationUser(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	deleteEducationUser(e, t) {
+		return P(this.configuration).deleteEducationUser(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	getEducationUser(e, t, n) {
+		return P(this.configuration).getEducationUser(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	listEducationUsers(e, t, n, r) {
+		return P(this.configuration).listEducationUsers(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+	updateEducationUser(e, t, n) {
+		return P(this.configuration).updateEducationUser(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+}, je = { MemberOf: "memberOf" }, Me = {
+	DisplayName: "displayName",
+	DisplayNameDesc: "displayName desc",
+	Mail: "mail",
+	MailDesc: "mail desc",
+	OnPremisesSamAccountName: "onPremisesSamAccountName",
+	OnPremisesSamAccountNameDesc: "onPremisesSamAccountName desc"
+}, Ne = { MemberOf: "memberOf" }, F = function(e) {
+	return {
+		addMember: async (t, n, r = {}) => {
+			s("addMember", "groupId", t), s("addMember", "memberReference", n);
+			let i = "/v1.0/groups/{group-id}/members/$ref".replace("{group-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "POST",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		},
+		deleteGroup: async (t, n, r = {}) => {
+			s("deleteGroup", "groupId", t);
+			let i = "/v1.0/groups/{group-id}".replace("{group-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "DELETE",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f.Accept = "application/json", n != null && (f["If-Match"] = String(n)), d(a, {});
+			let p = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...p,
+				...r.headers
+			}, {
+				url: m(a),
+				options: u
+			};
+		},
+		deleteMember: async (t, n, r, i = {}) => {
+			s("deleteMember", "groupId", t), s("deleteMember", "directoryObjectId", n);
+			let a = "/v1.0/groups/{group-id}/members/{directory-object-id}/$ref".replace("{group-id}", encodeURIComponent(String(t))).replace("{directory-object-id}", encodeURIComponent(String(n))), l = new URL(a, o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "DELETE",
+				...u,
+				...i
+			}, p = {};
+			c(f, e), p.Accept = "application/json", r != null && (p["If-Match"] = String(r)), d(l, {});
+			let h = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...p,
+				...h,
+				...i.headers
+			}, {
+				url: m(l),
+				options: f
+			};
+		},
+		getGroup: async (t, r, i, a = {}) => {
+			s("getGroup", "groupId", t);
+			let l = "/v1.0/groups/{group-id}".replace("{group-id}", encodeURIComponent(String(t))), u = new URL(l, o), f;
+			e && (f = e.baseOptions);
+			let p = {
+				method: "GET",
+				...f,
+				...a
+			}, h = {}, g = {};
+			c(p, e), r && (g.$select = Array.from(r).join(n.csv)), i && (g.$expand = Array.from(i).join(n.csv)), h.Accept = "application/json", d(u, g);
+			let _ = f && f.headers ? f.headers : {};
+			return p.headers = {
+				...h,
+				..._,
+				...a.headers
+			}, {
+				url: m(u),
+				options: p
+			};
+		},
+		listMembers: async (t, n = {}) => {
+			s("listMembers", "groupId", t);
+			let r = "/v1.0/groups/{group-id}/members".replace("{group-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let l = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			c(l, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return l.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: l
+			};
+		},
+		updateGroup: async (t, n, r = {}) => {
+			s("updateGroup", "groupId", t), s("updateGroup", "group", n);
+			let i = "/v1.0/groups/{group-id}".replace("{group-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "PATCH",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		}
+	};
+}, I = function(n) {
+	let r = F(n);
+	return {
+		async addMember(i, o, s) {
+			let c = await r.addMember(i, o, s), l = n?.serverIndex ?? 0, u = a["GroupApi.addMember"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async deleteGroup(i, o, s) {
+			let c = await r.deleteGroup(i, o, s), l = n?.serverIndex ?? 0, u = a["GroupApi.deleteGroup"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async deleteMember(i, o, s, c) {
+			let l = await r.deleteMember(i, o, s, c), u = n?.serverIndex ?? 0, d = a["GroupApi.deleteMember"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		},
+		async getGroup(i, o, s, c) {
+			let l = await r.getGroup(i, o, s, c), u = n?.serverIndex ?? 0, d = a["GroupApi.getGroup"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		},
+		async listMembers(i, o) {
+			let s = await r.listMembers(i, o), c = n?.serverIndex ?? 0, l = a["GroupApi.listMembers"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async updateGroup(i, o, s) {
+			let c = await r.updateGroup(i, o, s), l = n?.serverIndex ?? 0, u = a["GroupApi.updateGroup"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		}
+	};
+}, Pe = function(e, t, n) {
+	let r = I(e);
+	return {
+		addMember(e, i, a) {
+			return r.addMember(e, i, a).then((e) => e(n, t));
+		},
+		deleteGroup(e, i, a) {
+			return r.deleteGroup(e, i, a).then((e) => e(n, t));
+		},
+		deleteMember(e, i, a, o) {
+			return r.deleteMember(e, i, a, o).then((e) => e(n, t));
+		},
+		getGroup(e, i, a, o) {
+			return r.getGroup(e, i, a, o).then((e) => e(n, t));
+		},
+		listMembers(e, i) {
+			return r.listMembers(e, i).then((e) => e(n, t));
+		},
+		updateGroup(e, i, a) {
+			return r.updateGroup(e, i, a).then((e) => e(n, t));
+		}
+	};
+}, Fe = class extends r {
+	addMember(e, t, n) {
+		return I(this.configuration).addMember(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	deleteGroup(e, t, n) {
+		return I(this.configuration).deleteGroup(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	deleteMember(e, t, n, r) {
+		return I(this.configuration).deleteMember(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+	getGroup(e, t, n, r) {
+		return I(this.configuration).getGroup(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+	listMembers(e, t) {
+		return I(this.configuration).listMembers(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	updateGroup(e, t, n) {
+		return I(this.configuration).updateGroup(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+}, Ie = {
+	Id: "id",
+	Description: "description",
+	DisplayName: "displayName",
+	Members: "members"
+}, Le = { Members: "members" }, Re = function(e) {
+	return {
+		createGroup: async (t, n = {}) => {
+			s("createGroup", "group", t);
+			let r = new URL("/v1.0/groups", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "POST",
+				...i,
+				...n
+			}, l = {};
+			c(a, e), l["Content-Type"] = "application/json", l.Accept = "application/json", d(r, {});
+			let u = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...l,
+				...u,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		},
+		listGroups: async (t, r, i, a, s = {}) => {
+			let l = new URL("/v1.0/groups", o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "GET",
+				...u,
+				...s
+			}, p = {}, h = {};
+			c(f, e), t !== void 0 && (h.$search = t), r && (h.$orderby = Array.from(r).join(n.csv)), i && (h.$select = Array.from(i).join(n.csv)), a && (h.$expand = Array.from(a).join(n.csv)), p.Accept = "application/json", d(l, h);
+			let g = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...p,
+				...g,
+				...s.headers
+			}, {
+				url: m(l),
+				options: f
+			};
+		}
+	};
+}, L = function(n) {
+	let r = Re(n);
+	return {
+		async createGroup(i, o) {
+			let s = await r.createGroup(i, o), c = n?.serverIndex ?? 0, l = a["GroupsApi.createGroup"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async listGroups(i, o, s, c, l) {
+			let u = await r.listGroups(i, o, s, c, l), d = n?.serverIndex ?? 0, f = a["GroupsApi.listGroups"]?.[d]?.url;
+			return (r, i) => h(u, e, t, n)(r, f || i);
+		}
+	};
+}, ze = function(e, t, n) {
+	let r = L(e);
+	return {
+		createGroup(e, i) {
+			return r.createGroup(e, i).then((e) => e(n, t));
+		},
+		listGroups(e, i, a, o, s) {
+			return r.listGroups(e, i, a, o, s).then((e) => e(n, t));
+		}
+	};
+}, Be = class extends r {
+	createGroup(e, t) {
+		return L(this.configuration).createGroup(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	listGroups(e, t, n, r, i) {
+		return L(this.configuration).listGroups(e, t, n, r, i).then((e) => e(this.axios, this.basePath));
+	}
+}, Ve = {
+	DisplayName: "displayName",
+	DisplayNameDesc: "displayName desc"
+}, He = {
+	Id: "id",
+	Description: "description",
+	DisplayName: "displayName",
+	Mail: "mail",
+	Members: "members"
+}, Ue = { Members: "members" }, We = function(e) {
+	return {
+		createInvitation: async (t, n = {}) => {
+			let r = new URL("/v1.0/invitations", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "POST",
+				...i,
+				...n
+			}, s = {};
+			c(a, e), s["Content-Type"] = "application/json", s.Accept = "application/json", d(r, {});
+			let l = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...s,
+				...l,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		},
+		getInvitation: async (t, n = {}) => {
+			s("getInvitation", "invitationId", t);
+			let r = "/v1.0/invitations/{invitation-id}".replace("{invitation-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let l = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			c(l, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return l.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: l
+			};
+		},
+		listInvitations: async (t = {}) => {
+			let n = new URL("/v1.0/invitations", o), r;
+			e && (r = e.baseOptions);
+			let i = {
+				method: "GET",
+				...r,
+				...t
+			}, a = {};
+			c(i, e), a.Accept = "application/json", d(n, {});
+			let s = r && r.headers ? r.headers : {};
+			return i.headers = {
+				...a,
+				...s,
+				...t.headers
+			}, {
+				url: m(n),
+				options: i
+			};
+		}
+	};
+}, R = function(n) {
+	let r = We(n);
+	return {
+		async createInvitation(i, o) {
+			let s = await r.createInvitation(i, o), c = n?.serverIndex ?? 0, l = a["InvitationsApi.createInvitation"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async getInvitation(i, o) {
+			let s = await r.getInvitation(i, o), c = n?.serverIndex ?? 0, l = a["InvitationsApi.getInvitation"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async listInvitations(i) {
+			let o = await r.listInvitations(i), s = n?.serverIndex ?? 0, c = a["InvitationsApi.listInvitations"]?.[s]?.url;
+			return (r, i) => h(o, e, t, n)(r, c || i);
+		}
+	};
+}, Ge = function(e, t, n) {
+	let r = R(e);
+	return {
+		createInvitation(e, i) {
+			return r.createInvitation(e, i).then((e) => e(n, t));
+		},
+		getInvitation(e, i) {
+			return r.getInvitation(e, i).then((e) => e(n, t));
+		},
+		listInvitations(e) {
+			return r.listInvitations(e).then((e) => e(n, t));
+		}
+	};
+}, Ke = class extends r {
+	createInvitation(e, t) {
+		return R(this.configuration).createInvitation(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	getInvitation(e, t) {
+		return R(this.configuration).getInvitation(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	listInvitations(e) {
+		return R(this.configuration).listInvitations(e).then((e) => e(this.axios, this.basePath));
+	}
+}, qe = function(e) {
+	return { changeOwnPassword: async (t, n = {}) => {
+		s("changeOwnPassword", "passwordChange", t);
+		let r = new URL("/v1.0/me/changePassword", o), i;
+		e && (i = e.baseOptions);
+		let a = {
+			method: "POST",
+			...i,
+			...n
+		}, l = {};
+		c(a, e), l["Content-Type"] = "application/json", l.Accept = "application/json", d(r, {});
+		let u = i && i.headers ? i.headers : {};
+		return a.headers = {
+			...l,
+			...u,
+			...n.headers
+		}, a.data = p(t, a, e), {
+			url: m(r),
+			options: a
+		};
+	} };
+}, z = function(n) {
+	let r = qe(n);
+	return { async changeOwnPassword(i, o) {
+		let s = await r.changeOwnPassword(i, o), c = n?.serverIndex ?? 0, l = a["MeChangepasswordApi.changeOwnPassword"]?.[c]?.url;
+		return (r, i) => h(s, e, t, n)(r, l || i);
+	} };
+}, Je = function(e, t, n) {
+	let r = z(e);
+	return { changeOwnPassword(e, i) {
+		return r.changeOwnPassword(e, i).then((e) => e(n, t));
+	} };
+}, Ye = class extends r {
+	changeOwnPassword(e, t) {
+		return z(this.configuration).changeOwnPassword(e, t).then((e) => e(this.axios, this.basePath));
+	}
+}, Xe = function(e) {
+	return {
+		followDriveItem: async (t, n = {}) => {
+			s("followDriveItem", "itemId", t);
+			let r = "/v1.0/me/drive/items/{item-id}/follow".replace("{item-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let l = {
+				method: "POST",
+				...a,
+				...n
+			}, u = {};
+			c(l, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return l.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: l
+			};
+		},
+		getHome: async (t = {}) => {
+			let n = new URL("/v1.0/me/drive", o), r;
+			e && (r = e.baseOptions);
+			let i = {
+				method: "GET",
+				...r,
+				...t
+			}, a = {};
+			c(i, e), a.Accept = "application/json", d(n, {});
+			let s = r && r.headers ? r.headers : {};
+			return i.headers = {
+				...a,
+				...s,
+				...t.headers
+			}, {
+				url: m(n),
+				options: i
+			};
+		},
+		listSharedByMe: async (t, r = {}) => {
+			let i = new URL("/v1beta1/me/drive/sharedByMe", o), a;
+			e && (a = e.baseOptions);
+			let s = {
+				method: "GET",
+				...a,
+				...r
+			}, l = {}, u = {};
+			c(s, e), t && (u.$expand = Array.from(t).join(n.csv)), l.Accept = "application/json", d(i, u);
+			let f = a && a.headers ? a.headers : {};
+			return s.headers = {
+				...l,
+				...f,
+				...r.headers
+			}, {
+				url: m(i),
+				options: s
+			};
+		},
+		listSharedWithMe: async (t, r = {}) => {
+			let i = new URL("/v1beta1/me/drive/sharedWithMe", o), a;
+			e && (a = e.baseOptions);
+			let s = {
+				method: "GET",
+				...a,
+				...r
+			}, l = {}, u = {};
+			c(s, e), t && (u.$expand = Array.from(t).join(n.csv)), l.Accept = "application/json", d(i, u);
+			let f = a && a.headers ? a.headers : {};
+			return s.headers = {
+				...l,
+				...f,
+				...r.headers
+			}, {
+				url: m(i),
+				options: s
+			};
+		},
+		unfollowDriveItem: async (t, n = {}) => {
+			s("unfollowDriveItem", "itemId", t);
+			let r = "/v1.0/me/drive/following/{item-id}".replace("{item-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let l = {
+				method: "DELETE",
+				...a,
+				...n
+			}, u = {};
+			c(l, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return l.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: l
+			};
+		}
+	};
+}, B = function(n) {
+	let r = Xe(n);
+	return {
+		async followDriveItem(i, o) {
+			let s = await r.followDriveItem(i, o), c = n?.serverIndex ?? 0, l = a["MeDriveApi.followDriveItem"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async getHome(i) {
+			let o = await r.getHome(i), s = n?.serverIndex ?? 0, c = a["MeDriveApi.getHome"]?.[s]?.url;
+			return (r, i) => h(o, e, t, n)(r, c || i);
+		},
+		async listSharedByMe(i, o) {
+			let s = await r.listSharedByMe(i, o), c = n?.serverIndex ?? 0, l = a["MeDriveApi.listSharedByMe"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async listSharedWithMe(i, o) {
+			let s = await r.listSharedWithMe(i, o), c = n?.serverIndex ?? 0, l = a["MeDriveApi.listSharedWithMe"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async unfollowDriveItem(i, o) {
+			let s = await r.unfollowDriveItem(i, o), c = n?.serverIndex ?? 0, l = a["MeDriveApi.unfollowDriveItem"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		}
+	};
+}, Ze = function(e, t, n) {
+	let r = B(e);
+	return {
+		followDriveItem(e, i) {
+			return r.followDriveItem(e, i).then((e) => e(n, t));
+		},
+		getHome(e) {
+			return r.getHome(e).then((e) => e(n, t));
+		},
+		listSharedByMe(e, i) {
+			return r.listSharedByMe(e, i).then((e) => e(n, t));
+		},
+		listSharedWithMe(e, i) {
+			return r.listSharedWithMe(e, i).then((e) => e(n, t));
+		},
+		unfollowDriveItem(e, i) {
+			return r.unfollowDriveItem(e, i).then((e) => e(n, t));
+		}
+	};
+}, Qe = class extends r {
+	followDriveItem(e, t) {
+		return B(this.configuration).followDriveItem(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	getHome(e) {
+		return B(this.configuration).getHome(e).then((e) => e(this.axios, this.basePath));
+	}
+	listSharedByMe(e, t) {
+		return B(this.configuration).listSharedByMe(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	listSharedWithMe(e, t) {
+		return B(this.configuration).listSharedWithMe(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	unfollowDriveItem(e, t) {
+		return B(this.configuration).unfollowDriveItem(e, t).then((e) => e(this.axios, this.basePath));
+	}
+}, $e = { Thumbnails: "thumbnails" }, et = { Thumbnails: "thumbnails" }, tt = function(e) {
+	return { homeGetRoot: async (t = {}) => {
+		let n = new URL("/v1.0/me/drive/root", o), r;
+		e && (r = e.baseOptions);
+		let i = {
+			method: "GET",
+			...r,
+			...t
+		}, a = {};
+		c(i, e), a.Accept = "application/json", d(n, {});
+		let s = r && r.headers ? r.headers : {};
+		return i.headers = {
+			...a,
+			...s,
+			...t.headers
+		}, {
+			url: m(n),
+			options: i
+		};
+	} };
+}, V = function(n) {
+	let r = tt(n);
+	return { async homeGetRoot(i) {
+		let o = await r.homeGetRoot(i), s = n?.serverIndex ?? 0, c = a["MeDriveRootApi.homeGetRoot"]?.[s]?.url;
+		return (r, i) => h(o, e, t, n)(r, c || i);
+	} };
+}, nt = function(e, t, n) {
+	let r = V(e);
+	return { homeGetRoot(e) {
+		return r.homeGetRoot(e).then((e) => e(n, t));
+	} };
+}, rt = class extends r {
+	homeGetRoot(e) {
+		return V(this.configuration).homeGetRoot(e).then((e) => e(this.axios, this.basePath));
+	}
+}, it = function(e) {
+	return { homeGetChildren: async (t = {}) => {
+		let n = new URL("/v1.0/me/drive/root/children", o), r;
+		e && (r = e.baseOptions);
+		let i = {
+			method: "GET",
+			...r,
+			...t
+		}, a = {};
+		c(i, e), a.Accept = "application/json", d(n, {});
+		let s = r && r.headers ? r.headers : {};
+		return i.headers = {
+			...a,
+			...s,
+			...t.headers
+		}, {
+			url: m(n),
+			options: i
+		};
+	} };
+}, H = function(n) {
+	let r = it(n);
+	return { async homeGetChildren(i) {
+		let o = await r.homeGetChildren(i), s = n?.serverIndex ?? 0, c = a["MeDriveRootChildrenApi.homeGetChildren"]?.[s]?.url;
+		return (r, i) => h(o, e, t, n)(r, c || i);
+	} };
+}, at = function(e, t, n) {
+	let r = H(e);
+	return { homeGetChildren(e) {
+		return r.homeGetChildren(e).then((e) => e(n, t));
+	} };
+}, ot = class extends r {
+	homeGetChildren(e) {
+		return H(this.configuration).homeGetChildren(e).then((e) => e(this.axios, this.basePath));
+	}
+}, st = function(e) {
+	return {
+		listMyDrives: async (t, n, r = {}) => {
+			let i = new URL("/v1.0/me/drives", o), a;
+			e && (a = e.baseOptions);
+			let s = {
+				method: "GET",
+				...a,
+				...r
+			}, l = {}, u = {};
+			c(s, e), t !== void 0 && (u.$orderby = t), n !== void 0 && (u.$filter = n), l.Accept = "application/json", d(i, u);
+			let f = a && a.headers ? a.headers : {};
+			return s.headers = {
+				...l,
+				...f,
+				...r.headers
+			}, {
+				url: m(i),
+				options: s
+			};
+		},
+		listMyDrivesBeta: async (t, r, i, a, s = {}) => {
+			let l = new URL("/v1beta1/me/drives", o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "GET",
+				...u,
+				...s
+			}, p = {}, h = {};
+			c(f, e), t !== void 0 && (h.$orderby = t), r !== void 0 && (h.$filter = r), i !== void 0 && (h.$expand = i), a && (h.$select = Array.from(a).join(n.csv)), p.Accept = "application/json", d(l, h);
+			let g = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...p,
+				...g,
+				...s.headers
+			}, {
+				url: m(l),
+				options: f
+			};
+		}
+	};
+}, U = function(n) {
+	let r = st(n);
+	return {
+		async listMyDrives(i, o, s) {
+			let c = await r.listMyDrives(i, o, s), l = n?.serverIndex ?? 0, u = a["MeDrivesApi.listMyDrives"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async listMyDrivesBeta(i, o, s, c, l) {
+			let u = await r.listMyDrivesBeta(i, o, s, c, l), d = n?.serverIndex ?? 0, f = a["MeDrivesApi.listMyDrivesBeta"]?.[d]?.url;
+			return (r, i) => h(u, e, t, n)(r, f || i);
+		}
+	};
+}, ct = function(e, t, n) {
+	let r = U(e);
+	return {
+		listMyDrives(e, i, a) {
+			return r.listMyDrives(e, i, a).then((e) => e(n, t));
+		},
+		listMyDrivesBeta(e, i, a, o, s) {
+			return r.listMyDrivesBeta(e, i, a, o, s).then((e) => e(n, t));
+		}
+	};
+}, lt = class extends r {
+	listMyDrives(e, t, n) {
+		return U(this.configuration).listMyDrives(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	listMyDrivesBeta(e, t, n, r, i) {
+		return U(this.configuration).listMyDrivesBeta(e, t, n, r, i).then((e) => e(this.axios, this.basePath));
+	}
+}, ut = { LibreGraphHasTrashedItems: "@libre.graph.hasTrashedItems" }, dt = function(e) {
+	return {
+		deleteOwnUserPhoto: async (t = {}) => {
+			let n = new URL("/v1.0/me/photo/$value", o), r;
+			e && (r = e.baseOptions);
+			let i = {
+				method: "DELETE",
+				...r,
+				...t
+			}, a = {};
+			c(i, e), a.Accept = "application/json", d(n, {});
+			let s = r && r.headers ? r.headers : {};
+			return i.headers = {
+				...a,
+				...s,
+				...t.headers
+			}, {
+				url: m(n),
+				options: i
+			};
+		},
+		getOwnUserPhoto: async (t = {}) => {
+			let n = new URL("/v1.0/me/photo/$value", o), r;
+			e && (r = e.baseOptions);
+			let i = {
+				method: "GET",
+				...r,
+				...t
+			}, a = {};
+			c(i, e), a.Accept = "image/jpeg,application/json", d(n, {});
+			let s = r && r.headers ? r.headers : {};
+			return i.headers = {
+				...a,
+				...s,
+				...t.headers
+			}, {
+				url: m(n),
+				options: i
+			};
+		},
+		updateOwnUserPhotoPatch: async (t, n = {}) => {
+			let r = new URL("/v1.0/me/photo/$value", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "PATCH",
+				...i,
+				...n
+			}, s = {};
+			c(a, e), s["Content-Type"] = "image/jpeg", s.Accept = "application/json", d(r, {});
+			let l = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...s,
+				...l,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		},
+		updateOwnUserPhotoPut: async (t, n = {}) => {
+			let r = new URL("/v1.0/me/photo/$value", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "PUT",
+				...i,
+				...n
+			}, s = {};
+			c(a, e), s["Content-Type"] = "image/jpeg", s.Accept = "application/json", d(r, {});
+			let l = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...s,
+				...l,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		}
+	};
+}, W = function(n) {
+	let r = dt(n);
+	return {
+		async deleteOwnUserPhoto(i) {
+			let o = await r.deleteOwnUserPhoto(i), s = n?.serverIndex ?? 0, c = a["MePhotoApi.deleteOwnUserPhoto"]?.[s]?.url;
+			return (r, i) => h(o, e, t, n)(r, c || i);
+		},
+		async getOwnUserPhoto(i) {
+			let o = await r.getOwnUserPhoto(i), s = n?.serverIndex ?? 0, c = a["MePhotoApi.getOwnUserPhoto"]?.[s]?.url;
+			return (r, i) => h(o, e, t, n)(r, c || i);
+		},
+		async updateOwnUserPhotoPatch(i, o) {
+			let s = await r.updateOwnUserPhotoPatch(i, o), c = n?.serverIndex ?? 0, l = a["MePhotoApi.updateOwnUserPhotoPatch"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async updateOwnUserPhotoPut(i, o) {
+			let s = await r.updateOwnUserPhotoPut(i, o), c = n?.serverIndex ?? 0, l = a["MePhotoApi.updateOwnUserPhotoPut"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		}
+	};
+}, ft = function(e, t, n) {
+	let r = W(e);
+	return {
+		deleteOwnUserPhoto(e) {
+			return r.deleteOwnUserPhoto(e).then((e) => e(n, t));
+		},
+		getOwnUserPhoto(e) {
+			return r.getOwnUserPhoto(e).then((e) => e(n, t));
+		},
+		updateOwnUserPhotoPatch(e, i) {
+			return r.updateOwnUserPhotoPatch(e, i).then((e) => e(n, t));
+		},
+		updateOwnUserPhotoPut(e, i) {
+			return r.updateOwnUserPhotoPut(e, i).then((e) => e(n, t));
+		}
+	};
+}, pt = class extends r {
+	deleteOwnUserPhoto(e) {
+		return W(this.configuration).deleteOwnUserPhoto(e).then((e) => e(this.axios, this.basePath));
+	}
+	getOwnUserPhoto(e) {
+		return W(this.configuration).getOwnUserPhoto(e).then((e) => e(this.axios, this.basePath));
+	}
+	updateOwnUserPhotoPatch(e, t) {
+		return W(this.configuration).updateOwnUserPhotoPatch(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	updateOwnUserPhotoPut(e, t) {
+		return W(this.configuration).updateOwnUserPhotoPut(e, t).then((e) => e(this.axios, this.basePath));
+	}
+}, mt = function(e) {
+	return {
+		getOwnUser: async (t, r = {}) => {
+			let i = new URL("/v1.0/me", o), a;
+			e && (a = e.baseOptions);
+			let s = {
+				method: "GET",
+				...a,
+				...r
+			}, l = {}, u = {};
+			c(s, e), t && (u.$expand = Array.from(t).join(n.csv)), l.Accept = "application/json", d(i, u);
+			let f = a && a.headers ? a.headers : {};
+			return s.headers = {
+				...l,
+				...f,
+				...r.headers
+			}, {
+				url: m(i),
+				options: s
+			};
+		},
+		updateOwnUser: async (t, n = {}) => {
+			let r = new URL("/v1.0/me", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "PATCH",
+				...i,
+				...n
+			}, s = {};
+			c(a, e), s["Content-Type"] = "application/json", s.Accept = "application/json", d(r, {});
+			let l = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...s,
+				...l,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		}
+	};
+}, G = function(n) {
+	let r = mt(n);
+	return {
+		async getOwnUser(i, o) {
+			let s = await r.getOwnUser(i, o), c = n?.serverIndex ?? 0, l = a["MeUserApi.getOwnUser"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async updateOwnUser(i, o) {
+			let s = await r.updateOwnUser(i, o), c = n?.serverIndex ?? 0, l = a["MeUserApi.updateOwnUser"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		}
+	};
+}, ht = function(e, t, n) {
+	let r = G(e);
+	return {
+		getOwnUser(e, i) {
+			return r.getOwnUser(e, i).then((e) => e(n, t));
+		},
+		updateOwnUser(e, i) {
+			return r.updateOwnUser(e, i).then((e) => e(n, t));
+		}
+	};
+}, gt = class extends r {
+	getOwnUser(e, t) {
+		return G(this.configuration).getOwnUser(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	updateOwnUser(e, t) {
+		return G(this.configuration).updateOwnUser(e, t).then((e) => e(this.axios, this.basePath));
+	}
+}, _t = { MemberOf: "memberOf" }, vt = function(e) {
+	return {
+		getPermissionRoleDefinition: async (t, n = {}) => {
+			s("getPermissionRoleDefinition", "roleId", t);
+			let r = "/v1beta1/roleManagement/permissions/roleDefinitions/{role-id}".replace("{role-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let l = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			c(l, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return l.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: l
+			};
+		},
+		listPermissionRoleDefinitions: async (t = {}) => {
+			let n = new URL("/v1beta1/roleManagement/permissions/roleDefinitions", o), r;
+			e && (r = e.baseOptions);
+			let i = {
+				method: "GET",
+				...r,
+				...t
+			}, a = {};
+			c(i, e), a.Accept = "application/json", d(n, {});
+			let s = r && r.headers ? r.headers : {};
+			return i.headers = {
+				...a,
+				...s,
+				...t.headers
+			}, {
+				url: m(n),
+				options: i
+			};
+		}
+	};
+}, K = function(n) {
+	let r = vt(n);
+	return {
+		async getPermissionRoleDefinition(i, o) {
+			let s = await r.getPermissionRoleDefinition(i, o), c = n?.serverIndex ?? 0, l = a["RoleManagementApi.getPermissionRoleDefinition"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async listPermissionRoleDefinitions(i) {
+			let o = await r.listPermissionRoleDefinitions(i), s = n?.serverIndex ?? 0, c = a["RoleManagementApi.listPermissionRoleDefinitions"]?.[s]?.url;
+			return (r, i) => h(o, e, t, n)(r, c || i);
+		}
+	};
+}, yt = function(e, t, n) {
+	let r = K(e);
+	return {
+		getPermissionRoleDefinition(e, i) {
+			return r.getPermissionRoleDefinition(e, i).then((e) => e(n, t));
+		},
+		listPermissionRoleDefinitions(e) {
+			return r.listPermissionRoleDefinitions(e).then((e) => e(n, t));
+		}
+	};
+}, bt = class extends r {
+	getPermissionRoleDefinition(e, t) {
+		return K(this.configuration).getPermissionRoleDefinition(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	listPermissionRoleDefinitions(e) {
+		return K(this.configuration).listPermissionRoleDefinitions(e).then((e) => e(this.axios, this.basePath));
+	}
+}, xt = function(e) {
+	return {
+		assignTags: async (t, n = {}) => {
+			let r = new URL("/v1.0/extensions/org.libregraph/tags", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "PUT",
+				...i,
+				...n
+			}, s = {};
+			c(a, e), s["Content-Type"] = "application/json", s.Accept = "application/json", d(r, {});
+			let l = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...s,
+				...l,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		},
+		getTags: async (t = {}) => {
+			let n = new URL("/v1.0/extensions/org.libregraph/tags", o), r;
+			e && (r = e.baseOptions);
+			let i = {
+				method: "GET",
+				...r,
+				...t
+			}, a = {};
+			c(i, e), a.Accept = "application/json", d(n, {});
+			let s = r && r.headers ? r.headers : {};
+			return i.headers = {
+				...a,
+				...s,
+				...t.headers
+			}, {
+				url: m(n),
+				options: i
+			};
+		},
+		unassignTags: async (t, n = {}) => {
+			let r = new URL("/v1.0/extensions/org.libregraph/tags", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "DELETE",
+				...i,
+				...n
+			}, s = {};
+			c(a, e), s["Content-Type"] = "application/json", s.Accept = "application/json", d(r, {});
+			let l = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...s,
+				...l,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		}
+	};
+}, q = function(n) {
+	let r = xt(n);
+	return {
+		async assignTags(i, o) {
+			let s = await r.assignTags(i, o), c = n?.serverIndex ?? 0, l = a["TagsApi.assignTags"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async getTags(i) {
+			let o = await r.getTags(i), s = n?.serverIndex ?? 0, c = a["TagsApi.getTags"]?.[s]?.url;
+			return (r, i) => h(o, e, t, n)(r, c || i);
+		},
+		async unassignTags(i, o) {
+			let s = await r.unassignTags(i, o), c = n?.serverIndex ?? 0, l = a["TagsApi.unassignTags"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		}
+	};
+}, St = function(e, t, n) {
+	let r = q(e);
+	return {
+		assignTags(e, i) {
+			return r.assignTags(e, i).then((e) => e(n, t));
+		},
+		getTags(e) {
+			return r.getTags(e).then((e) => e(n, t));
+		},
+		unassignTags(e, i) {
+			return r.unassignTags(e, i).then((e) => e(n, t));
+		}
+	};
+}, Ct = class extends r {
+	assignTags(e, t) {
+		return q(this.configuration).assignTags(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	getTags(e) {
+		return q(this.configuration).getTags(e).then((e) => e(this.axios, this.basePath));
+	}
+	unassignTags(e, t) {
+		return q(this.configuration).unassignTags(e, t).then((e) => e(this.axios, this.basePath));
+	}
+}, J = function(e) {
+	return {
+		deleteUser: async (t, n, r = {}) => {
+			s("deleteUser", "userId", t);
+			let i = "/v1.0/users/{user-id}".replace("{user-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "DELETE",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f.Accept = "application/json", n != null && (f["If-Match"] = String(n)), d(a, {});
+			let p = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...p,
+				...r.headers
+			}, {
+				url: m(a),
+				options: u
+			};
+		},
+		exportPersonalData: async (t, n, r = {}) => {
+			s("exportPersonalData", "userId", t);
+			let i = "/v1.0/users/{user-id}/exportPersonalData".replace("{user-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "POST",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		},
+		getUser: async (t, r, i, a = {}) => {
+			s("getUser", "userId", t);
+			let l = "/v1.0/users/{user-id}".replace("{user-id}", encodeURIComponent(String(t))), u = new URL(l, o), f;
+			e && (f = e.baseOptions);
+			let p = {
+				method: "GET",
+				...f,
+				...a
+			}, h = {}, g = {};
+			c(p, e), r && (g.$select = Array.from(r).join(n.csv)), i && (g.$expand = Array.from(i).join(n.csv)), h.Accept = "application/json", d(u, g);
+			let _ = f && f.headers ? f.headers : {};
+			return p.headers = {
+				...h,
+				..._,
+				...a.headers
+			}, {
+				url: m(u),
+				options: p
+			};
+		},
+		updateUser: async (t, n, r = {}) => {
+			s("updateUser", "userId", t), s("updateUser", "userUpdate", n);
+			let i = "/v1.0/users/{user-id}".replace("{user-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "PATCH",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		}
+	};
+}, Y = function(n) {
+	let r = J(n);
+	return {
+		async deleteUser(i, o, s) {
+			let c = await r.deleteUser(i, o, s), l = n?.serverIndex ?? 0, u = a["UserApi.deleteUser"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async exportPersonalData(i, o, s) {
+			let c = await r.exportPersonalData(i, o, s), l = n?.serverIndex ?? 0, u = a["UserApi.exportPersonalData"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async getUser(i, o, s, c) {
+			let l = await r.getUser(i, o, s, c), u = n?.serverIndex ?? 0, d = a["UserApi.getUser"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		},
+		async updateUser(i, o, s) {
+			let c = await r.updateUser(i, o, s), l = n?.serverIndex ?? 0, u = a["UserApi.updateUser"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		}
+	};
+}, wt = function(e, t, n) {
+	let r = Y(e);
+	return {
+		deleteUser(e, i, a) {
+			return r.deleteUser(e, i, a).then((e) => e(n, t));
+		},
+		exportPersonalData(e, i, a) {
+			return r.exportPersonalData(e, i, a).then((e) => e(n, t));
+		},
+		getUser(e, i, a, o) {
+			return r.getUser(e, i, a, o).then((e) => e(n, t));
+		},
+		updateUser(e, i, a) {
+			return r.updateUser(e, i, a).then((e) => e(n, t));
+		}
+	};
+}, Tt = class extends r {
+	deleteUser(e, t, n) {
+		return Y(this.configuration).deleteUser(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	exportPersonalData(e, t, n) {
+		return Y(this.configuration).exportPersonalData(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	getUser(e, t, n, r) {
+		return Y(this.configuration).getUser(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+	updateUser(e, t, n) {
+		return Y(this.configuration).updateUser(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+}, Et = {
+	Id: "id",
+	DisplayName: "displayName",
+	Drive: "drive",
+	Drives: "drives",
+	Mail: "mail",
+	MemberOf: "memberOf",
+	OnPremisesSamAccountName: "onPremisesSamAccountName",
+	Surname: "surname"
+}, Dt = {
+	Drive: "drive",
+	Drives: "drives",
+	MemberOf: "memberOf",
+	AppRoleAssignments: "appRoleAssignments"
+}, Ot = function(e) {
+	return {
+		userCreateAppRoleAssignments: async (t, n, r = {}) => {
+			s("userCreateAppRoleAssignments", "userId", t), s("userCreateAppRoleAssignments", "appRoleAssignment", n);
+			let i = "/v1.0/users/{user-id}/appRoleAssignments".replace("{user-id}", encodeURIComponent(String(t))), a = new URL(i, o), l;
+			e && (l = e.baseOptions);
+			let u = {
+				method: "POST",
+				...l,
+				...r
+			}, f = {};
+			c(u, e), f["Content-Type"] = "application/json", f.Accept = "application/json", d(a, {});
+			let h = l && l.headers ? l.headers : {};
+			return u.headers = {
+				...f,
+				...h,
+				...r.headers
+			}, u.data = p(n, u, e), {
+				url: m(a),
+				options: u
+			};
+		},
+		userDeleteAppRoleAssignments: async (t, n, r, i = {}) => {
+			s("userDeleteAppRoleAssignments", "userId", t), s("userDeleteAppRoleAssignments", "appRoleAssignmentId", n);
+			let a = "/v1.0/users/{user-id}/appRoleAssignments/{appRoleAssignment-id}".replace("{user-id}", encodeURIComponent(String(t))).replace("{appRoleAssignment-id}", encodeURIComponent(String(n))), l = new URL(a, o), u;
+			e && (u = e.baseOptions);
+			let f = {
+				method: "DELETE",
+				...u,
+				...i
+			}, p = {};
+			c(f, e), p.Accept = "application/json", r != null && (p["If-Match"] = String(r)), d(l, {});
+			let h = u && u.headers ? u.headers : {};
+			return f.headers = {
+				...p,
+				...h,
+				...i.headers
+			}, {
+				url: m(l),
+				options: f
+			};
+		},
+		userListAppRoleAssignments: async (t, n = {}) => {
+			s("userListAppRoleAssignments", "userId", t);
+			let r = "/v1.0/users/{user-id}/appRoleAssignments".replace("{user-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+			e && (a = e.baseOptions);
+			let l = {
+				method: "GET",
+				...a,
+				...n
+			}, u = {};
+			c(l, e), u.Accept = "application/json", d(i, {});
+			let f = a && a.headers ? a.headers : {};
+			return l.headers = {
+				...u,
+				...f,
+				...n.headers
+			}, {
+				url: m(i),
+				options: l
+			};
+		}
+	};
+}, X = function(n) {
+	let r = Ot(n);
+	return {
+		async userCreateAppRoleAssignments(i, o, s) {
+			let c = await r.userCreateAppRoleAssignments(i, o, s), l = n?.serverIndex ?? 0, u = a["UserAppRoleAssignmentApi.userCreateAppRoleAssignments"]?.[l]?.url;
+			return (r, i) => h(c, e, t, n)(r, u || i);
+		},
+		async userDeleteAppRoleAssignments(i, o, s, c) {
+			let l = await r.userDeleteAppRoleAssignments(i, o, s, c), u = n?.serverIndex ?? 0, d = a["UserAppRoleAssignmentApi.userDeleteAppRoleAssignments"]?.[u]?.url;
+			return (r, i) => h(l, e, t, n)(r, d || i);
+		},
+		async userListAppRoleAssignments(i, o) {
+			let s = await r.userListAppRoleAssignments(i, o), c = n?.serverIndex ?? 0, l = a["UserAppRoleAssignmentApi.userListAppRoleAssignments"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		}
+	};
+}, kt = function(e, t, n) {
+	let r = X(e);
+	return {
+		userCreateAppRoleAssignments(e, i, a) {
+			return r.userCreateAppRoleAssignments(e, i, a).then((e) => e(n, t));
+		},
+		userDeleteAppRoleAssignments(e, i, a, o) {
+			return r.userDeleteAppRoleAssignments(e, i, a, o).then((e) => e(n, t));
+		},
+		userListAppRoleAssignments(e, i) {
+			return r.userListAppRoleAssignments(e, i).then((e) => e(n, t));
+		}
+	};
+}, At = class extends r {
+	userCreateAppRoleAssignments(e, t, n) {
+		return X(this.configuration).userCreateAppRoleAssignments(e, t, n).then((e) => e(this.axios, this.basePath));
+	}
+	userDeleteAppRoleAssignments(e, t, n, r) {
+		return X(this.configuration).userDeleteAppRoleAssignments(e, t, n, r).then((e) => e(this.axios, this.basePath));
+	}
+	userListAppRoleAssignments(e, t) {
+		return X(this.configuration).userListAppRoleAssignments(e, t).then((e) => e(this.axios, this.basePath));
+	}
+}, jt = function(e) {
+	return { getUserPhoto: async (t, n = {}) => {
+		s("getUserPhoto", "userId", t);
+		let r = "/v1.0/users/{user-id}/photo/$value".replace("{user-id}", encodeURIComponent(String(t))), i = new URL(r, o), a;
+		e && (a = e.baseOptions);
+		let l = {
+			method: "GET",
+			...a,
+			...n
+		}, u = {};
+		c(l, e), u.Accept = "image/jpeg,application/json", d(i, {});
+		let f = a && a.headers ? a.headers : {};
+		return l.headers = {
+			...u,
+			...f,
+			...n.headers
+		}, {
+			url: m(i),
+			options: l
+		};
+	} };
+}, Z = function(n) {
+	let r = jt(n);
+	return { async getUserPhoto(i, o) {
+		let s = await r.getUserPhoto(i, o), c = n?.serverIndex ?? 0, l = a["UserPhotoApi.getUserPhoto"]?.[c]?.url;
+		return (r, i) => h(s, e, t, n)(r, l || i);
+	} };
+}, Mt = function(e, t, n) {
+	let r = Z(e);
+	return { getUserPhoto(e, i) {
+		return r.getUserPhoto(e, i).then((e) => e(n, t));
+	} };
+}, Nt = class extends r {
+	getUserPhoto(e, t) {
+		return Z(this.configuration).getUserPhoto(e, t).then((e) => e(this.axios, this.basePath));
+	}
+}, Q = function(e) {
+	return {
+		createUser: async (t, n = {}) => {
+			s("createUser", "user", t);
+			let r = new URL("/v1.0/users", o), i;
+			e && (i = e.baseOptions);
+			let a = {
+				method: "POST",
+				...i,
+				...n
+			}, l = {};
+			c(a, e), l["Content-Type"] = "application/json", l.Accept = "application/json", d(r, {});
+			let u = i && i.headers ? i.headers : {};
+			return a.headers = {
+				...l,
+				...u,
+				...n.headers
+			}, a.data = p(t, a, e), {
+				url: m(r),
+				options: a
+			};
+		},
+		listUsers: async (t, r, i, a, s, l = {}) => {
+			let u = new URL("/v1.0/users", o), f;
+			e && (f = e.baseOptions);
+			let p = {
+				method: "GET",
+				...f,
+				...l
+			}, h = {}, g = {};
+			c(p, e), t !== void 0 && (g.$search = t), r !== void 0 && (g.$filter = r), i && (g.$orderby = Array.from(i).join(n.csv)), a && (g.$select = Array.from(a).join(n.csv)), s && (g.$expand = Array.from(s).join(n.csv)), h.Accept = "application/json", d(u, g);
+			let _ = f && f.headers ? f.headers : {};
+			return p.headers = {
+				...h,
+				..._,
+				...l.headers
+			}, {
+				url: m(u),
+				options: p
+			};
+		}
+	};
+}, $ = function(n) {
+	let r = Q(n);
+	return {
+		async createUser(i, o) {
+			let s = await r.createUser(i, o), c = n?.serverIndex ?? 0, l = a["UsersApi.createUser"]?.[c]?.url;
+			return (r, i) => h(s, e, t, n)(r, l || i);
+		},
+		async listUsers(i, o, s, c, l, u) {
+			let d = await r.listUsers(i, o, s, c, l, u), f = n?.serverIndex ?? 0, p = a["UsersApi.listUsers"]?.[f]?.url;
+			return (r, i) => h(d, e, t, n)(r, p || i);
+		}
+	};
+}, Pt = function(e, t, n) {
+	let r = $(e);
+	return {
+		createUser(e, i) {
+			return r.createUser(e, i).then((e) => e(n, t));
+		},
+		listUsers(e, i, a, o, s, c) {
+			return r.listUsers(e, i, a, o, s, c).then((e) => e(n, t));
+		}
+	};
+}, Ft = class extends r {
+	createUser(e, t) {
+		return $(this.configuration).createUser(e, t).then((e) => e(this.axios, this.basePath));
+	}
+	listUsers(e, t, n, r, i, a) {
+		return $(this.configuration).listUsers(e, t, n, r, i, a).then((e) => e(this.axios, this.basePath));
+	}
+}, It = {
+	DisplayName: "displayName",
+	DisplayNameDesc: "displayName desc",
+	Mail: "mail",
+	MailDesc: "mail desc",
+	OnPremisesSamAccountName: "onPremisesSamAccountName",
+	OnPremisesSamAccountNameDesc: "onPremisesSamAccountName desc"
+}, Lt = {
+	Id: "id",
+	DisplayName: "displayName",
+	Mail: "mail",
+	MemberOf: "memberOf",
+	OnPremisesSamAccountName: "onPremisesSamAccountName",
+	Surname: "surname"
+}, Rt = {
+	Drive: "drive",
+	Drives: "drives",
+	MemberOf: "memberOf",
+	AppRoleAssignments: "appRoleAssignments"
+}, zt = class {
+	apiKey;
+	username;
+	password;
+	accessToken;
+	awsv4;
+	basePath;
+	serverIndex;
+	baseOptions;
+	formDataCtor;
+	constructor(e = {}) {
+		this.apiKey = e.apiKey, this.username = e.username, this.password = e.password, this.accessToken = e.accessToken, this.awsv4 = e.awsv4, this.basePath = e.basePath, this.serverIndex = e.serverIndex, this.baseOptions = {
+			...e.baseOptions,
+			headers: { ...e.baseOptions?.headers }
+		}, this.formDataCtor = e.formDataCtor;
+	}
+	isJsonMime(e) {
+		return e !== null && ((/* @__PURE__ */ RegExp("^(application/json|[^;/ 	]+/[^;/ 	]+[+]json)[ 	]*(;.*)?$", "i")).test(e) || e.toLowerCase() === "application/json-patch+json");
+	}
+};
+//#endregion
+export { Et as $, G as $t, we as A, Qe as At, j as B, at as Bt, he as C, Pt as Cn, Rt as Ct, ye as D, qe as Dt, xe as E, Ye as Et, Ee as F, tt as Ft, ke as G, U as Gt, M as H, lt as Ht, k as I, nt as It, je as J, ft as Jt, P as K, pt as Kt, Te as L, V as Lt, Ce as M, Ze as Mt, O as N, B as Nt, be as O, Je as Ot, g as P, rt as Pt, Dt as Q, ht as Qt, A as R, ot as Rt, _e as S, Q as Sn, et as St, T, Lt as Tt, Ae as U, st as Ut, De as V, H as Vt, N as W, ct as Wt, Ie as X, gt as Xt, Le as Y, W as Yt, _t as Z, mt as Zt, C as _, Nt as _n, He as _t, y as a, Ct as an, Re as at, fe as b, Z as bn, Se as bt, re as c, q as cn, Ke as ct, x as d, wt as dn, R as dt, bt as en, Fe as et, ae as f, Y as fn, me as ft, ce as g, X as gn, Ve as gt, se as h, kt as hn, Ue as ht, ee as i, _ as in, Be as it, D as j, Xe as jt, E as k, z as kt, b as l, Tt as ln, We as lt, le as m, Ot as mn, Me as mt, te as n, yt as nn, Pe as nt, ie as o, xt as on, ze as ot, S as p, At as pn, Ne as pt, ue as q, dt as qt, v as r, K as rn, I as rt, ne as s, St as sn, L as st, zt as t, vt as tn, F as tt, oe as u, J as un, Ge as ut, pe as v, jt as vn, ut as vt, ge as w, $ as wn, It as wt, w as x, Ft as xn, $e as xt, de as y, Mt as yn, ve as yt, Oe as z, it as zt };

@@ -1,0 +1,3 @@
+import type { GraphFactoryOptions } from './../types';
+import type { GraphDriveItems } from './types';
+export declare const DriveItemsFactory: ({ axiosClient, config }: GraphFactoryOptions) => GraphDriveItems;

@@ -1,0 +1,20 @@
+import { Ref } from 'vue';
+import { ClientService } from '../../services';
+import { FileContext } from './types';
+import { AppNavigationResult } from './useAppNavigation';
+import { AppConfigResult } from './useAppConfig';
+import { AppFileHandlingResult } from './useAppFileHandling';
+import { AppFolderHandlingResult } from './useAppFolderHandling';
+import { RequestResult } from '../authContext';
+import { MaybeRef } from '../../utils';
+interface AppDefaultsOptions {
+    applicationId: string;
+    applicationName?: MaybeRef<string>;
+    clientService?: ClientService;
+}
+export type AppDefaultsResult = AppConfigResult & AppNavigationResult & AppFileHandlingResult & RequestResult & AppFolderHandlingResult & {
+    isPublicLinkContext: Ref<boolean>;
+    currentFileContext: Ref<FileContext>;
+};
+export declare function useAppDefaults(options: AppDefaultsOptions): AppDefaultsResult;
+export {};

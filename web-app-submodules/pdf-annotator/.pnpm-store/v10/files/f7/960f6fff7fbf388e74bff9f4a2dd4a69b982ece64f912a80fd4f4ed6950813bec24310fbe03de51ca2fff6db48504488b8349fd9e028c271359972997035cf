@@ -1,0 +1,2 @@
+import { Ref } from 'vue';
+export declare const useRouteMeta: (key: string, defaultValue?: string) => Ref<string>;

@@ -1,0 +1,94 @@
+export interface Props {
+    /**
+     * @docs The label of the input element.
+     */
+    label: string;
+    /**
+     * @docs The element ID of the input.
+     */
+    id?: string;
+    /**
+     * @docs The file types that the input should accept. E.g. 'image/*, .pdf'.
+     * @default ''
+     */
+    fileTypes?: string;
+    /**
+     * @docs Determines if the input should accept multiple files.
+     * @default false
+     */
+    multiple?: boolean;
+    /**
+     * @docs Value of the input element.
+     */
+    modelValue?: FileList;
+    /**
+     * @docs Determines if the input should have a clear button. Only gets displayed if the input has a value.
+     * @default true
+     */
+    clearButtonEnabled?: boolean;
+    /**
+     * @docs Determines if the input is disabled.
+     * @default false
+     */
+    disabled?: boolean;
+    /**
+     * @docs The error message to be displayed below the input.
+     */
+    errorMessage?: string;
+    /**
+     * @docs Determines if the message line should be fixed.
+     * @default false
+     */
+    fixMessageLine?: boolean;
+    /**
+     * @docs The description message to be displayed below the input.
+     */
+    descriptionMessage?: string;
+    /**
+     * @docs Determines if a required mark (*) should be displayed next to the label.
+     * @default false
+     */
+    requiredMark?: boolean;
+    /**
+     * @docs The icon that should be shown as preview placeholder.
+     * @default file
+     */
+    previewIcon?: string;
+    /**
+     * @docs The fill type of the preview icon.
+     * @default line
+     */
+    previewIconFillType?: 'line' | 'fill';
+}
+export interface Emits {
+    /**
+     * @docs Emitted when the value of the input has updated.
+     */
+    (e: 'update:modelValue', value: FileList): void;
+    /**
+     * @docs Emitted when the input has been focused.
+     */
+    (e: 'focus', value: HTMLElement): void;
+}
+export interface Slots {
+    /**
+     * @docs Can be used to overwrite the default rendering of the label.
+     */
+    label?: () => unknown;
+}
+type __VLS_Slots = Slots;
+declare const __VLS_base: import("vue").DefineComponent<Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+    focus: (value: HTMLElement) => any;
+    "update:modelValue": (value: FileList) => any;
+}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{
+    onFocus?: (value: HTMLElement) => any;
+    "onUpdate:modelValue"?: (value: FileList) => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const __VLS_export: __VLS_WithSlots<typeof __VLS_base, __VLS_Slots>;
+declare const _default: typeof __VLS_export;
+export default _default;
+type __VLS_WithSlots<T, S> = T & {
+    new (): {
+        $slots: S;
+    };
+};

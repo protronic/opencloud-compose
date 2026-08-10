@@ -1,0 +1,2 @@
+import { ComputedRef } from 'vue';
+export declare const useRouteName: () => ComputedRef<string>;

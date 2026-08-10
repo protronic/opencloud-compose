@@ -1,0 +1,34 @@
+export interface Props {
+    /**
+     * @docs The color of the progress bar. It can be any valid CSS color or registered color role.
+     * @default var(--oc-role-secondary)
+     */
+    color?: string;
+    /**
+     * @docs The background color of the progress bar. It can be any valid CSS color or registered color role.
+     * @default var(--oc-role-surface-container)
+     */
+    backgroundColor?: string;
+    /**
+     * @docs Determines if the progress bar is indeterminate.
+     * @default false
+     */
+    indeterminate?: boolean;
+    /**
+     * @docs The maximum value of the progress bar.
+     */
+    max?: number;
+    /**
+     * @docs The size of the progress bar.
+     * @default default
+     */
+    size?: 'default' | 'small' | 'xsmall';
+    /**
+     * @docs The current value of the progress bar.
+     * @default 0
+     */
+    value?: number;
+}
+declare const __VLS_export: import("vue").DefineComponent<Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+declare const _default: typeof __VLS_export;
+export default _default;

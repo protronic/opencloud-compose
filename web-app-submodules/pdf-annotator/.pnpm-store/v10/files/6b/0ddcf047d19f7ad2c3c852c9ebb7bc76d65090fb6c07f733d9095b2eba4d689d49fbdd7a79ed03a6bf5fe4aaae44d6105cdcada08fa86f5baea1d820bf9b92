@@ -1,0 +1,140 @@
+import { PasswordPolicy } from '../../helpers';
+export interface Props {
+    /**
+     * @docs The element ID of the input.
+     */
+    id?: string;
+    /**
+     * @docs The type of the input.
+     * @default text
+     */
+    type?: 'text' | 'number' | 'email' | 'password' | 'date';
+    /**
+     * @docs The value of the input.
+     */
+    modelValue?: string;
+    /**
+     * @docs The selection range of the input.
+     */
+    selectionRange?: [number, number];
+    /**
+     * @docs Determines if the input should have a clear button.
+     * @default false
+     */
+    clearButtonEnabled?: boolean;
+    /**
+     * @docs The accessible label of the clear button.
+     */
+    clearButtonAccessibleLabel?: string;
+    /**
+     * @docs The default value of the input.
+     */
+    defaultValue?: string;
+    /**
+     * @docs Determines if the input is disabled.
+     * @default false
+     */
+    disabled?: boolean;
+    /**
+     * @docs The label of the input element.
+     */
+    label: string;
+    /**
+     * @docs Determines if the label will be displayed next to the input field.
+     * @default false
+     * */
+    inlineLabel?: boolean;
+    /**
+     * @docs The error message to be displayed below the input.
+     */
+    errorMessage?: string;
+    /**
+     * @docs Determines if the message line should be fixed.
+     * @default false
+     */
+    errorMessageDebouncedTime?: number;
+    /**
+     * @docs The time in milliseconds to debounce the error message visibility.
+     * @default 500
+     */
+    fixMessageLine?: boolean;
+    /**
+     * @docs The description message to be displayed below the input.
+     */
+    descriptionMessage?: string;
+    /**
+     * @docs Determines if the input is read-only.
+     * @default false
+     */
+    readOnly?: boolean;
+    /**
+     * @docs Determines if a required mark (*) should be displayed next to the label.
+     * @default false
+     */
+    requiredMark?: boolean;
+    /**
+     * @docs The password policy if the `type` is set to `password`. Please refer to the component source for the `PasswordPolicy` type definition.
+     */
+    passwordPolicy?: PasswordPolicy;
+    /**
+     * @docs The method to generate a password if the `type` is set to `password`.
+     */
+    generatePasswordMethod?: (...args: unknown[]) => string;
+    /**
+     * @docs Determines if the input field has a surrounding border.
+     * @default true
+     */
+    hasBorder?: boolean;
+}
+export interface Emits {
+    /**
+     * @docs Emitted when the value of the input has changed after the user confirms or leaves the focus.
+     */
+    (e: 'change', value: string): void;
+    /**
+     * @docs Emitted when the value of the input has updated.
+     */
+    (e: 'update:modelValue', value: string): void;
+    /**
+     * @docs Emitted when the input has been focused.
+     */
+    (e: 'focus', value: string): void;
+    /**
+     * @docs Emitted when the password challenge has been completed successfully.
+     */
+    (e: 'passwordChallengeCompleted'): void;
+    /**
+     * @docs Emitted when the password challenge has failed.
+     */
+    (e: 'passwordChallengeFailed'): void;
+}
+export interface Slots {
+    /**
+     * @docs Can be used to overwrite the default rendering of the label.
+     */
+    label?: () => unknown;
+}
+type __VLS_Slots = Slots;
+declare const __VLS_base: import("vue").DefineComponent<Props, {
+    focus: () => void;
+}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+    change: (value: string) => any;
+    focus: (value: string) => any;
+    "update:modelValue": (value: string) => any;
+    passwordChallengeCompleted: () => any;
+    passwordChallengeFailed: () => any;
+}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{
+    onChange?: (value: string) => any;
+    onFocus?: (value: string) => any;
+    "onUpdate:modelValue"?: (value: string) => any;
+    onPasswordChallengeCompleted?: () => any;
+    onPasswordChallengeFailed?: () => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const __VLS_export: __VLS_WithSlots<typeof __VLS_base, __VLS_Slots>;
+declare const _default: typeof __VLS_export;
+export default _default;
+type __VLS_WithSlots<T, S> = T & {
+    new (): {
+        $slots: S;
+    };
+};

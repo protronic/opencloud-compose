@@ -1,0 +1,10 @@
+/**
+ * Share type
+ */
+export declare const shareType: {
+    user: number;
+    group: number;
+    link: number;
+    guest: number;
+    remote: number;
+};

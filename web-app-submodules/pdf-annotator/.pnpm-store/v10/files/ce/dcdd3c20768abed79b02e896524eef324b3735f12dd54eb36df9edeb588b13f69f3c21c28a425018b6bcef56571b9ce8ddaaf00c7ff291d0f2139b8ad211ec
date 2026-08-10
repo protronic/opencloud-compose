@@ -1,0 +1,12 @@
+import { FileAction } from '../types';
+import { Resource } from '@opencloud-eu/web-client';
+import { LocationQuery } from 'vue-router';
+export declare const useFileActionsOpenWithApp: ({ appId }: {
+    appId: string;
+}) => {
+    actions: import("vue").ComputedRef<FileAction[]>;
+    onFilePicked: ({ resource, locationQuery }: {
+        resource: Resource;
+        locationQuery: LocationQuery;
+    }) => void;
+};

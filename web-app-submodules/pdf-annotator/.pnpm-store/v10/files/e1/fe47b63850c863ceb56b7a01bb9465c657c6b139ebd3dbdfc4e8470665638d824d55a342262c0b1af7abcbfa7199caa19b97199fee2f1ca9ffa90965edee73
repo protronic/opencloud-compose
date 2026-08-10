@@ -1,0 +1,27 @@
+import { Router, RouteLocationNamedRaw } from 'vue-router';
+export interface ActiveRouteDirectorFunc<T extends string> {
+    (router: Router, ...comparatives: T[]): boolean;
+}
+/**
+ * helper function to find out if comparative route location is active or not.
+ * it uses vue router resolve to do so.
+ *
+ * @param router
+ * @param comparatives
+ */
+export declare const isLocationActive: (router: Router, ...comparatives: [RouteLocationNamedRaw, ...RouteLocationNamedRaw[]]) => boolean;
+/**
+ * wraps isLocationActive to be used as a closure,
+ * the resulting closure then can be used to check a location against the defined set of director locations
+ *
+ * @param defaultComparatives
+ */
+export declare const isLocationActiveDirector: <T extends string>(...defaultComparatives: [RouteLocationNamedRaw, ...RouteLocationNamedRaw[]]) => ActiveRouteDirectorFunc<T>;
+export { $gettext } from '../utils/dummyGettext';
+/**
+ * create a location with attached default values
+ *
+ * @param name
+ * @param locations
+ */
+export declare const createLocation: (name: string, ...locations: RouteLocationNamedRaw[]) => RouteLocationNamedRaw;

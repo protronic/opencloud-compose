@@ -1,0 +1,9 @@
+import { HttpError } from '../errors';
+/**
+ * Create a HttpError based on a given message, status code and x-request-id.
+ */
+export declare const createHttpError: ({ message, statusCode, xReqId }: {
+    message: string;
+    statusCode: number;
+    xReqId: string;
+}) => HttpError;

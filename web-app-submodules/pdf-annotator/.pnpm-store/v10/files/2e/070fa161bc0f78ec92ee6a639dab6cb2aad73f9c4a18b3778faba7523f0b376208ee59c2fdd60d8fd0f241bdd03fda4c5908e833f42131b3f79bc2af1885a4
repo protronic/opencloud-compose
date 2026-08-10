@@ -1,0 +1,6 @@
+import { SpaceResource } from '../helpers';
+import { DAV } from './client';
+import { WebDavOptions } from './types';
+export declare const GetPublicFileUrlFactory: (dav: DAV, options: WebDavOptions) => {
+    getPublicFileUrl(space: SpaceResource, publicLinkToken: string): string;
+};

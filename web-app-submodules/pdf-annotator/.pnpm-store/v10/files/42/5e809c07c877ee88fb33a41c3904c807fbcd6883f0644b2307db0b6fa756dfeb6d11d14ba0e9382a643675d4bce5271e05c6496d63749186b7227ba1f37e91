@@ -1,0 +1,68 @@
+import { Ref } from 'vue';
+import { Resource, SpaceResource } from '@opencloud-eu/web-client';
+/**
+ * Shared helpers for resource view components (like ResourceTable and ResourceTiles).
+ */
+export declare const useResourceViewHelpers: ({ space, resources, selectedIds, emit }: {
+    space: Ref<SpaceResource>;
+    resources: Ref<Resource[]>;
+    selectedIds: Ref<string[]>;
+    emit: ReturnType<typeof defineEmits>;
+}) => {
+    getResourceCheckboxLabel: (resource: Resource) => string;
+    areAllResourcesSelected: import("vue").ComputedRef<boolean>;
+    selectAllCheckboxLabel: import("vue").ComputedRef<string>;
+    toggleSelectionAll: () => void;
+    shouldShowContextDrop: (item: Resource) => boolean;
+    showContextMenuOnBtnClick: (event: MouseEvent | KeyboardEvent, item: Resource, drop: import("vue").ComponentPublicInstance<typeof import("@opencloud-eu/design-system/components").OcDrop>) => void;
+    showContextMenuOnRightClick: (event: MouseEvent | KeyboardEvent, item: Resource, drop: import("vue").ComponentPublicInstance<typeof import("@opencloud-eu/design-system/components").OcDrop>) => void;
+    ghostElement: Readonly<import("vue").ShallowRef<import("vue").ComponentPublicInstance<import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+        previewItems: {
+            type: import("vue").PropType<Resource[]>;
+            required: true;
+        };
+    }>, {}, {}, {
+        layerCount(): number;
+        showSecondLayer(): boolean;
+        showThirdLayer(): boolean;
+        itemCount(): number;
+    }, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+        previewItems: {
+            type: import("vue").PropType<Resource[]>;
+            required: true;
+        };
+    }>> & Readonly<{}>, {}, {}, {
+        ResourceIcon: import("vue").DefineComponent<{
+            resource: Resource | SpaceResource;
+            size?: import("@opencloud-eu/design-system/helpers").SizeType;
+        }, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<{
+            resource: Resource | SpaceResource;
+            size?: import("@opencloud-eu/design-system/helpers").SizeType;
+        }> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+    }, {}, string, import("vue").ComponentProvideOptions, true, {}, any>>>>;
+    dragItem: Ref<Resource, Resource>;
+    dragSelection: import("vue").ComputedRef<Resource[]>;
+    dragStart: (resource: Resource, event: DragEvent) => Promise<void>;
+    fileDropped: (resource: Resource, event: DragEvent) => void;
+    setDropStyling: (resource: Resource, leaving: boolean, event: DragEvent) => void;
+    selectedResources: import("vue").ComputedRef<Resource[]>;
+    disabledResources: import("vue").ComputedRef<string[]>;
+    isResourceSelected: (item: Resource) => boolean;
+    isResourceInDeleteQueue: (id: string) => boolean;
+    isResourceDisabled: (resource: Resource) => boolean;
+    isResourceClickable: (resource: Resource, areResourcesClickable: boolean) => boolean;
+    isResourceCut: (resource: Resource) => boolean;
+    fileContainerClicked: ({ resource, event }: {
+        resource: Resource;
+        event: MouseEvent | KeyboardEvent;
+    }) => void;
+    fileNameClicked: ({ resource, event }: {
+        resource: Resource;
+        event: MouseEvent | KeyboardEvent;
+    }) => void;
+    fileCheckboxClicked: ({ resource, event }: {
+        resource: Resource;
+        event: MouseEvent | KeyboardEvent;
+    }) => void;
+    getResourceLink: (resource: Resource) => string | import("vue-router").RouteLocationAsRelativeGeneric | import("vue-router").RouteLocationAsPathGeneric;
+};

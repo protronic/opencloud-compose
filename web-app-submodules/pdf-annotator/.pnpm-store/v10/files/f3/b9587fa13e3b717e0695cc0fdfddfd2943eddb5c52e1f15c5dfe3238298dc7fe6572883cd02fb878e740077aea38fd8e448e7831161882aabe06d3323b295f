@@ -1,0 +1,12 @@
+import 'cropperjs';
+type __VLS_Props = {
+    imageUrl: string;
+    aspectRatio?: number;
+    height?: string;
+    roundedSelection?: boolean;
+};
+declare const __VLS_export: import("vue").DefineComponent<__VLS_Props, {
+    getCroppedCanvas: (width?: number, height?: number) => Promise<HTMLCanvasElement>;
+}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const _default: typeof __VLS_export;
+export default _default;

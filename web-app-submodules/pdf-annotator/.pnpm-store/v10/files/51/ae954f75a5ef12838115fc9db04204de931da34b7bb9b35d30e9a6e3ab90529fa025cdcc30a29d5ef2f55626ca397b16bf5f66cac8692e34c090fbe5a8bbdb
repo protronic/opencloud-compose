@@ -1,0 +1,4 @@
+export declare const useTileSize: () => {
+    calculateTileSizePixels: (viewSize: number) => number;
+    calculateTileSizeRem: (viewSize: number) => number;
+};

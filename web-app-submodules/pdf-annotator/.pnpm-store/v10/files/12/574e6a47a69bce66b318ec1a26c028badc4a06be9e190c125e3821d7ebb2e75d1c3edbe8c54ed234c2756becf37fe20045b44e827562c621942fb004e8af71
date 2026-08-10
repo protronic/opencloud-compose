@@ -1,0 +1,4 @@
+import { Action } from './types';
+export declare const useActionsShowDetails: () => {
+    actions: import("vue").ComputedRef<Action<import("./types").ActionOptions>[]>;
+};

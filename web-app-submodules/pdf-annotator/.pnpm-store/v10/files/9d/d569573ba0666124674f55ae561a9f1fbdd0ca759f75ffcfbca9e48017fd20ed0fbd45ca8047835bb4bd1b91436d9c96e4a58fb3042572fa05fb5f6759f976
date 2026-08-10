@@ -1,0 +1,37 @@
+import { Resource } from '../resource';
+import { ShareResource, OutgoingShareResource, IncomingShareResource, CollaboratorShare, GraphSharePermission, LinkShare, ShareRole } from './types';
+import { DriveItem, Permission, UnifiedRoleDefinition, User } from '../../graph/generated';
+export declare const isShareResource: (resource: Resource) => resource is ShareResource;
+export declare const isOutgoingShareResource: (resource: Resource) => resource is OutgoingShareResource;
+export declare const isIncomingShareResource: (resource: Resource) => resource is IncomingShareResource;
+export declare const isCollaboratorShare: (share: CollaboratorShare | LinkShare) => share is CollaboratorShare;
+export declare const isLinkShare: (share: CollaboratorShare | LinkShare) => share is LinkShare;
+export declare const getShareResourceRoles: ({ driveItem, graphRoles }: {
+    driveItem: DriveItem;
+    graphRoles: Record<string, ShareRole>;
+}) => UnifiedRoleDefinition[];
+export declare const getShareResourcePermissions: ({ driveItem, shareRoles }: {
+    driveItem: DriveItem;
+    shareRoles: UnifiedRoleDefinition[];
+}) => GraphSharePermission[];
+export declare function buildIncomingShareResource({ driveItem, graphRoles, serverUrl }: {
+    driveItem: DriveItem;
+    graphRoles: Record<string, ShareRole>;
+    serverUrl: string;
+}): IncomingShareResource;
+export declare function buildOutgoingShareResource({ driveItem, user, serverUrl }: {
+    driveItem: DriveItem;
+    user: User;
+    serverUrl: string;
+}): OutgoingShareResource;
+export declare function buildCollaboratorShare({ graphPermission, graphRoles, resourceId, indirect }: {
+    graphPermission: Permission;
+    graphRoles: Record<string, ShareRole>;
+    resourceId: string;
+    indirect?: boolean;
+}): CollaboratorShare;
+export declare function buildLinkShare({ graphPermission, resourceId, indirect }: {
+    graphPermission: Permission;
+    resourceId: string;
+    indirect?: boolean;
+}): LinkShare;

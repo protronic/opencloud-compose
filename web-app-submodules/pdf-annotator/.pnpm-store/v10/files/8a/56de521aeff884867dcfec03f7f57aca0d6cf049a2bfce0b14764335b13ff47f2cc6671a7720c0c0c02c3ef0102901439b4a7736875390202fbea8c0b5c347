@@ -1,0 +1,1 @@
+export declare const useIsAppActive: () => import("vue").ComputedRef<string | string[]>;

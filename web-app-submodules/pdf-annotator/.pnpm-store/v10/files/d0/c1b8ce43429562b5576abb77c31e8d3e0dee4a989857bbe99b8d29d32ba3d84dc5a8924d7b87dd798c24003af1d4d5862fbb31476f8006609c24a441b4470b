@@ -1,0 +1,2 @@
+import { Resource } from '@opencloud-eu/web-client';
+export declare const filterResources: <T extends Resource>(resources: T[], term: string, limit?: number) => T[];

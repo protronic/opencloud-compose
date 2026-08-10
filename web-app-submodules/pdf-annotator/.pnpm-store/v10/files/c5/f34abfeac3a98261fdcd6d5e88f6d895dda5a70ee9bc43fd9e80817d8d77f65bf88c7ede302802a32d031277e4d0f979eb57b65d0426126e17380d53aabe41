@@ -1,0 +1,5 @@
+import { WebDavOptions } from './types';
+import { DAV, DAVRequestOptions } from './client';
+export declare const ListFileVersionsFactory: (dav: DAV, options: WebDavOptions) => {
+    listFileVersions(id: string, opts?: DAVRequestOptions): Promise<import("..").Resource[]>;
+};

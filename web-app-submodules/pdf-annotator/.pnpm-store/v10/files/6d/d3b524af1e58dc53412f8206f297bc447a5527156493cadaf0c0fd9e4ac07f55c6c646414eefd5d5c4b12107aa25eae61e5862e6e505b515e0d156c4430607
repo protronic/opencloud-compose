@@ -1,0 +1,8 @@
+import { Resource } from '@opencloud-eu/web-client';
+/**
+ * Asserts whether given resource can be moved
+ * @param {String} resource Resource which is to be moved
+ * @param {Object} parentPath Path of the parent folder of the resource
+ * @return {Boolean} can be moved
+ */
+export declare function canBeMoved(resource: Resource, parentPath: string): boolean;

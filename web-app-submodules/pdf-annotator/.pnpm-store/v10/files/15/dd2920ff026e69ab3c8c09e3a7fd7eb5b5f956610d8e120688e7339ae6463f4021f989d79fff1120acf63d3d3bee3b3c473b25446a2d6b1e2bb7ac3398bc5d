@@ -1,0 +1,47 @@
+import { defineComponent } from 'vue';
+import { UrlForResourceOptions, FileContentOptions } from '../../composables';
+import { Resource, SpaceResource } from '@opencloud-eu/web-client';
+type __VLS_Props = {
+    applicationId: string;
+    urlForResourceOptions?: UrlForResourceOptions;
+    fileContentOptions?: FileContentOptions;
+    wrappedComponent?: ReturnType<typeof defineComponent>;
+    importResourceWithExtension?: (resource: Resource) => string;
+    disableAutoSave?: boolean;
+};
+declare var __VLS_11: {
+    url: string;
+    space: SpaceResource;
+    resource: Resource;
+    activeFiles: Resource[];
+    isDirty: boolean;
+    isReadOnly: boolean;
+    applicationConfig: import("../../index.js").AppConfigObject;
+    currentFileContext: import("../../composables").FileContext;
+    currentContent: unknown;
+    isFolderLoading: boolean;
+    'onUpdate:resource': (value: Resource) => void;
+    'onUpdate:currentContent': (value: unknown) => void;
+    'onRegister:onDeleteResourceCallback': (value: () => void) => void;
+    'onDelete:resource': () => void;
+    onSave: () => Promise<void>;
+    onClose: () => void;
+    loadFolderForFileContext: (context: import("vue").MaybeRef<import("../../composables").FileContext>) => Promise<void>;
+    revokeUrl: (url: string) => void;
+    getUrlForResource: (space: SpaceResource, resource: Resource, options?: UrlForResourceOptions) => Promise<string>;
+    class: {
+        'w-[calc(100%-360px)]': boolean;
+    };
+};
+type __VLS_Slots = {} & {
+    default?: (props: typeof __VLS_11) => any;
+};
+declare const __VLS_base: import("vue").DefineComponent<__VLS_Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const __VLS_export: __VLS_WithSlots<typeof __VLS_base, __VLS_Slots>;
+declare const _default: typeof __VLS_export;
+export default _default;
+type __VLS_WithSlots<T, S> = T & {
+    new (): {
+        $slots: S;
+    };
+};

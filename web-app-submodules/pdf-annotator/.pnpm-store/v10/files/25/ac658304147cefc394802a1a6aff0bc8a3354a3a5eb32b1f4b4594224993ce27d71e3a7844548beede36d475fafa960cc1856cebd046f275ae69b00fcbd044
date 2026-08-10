@@ -1,0 +1,134 @@
+import 'vue-select/dist/vue-select.css';
+import { ContextualHelper } from '../../helpers';
+export interface Props {
+    /**
+     * @docs The element ID of the select.
+     */
+    id?: string;
+    /**
+     * @docs The filter function for the select. Defaults to searching by label.
+     */
+    filter?: (items: any[], search: string, { label }: {
+        label?: string;
+    }) => unknown[];
+    /**
+     * @docs Determines if the select is disabled.
+     * @default false
+     */
+    disabled?: boolean;
+    /**
+     * @docs The label of the select input.
+     */
+    label: string;
+    /**
+     * @docs Determines if the label will be displayed next to the select input field.
+     * @default false
+     * */
+    inlineLabel?: boolean;
+    /**
+     * @docs Determines if the label is visually hidden. Note that it will still be read by screen readers.
+     * @default false
+     */
+    labelHidden?: boolean;
+    /**
+     * @docs The contextual helper for the select. Please refer to the component source for the `ContextualHelper` type definition.
+     */
+    contextualHelper?: ContextualHelper;
+    /**
+     * @docs The label key of the options object.
+     * @default label
+     */
+    optionLabel?: string;
+    /**
+     * @docs The getOptionLabel function of the options object. Takes precedence over the `optionLabel` prop.
+     * @default function
+     */
+    getOptionLabel?: (option: unknown) => string;
+    /**
+     * @docs Determines if the options of the select are searchable.
+     * @default true
+     */
+    searchable?: boolean;
+    /**
+     * @docs Determines if the select is clearable.
+     * @default false
+     */
+    clearable?: boolean;
+    /**
+     * @docs Determines if the select is in a loading state.
+     * @default false
+     */
+    loading?: boolean;
+    /**
+     * @docs The error message to be displayed below the select.
+     */
+    errorMessage?: string;
+    /**
+     * @docs Determines if the message line should be fixed.
+     * @default false
+     */
+    fixMessageLine?: boolean;
+    /**
+     * @docs The description message to be displayed below the select.
+     */
+    descriptionMessage?: string;
+    /**
+     * @docs Determines if the select allows multiple selections.
+     * @default false
+     */
+    multiple?: boolean;
+    /**
+     * @docs Determines if the select is read-only.
+     * @default false
+     */
+    readOnly?: boolean;
+    /**
+     * @docs Determines if the dropdown menu should be fixed to the viewport.
+     * @default false
+     */
+    positionFixed?: boolean;
+    /**
+     * @docs Determines if a required mark (*) should be displayed next to the label.
+     * @default false
+     */
+    requiredMark?: boolean;
+    /**
+     * @docs Determines if the select input field has a surrounding border.
+     * @default true
+     */
+    hasBorder?: boolean;
+}
+export interface Emits {
+    /**
+     * @docs Emitted when the user has typed.
+     */
+    (e: 'search:input', search: string): void;
+    /**
+     * @docs Emitted when the user has selected an option.
+     */
+    (e: 'update:modelValue', value: any): void;
+}
+export interface Slots {
+    /**
+     * @docs Slot for when an option is selected.
+     */
+    'selected-option'?: (option: any) => any;
+    /**
+     * @docs This component inherits all slots from `vue-select`. See https://vue-select.org/api/slots for more information.
+     */
+    [dynamicSlot: string]: any;
+}
+declare const _default: typeof __VLS_export;
+export default _default;
+declare const __VLS_export: __VLS_WithSlots<import("vue").DefineComponent<Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+    "update:modelValue": (value: any) => any;
+    "search:input": (search: string) => any;
+}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{
+    "onUpdate:modelValue"?: (value: any) => any;
+    "onSearch:input"?: (search: string) => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>, Slots>;
+type __VLS_WithSlots<T, S> = T & {
+    new (): {
+        $slots: S;
+    };
+};

@@ -1,0 +1,105 @@
+import { PropType } from 'vue';
+import { DateTime } from 'luxon';
+import { Modal } from '../../composables/piniaStores';
+declare const _default: typeof __VLS_export;
+export default _default;
+declare const __VLS_export: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+    modal: {
+        type: PropType<Modal>;
+        required: true;
+    };
+    currentDate: {
+        type: PropType<DateTime>;
+        required: false;
+        default: any;
+    };
+    minDate: {
+        type: PropType<DateTime>;
+        required: false;
+        default: any;
+    };
+    isClearable: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+}>, {
+    confirmDisabled: import("vue").Ref<boolean, boolean>;
+    onDateChanged: ({ date, error }: {
+        date: DateTime;
+        error: boolean;
+    }) => void;
+    currentTheme: import("vue").Ref<{
+        isDark: boolean;
+        label: string;
+        name?: string;
+        slogan?: string;
+        logo?: string;
+        logoMobile?: string;
+        urls?: {
+            accessDeniedHelp?: string;
+            imprint?: string;
+            privacy?: string;
+            accessibility?: string;
+        };
+        shareRoles?: Record<string, {
+            iconName: string;
+        }>;
+        designTokens?: {
+            roles?: Record<string, string>;
+            colorPalette?: Record<string, string>;
+            fontFamily?: string;
+        };
+        favicon?: string;
+        background?: string;
+    }, {
+        isDark: boolean;
+        label: string;
+        name?: string;
+        slogan?: string;
+        logo?: string;
+        logoMobile?: string;
+        urls?: {
+            accessDeniedHelp?: string;
+            imprint?: string;
+            privacy?: string;
+            accessibility?: string;
+        };
+        shareRoles?: Record<string, {
+            iconName: string;
+        }>;
+        designTokens?: {
+            roles?: Record<string, string>;
+            colorPalette?: Record<string, string>;
+            fontFamily?: string;
+        };
+        favicon?: string;
+        background?: string;
+    }>;
+    dateTime: import("vue").Ref<DateTime<boolean>, DateTime<boolean>>;
+}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, ("cancel" | "confirm")[], "cancel" | "confirm", import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+    modal: {
+        type: PropType<Modal>;
+        required: true;
+    };
+    currentDate: {
+        type: PropType<DateTime>;
+        required: false;
+        default: any;
+    };
+    minDate: {
+        type: PropType<DateTime>;
+        required: false;
+        default: any;
+    };
+    isClearable: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+}>> & Readonly<{
+    onCancel?: (...args: any[]) => any;
+    onConfirm?: (...args: any[]) => any;
+}>, {
+    currentDate: DateTime<boolean>;
+    isClearable: boolean;
+    minDate: DateTime<boolean>;
+}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;

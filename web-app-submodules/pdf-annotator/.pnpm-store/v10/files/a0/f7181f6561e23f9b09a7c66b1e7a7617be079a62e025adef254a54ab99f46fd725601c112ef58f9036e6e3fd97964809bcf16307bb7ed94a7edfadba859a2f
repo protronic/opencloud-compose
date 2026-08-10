@@ -1,0 +1,17 @@
+export interface BottomDrawer {
+    id: string;
+}
+export declare const useBottomDrawer: import("pinia").SetupStoreDefinition<"bottomDrawers", {
+    drawers: import("vue").Ref<{
+        id: string;
+    }[], BottomDrawer[] | {
+        id: string;
+    }[]>;
+    currentDrawer: import("vue").ComputedRef<BottomDrawer>;
+    showDrawer: () => {
+        id: string;
+    };
+    closeDrawer: (id: string) => void;
+    closeAllDrawers: () => void;
+}>;
+export type BottomDrawerStore = ReturnType<typeof useBottomDrawer>;

@@ -1,0 +1,14 @@
+export declare abstract class ImageDimension {
+    static readonly Thumbnail: [number, number];
+    static readonly Tile: [number, number];
+    static readonly Preview: [number, number];
+    static readonly Avatar: number;
+}
+export declare abstract class ImageType {
+    static readonly Thumbnail: string;
+    static readonly Preview: string;
+    static readonly Avatar: string;
+}
+export declare const AVATAR_UPLOAD_MAX_FILE_SIZE_MB = 10;
+export declare const RESOURCE_MAX_CHARACTER_LENGTH = 63;
+export declare const RESOURCE_NAME_MAX_BYTES = 256;

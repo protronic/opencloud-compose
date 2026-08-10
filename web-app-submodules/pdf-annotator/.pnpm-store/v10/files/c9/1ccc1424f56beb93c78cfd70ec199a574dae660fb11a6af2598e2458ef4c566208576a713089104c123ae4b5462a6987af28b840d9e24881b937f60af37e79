@@ -1,0 +1,1463 @@
+import { a as e, i as t, n, r } from "./axios-DAxu7d04.js";
+import { c as i, i as a, l as o, n as s, o as c, r as l, t as u, u as d } from "./toString-9BJo4tor.js";
+//#region src/helpers/call.ts
+var f = function* (e) {
+	return yield e;
+}, p = class extends Error {
+	response;
+	statusCode;
+	constructor(e, t, n = null) {
+		super(e), this.response = t, this.statusCode = n;
+	}
+}, m = class extends p {
+	errorCode;
+	constructor(e, t, n, r = null) {
+		super(e, n, r), this.errorCode = t;
+	}
+}, h = ({ message: e, statusCode: t, xReqId: n }) => new p(e, new Response(void 0, {
+	headers: { "x-request-id": n },
+	status: t
+}), t);
+//#endregion
+//#region src/helpers/publicLink/functions.ts
+function g(e, t = "") {
+	return `/public-files/${e}/${t}`.split("/").filter(Boolean).join("/");
+}
+function _(e, t = "") {
+	return `/ocm/${e}/${t}`.split("/").filter(Boolean).join("/");
+}
+//#endregion
+//#region src/webdav/constants/dav.ts
+var v = /* @__PURE__ */ e((/* @__PURE__ */ t(((e, t) => {
+	n();
+	function i(e) {
+		if (typeof e != "string") throw TypeError("Path must be a string. Received " + JSON.stringify(e));
+	}
+	function a(e, t) {
+		for (var n = "", r = 0, i = -1, a = 0, o, s = 0; s <= e.length; ++s) {
+			if (s < e.length) o = e.charCodeAt(s);
+			else if (o === 47) break;
+			else o = 47;
+			if (o === 47) {
+				if (!(i === s - 1 || a === 1)) if (i !== s - 1 && a === 2) {
+					if (n.length < 2 || r !== 2 || n.charCodeAt(n.length - 1) !== 46 || n.charCodeAt(n.length - 2) !== 46) {
+						if (n.length > 2) {
+							var c = n.lastIndexOf("/");
+							if (c !== n.length - 1) {
+								c === -1 ? (n = "", r = 0) : (n = n.slice(0, c), r = n.length - 1 - n.lastIndexOf("/")), i = s, a = 0;
+								continue;
+							}
+						} else if (n.length === 2 || n.length === 1) {
+							n = "", r = 0, i = s, a = 0;
+							continue;
+						}
+					}
+					t && (n.length > 0 ? n += "/.." : n = "..", r = 2);
+				} else n.length > 0 ? n += "/" + e.slice(i + 1, s) : n = e.slice(i + 1, s), r = s - i - 1;
+				i = s, a = 0;
+			} else o === 46 && a !== -1 ? ++a : a = -1;
+		}
+		return n;
+	}
+	function o(e, t) {
+		var n = t.dir || t.root, r = t.base || (t.name || "") + (t.ext || "");
+		return n ? n === t.root ? n + r : n + e + r : r;
+	}
+	var s = {
+		resolve: function() {
+			for (var e = "", t = !1, n, o = arguments.length - 1; o >= -1 && !t; o--) {
+				var s;
+				o >= 0 ? s = arguments[o] : (n === void 0 && (n = r.cwd()), s = n), i(s), s.length !== 0 && (e = s + "/" + e, t = s.charCodeAt(0) === 47);
+			}
+			return e = a(e, !t), t ? e.length > 0 ? "/" + e : "/" : e.length > 0 ? e : ".";
+		},
+		normalize: function(e) {
+			if (i(e), e.length === 0) return ".";
+			var t = e.charCodeAt(0) === 47, n = e.charCodeAt(e.length - 1) === 47;
+			return e = a(e, !t), e.length === 0 && !t && (e = "."), e.length > 0 && n && (e += "/"), t ? "/" + e : e;
+		},
+		isAbsolute: function(e) {
+			return i(e), e.length > 0 && e.charCodeAt(0) === 47;
+		},
+		join: function() {
+			if (arguments.length === 0) return ".";
+			for (var e, t = 0; t < arguments.length; ++t) {
+				var n = arguments[t];
+				i(n), n.length > 0 && (e === void 0 ? e = n : e += "/" + n);
+			}
+			return e === void 0 ? "." : s.normalize(e);
+		},
+		relative: function(e, t) {
+			if (i(e), i(t), e === t || (e = s.resolve(e), t = s.resolve(t), e === t)) return "";
+			for (var n = 1; n < e.length && e.charCodeAt(n) === 47; ++n);
+			for (var r = e.length, a = r - n, o = 1; o < t.length && t.charCodeAt(o) === 47; ++o);
+			for (var c = t.length - o, l = a < c ? a : c, u = -1, d = 0; d <= l; ++d) {
+				if (d === l) {
+					if (c > l) {
+						if (t.charCodeAt(o + d) === 47) return t.slice(o + d + 1);
+						if (d === 0) return t.slice(o + d);
+					} else a > l && (e.charCodeAt(n + d) === 47 ? u = d : d === 0 && (u = 0));
+					break;
+				}
+				var f = e.charCodeAt(n + d);
+				if (f !== t.charCodeAt(o + d)) break;
+				f === 47 && (u = d);
+			}
+			var p = "";
+			for (d = n + u + 1; d <= r; ++d) (d === r || e.charCodeAt(d) === 47) && (p.length === 0 ? p += ".." : p += "/..");
+			return p.length > 0 ? p + t.slice(o + u) : (o += u, t.charCodeAt(o) === 47 && ++o, t.slice(o));
+		},
+		_makeLong: function(e) {
+			return e;
+		},
+		dirname: function(e) {
+			if (i(e), e.length === 0) return ".";
+			for (var t = e.charCodeAt(0), n = t === 47, r = -1, a = !0, o = e.length - 1; o >= 1; --o) if (t = e.charCodeAt(o), t === 47) {
+				if (!a) {
+					r = o;
+					break;
+				}
+			} else a = !1;
+			return r === -1 ? n ? "/" : "." : n && r === 1 ? "//" : e.slice(0, r);
+		},
+		basename: function(e, t) {
+			if (t !== void 0 && typeof t != "string") throw TypeError("\"ext\" argument must be a string");
+			i(e);
+			var n = 0, r = -1, a = !0, o;
+			if (t !== void 0 && t.length > 0 && t.length <= e.length) {
+				if (t.length === e.length && t === e) return "";
+				var s = t.length - 1, c = -1;
+				for (o = e.length - 1; o >= 0; --o) {
+					var l = e.charCodeAt(o);
+					if (l === 47) {
+						if (!a) {
+							n = o + 1;
+							break;
+						}
+					} else c === -1 && (a = !1, c = o + 1), s >= 0 && (l === t.charCodeAt(s) ? --s === -1 && (r = o) : (s = -1, r = c));
+				}
+				return n === r ? r = c : r === -1 && (r = e.length), e.slice(n, r);
+			} else {
+				for (o = e.length - 1; o >= 0; --o) if (e.charCodeAt(o) === 47) {
+					if (!a) {
+						n = o + 1;
+						break;
+					}
+				} else r === -1 && (a = !1, r = o + 1);
+				return r === -1 ? "" : e.slice(n, r);
+			}
+		},
+		extname: function(e) {
+			i(e);
+			for (var t = -1, n = 0, r = -1, a = !0, o = 0, s = e.length - 1; s >= 0; --s) {
+				var c = e.charCodeAt(s);
+				if (c === 47) {
+					if (!a) {
+						n = s + 1;
+						break;
+					}
+					continue;
+				}
+				r === -1 && (a = !1, r = s + 1), c === 46 ? t === -1 ? t = s : o !== 1 && (o = 1) : t !== -1 && (o = -1);
+			}
+			return t === -1 || r === -1 || o === 0 || o === 1 && t === r - 1 && t === n + 1 ? "" : e.slice(t, r);
+		},
+		format: function(e) {
+			if (typeof e != "object" || !e) throw TypeError("The \"pathObject\" argument must be of type Object. Received type " + typeof e);
+			return o("/", e);
+		},
+		parse: function(e) {
+			i(e);
+			var t = {
+				root: "",
+				dir: "",
+				base: "",
+				ext: "",
+				name: ""
+			};
+			if (e.length === 0) return t;
+			var n = e.charCodeAt(0), r = n === 47, a;
+			r ? (t.root = "/", a = 1) : a = 0;
+			for (var o = -1, s = 0, c = -1, l = !0, u = e.length - 1, d = 0; u >= a; --u) {
+				if (n = e.charCodeAt(u), n === 47) {
+					if (!l) {
+						s = u + 1;
+						break;
+					}
+					continue;
+				}
+				c === -1 && (l = !1, c = u + 1), n === 46 ? o === -1 ? o = u : d !== 1 && (d = 1) : o !== -1 && (d = -1);
+			}
+			return o === -1 || c === -1 || d === 0 || d === 1 && o === c - 1 && o === s + 1 ? c !== -1 && (s === 0 && r ? t.base = t.name = e.slice(1, c) : t.base = t.name = e.slice(s, c)) : (s === 0 && r ? (t.name = e.slice(1, o), t.base = e.slice(1, c)) : (t.name = e.slice(s, o), t.base = e.slice(s, c)), t.ext = e.slice(o, c)), s > 0 ? t.dir = e.slice(0, s - 1) : r && (t.dir = "/"), t;
+		},
+		sep: "/",
+		delimiter: ":",
+		win32: null,
+		posix: null
+	};
+	s.posix = s, t.exports = s;
+})))(), 1), y = class {
+	static Shared = "S";
+	static Shareable = "R";
+	static Mounted = "M";
+	static Deletable = "D";
+	static Renameable = "N";
+	static Moveable = "V";
+	static Updateable = "NV";
+	static FileUpdateable = "W";
+	static FolderCreateable = "CK";
+	static Deny = "Z";
+	static SecureView = "X";
+}, ee = /* @__PURE__ */ function(e) {
+	return e.copy = "COPY", e.delete = "DELETE", e.lock = "LOCK", e.mkcol = "MKCOL", e.move = "MOVE", e.propfind = "PROPFIND", e.proppatch = "PROPPATCH", e.put = "PUT", e.report = "REPORT", e.unlock = "UNLOCK", e;
+}({}), b = (e) => ({
+	value: e,
+	type: null
+}), te = (e) => b(e), x = (e) => b(e), S = (e) => b(e), ne = {
+	Permissions: x("permissions"),
+	IsFavorite: S("favorite"),
+	FileId: x("fileid"),
+	FileParent: x("file-parent"),
+	Name: x("name"),
+	OwnerId: x("owner-id"),
+	OwnerDisplayName: x("owner-display-name"),
+	PrivateLink: x("privatelink"),
+	ContentLength: S("getcontentlength"),
+	ContentSize: S("size"),
+	LastModifiedDate: x("getlastmodified"),
+	Tags: te("tags"),
+	Audio: {
+		value: "audio",
+		type: null
+	},
+	Location: {
+		value: "location",
+		type: null
+	},
+	Image: {
+		value: "image",
+		type: null
+	},
+	Photo: {
+		value: "photo",
+		type: null
+	},
+	ETag: x("getetag"),
+	MimeType: x("getcontenttype"),
+	ResourceType: ((e) => b(e))("resourcetype"),
+	LockDiscovery: {
+		value: "lockdiscovery",
+		type: null
+	},
+	LockOwner: x("owner"),
+	LockTime: x("locktime"),
+	ActiveLock: {
+		value: "activelock",
+		type: null
+	},
+	DownloadURL: x("downloadURL"),
+	Highlights: x("highlights"),
+	MetaPathForUser: x("meta-path-for-user"),
+	RemoteItemId: x("remote-item-id"),
+	HasPreview: S("has-preview"),
+	ShareId: x("shareid"),
+	ShareRoot: x("shareroot"),
+	ShareTypes: {
+		value: "share-types",
+		type: null
+	},
+	SharePermissions: x("share-permissions"),
+	TrashbinOriginalFilename: x("trashbin-original-filename"),
+	TrashbinOriginalLocation: x("trashbin-original-location"),
+	TrashbinDeletedDate: x("trashbin-delete-datetime"),
+	PublicLinkItemType: x("public-link-item-type"),
+	PublicLinkPermission: x("public-link-permission"),
+	PublicLinkExpiration: x("public-link-expiration"),
+	PublicLinkShareDate: x("public-link-share-datetime"),
+	PublicLinkShareOwner: x("public-link-share-owner")
+}, C = Object.fromEntries(Object.entries(ne).map(([e, t]) => [e, t.value])), re = class e {
+	static Default = [
+		C.Permissions,
+		C.IsFavorite,
+		C.FileId,
+		C.FileParent,
+		C.Name,
+		C.LockDiscovery,
+		C.ActiveLock,
+		C.OwnerId,
+		C.OwnerDisplayName,
+		C.RemoteItemId,
+		C.ShareRoot,
+		C.ShareTypes,
+		C.PrivateLink,
+		C.ContentLength,
+		C.ContentSize,
+		C.LastModifiedDate,
+		C.ETag,
+		C.MimeType,
+		C.ResourceType,
+		C.Tags,
+		C.Audio,
+		C.Location,
+		C.Image,
+		C.Photo,
+		C.HasPreview
+	];
+	static PublicLink = e.Default.concat([
+		C.PublicLinkItemType,
+		C.PublicLinkPermission,
+		C.PublicLinkExpiration,
+		C.PublicLinkShareDate,
+		C.PublicLinkShareOwner
+	]);
+	static Trashbin = [
+		C.ContentLength,
+		C.ResourceType,
+		C.TrashbinOriginalLocation,
+		C.TrashbinOriginalFilename,
+		C.TrashbinDeletedDate,
+		C.Permissions,
+		C.FileParent
+	];
+	static DavNamespace = [
+		C.ContentLength,
+		C.LastModifiedDate,
+		C.ETag,
+		C.MimeType,
+		C.ResourceType,
+		C.LockDiscovery,
+		C.ActiveLock
+	];
+};
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/identity.js
+function w(e) {
+	return e;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_apply.js
+function ie(e, t, n) {
+	switch (n.length) {
+		case 0: return e.call(t);
+		case 1: return e.call(t, n[0]);
+		case 2: return e.call(t, n[0], n[1]);
+		case 3: return e.call(t, n[0], n[1], n[2]);
+	}
+	return e.apply(t, n);
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/noop.js
+function ae() {}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_shortOut.js
+var oe = 800, se = 16, ce = Date.now;
+function le(e) {
+	var t = 0, n = 0;
+	return function() {
+		var r = ce(), i = se - (r - n);
+		if (n = r, i > 0) {
+			if (++t >= oe) return arguments[0];
+		} else t = 0;
+		return e.apply(void 0, arguments);
+	};
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/constant.js
+function ue(e) {
+	return function() {
+		return e;
+	};
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_defineProperty.js
+var de = function() {
+	try {
+		var e = l(Object, "defineProperty");
+		return e({}, "", {}), e;
+	} catch {}
+}(), fe = le(de ? function(e, t) {
+	return de(e, "toString", {
+		configurable: !0,
+		enumerable: !1,
+		value: ue(t),
+		writable: !0
+	});
+} : w);
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_baseFindIndex.js
+function pe(e, t, n, r) {
+	for (var i = e.length, a = n + (r ? 1 : -1); r ? a-- : ++a < i;) if (t(e[a], a, e)) return a;
+	return -1;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_baseIsNaN.js
+function me(e) {
+	return e !== e;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_strictIndexOf.js
+function he(e, t, n) {
+	for (var r = n - 1, i = e.length; ++r < i;) if (e[r] === t) return r;
+	return -1;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_baseIndexOf.js
+function ge(e, t, n) {
+	return t === t ? he(e, t, n) : pe(e, me, n);
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_arrayIncludes.js
+function _e(e, t) {
+	return !!(e != null && e.length) && ge(e, t, 0) > -1;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_overRest.js
+var ve = Math.max;
+function ye(e, t, n) {
+	return t = ve(t === void 0 ? e.length - 1 : t, 0), function() {
+		for (var r = arguments, i = -1, a = ve(r.length - t, 0), o = Array(a); ++i < a;) o[i] = r[t + i];
+		i = -1;
+		for (var s = Array(t + 1); ++i < t;) s[i] = r[i];
+		return s[t] = n(o), ie(e, this, s);
+	};
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_baseRest.js
+function be(e, t) {
+	return fe(ye(e, t, w), e + "");
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/isLength.js
+var xe = 9007199254740991;
+function Se(e) {
+	return typeof e == "number" && e > -1 && e % 1 == 0 && e <= xe;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/isArrayLike.js
+function Ce(e) {
+	return e != null && Se(e.length) && !a(e);
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_baseUnary.js
+function we(e) {
+	return function(t) {
+		return e(t);
+	};
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_baseSlice.js
+function Te(e, t, n) {
+	var r = -1, i = e.length;
+	t < 0 && (t = -t > i ? 0 : i + t), n = n > i ? i : n, n < 0 && (n += i), i = t > n ? 0 : n - t >>> 0, t >>>= 0;
+	for (var a = Array(i); ++r < i;) a[r] = e[r + t];
+	return a;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_castSlice.js
+function Ee(e, t, n) {
+	var r = e.length;
+	return n = n === void 0 ? r : n, !t && n >= r ? e : Te(e, t, n);
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_hasUnicode.js
+var De = RegExp("[\\u200d\\ud800-\\udfff\\u0300-\\u036f\\ufe20-\\ufe2f\\u20d0-\\u20ff\\ufe0e\\ufe0f]");
+function Oe(e) {
+	return De.test(e);
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_asciiToArray.js
+function ke(e) {
+	return e.split("");
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_unicodeToArray.js
+var Ae = "\\ud800-\\udfff", je = "\\u0300-\\u036f\\ufe20-\\ufe2f\\u20d0-\\u20ff", Me = "\\ufe0e\\ufe0f", Ne = "[" + Ae + "]", T = "[" + je + "]", E = "\\ud83c[\\udffb-\\udfff]", Pe = "(?:" + T + "|" + E + ")", Fe = "[^" + Ae + "]", Ie = "(?:\\ud83c[\\udde6-\\uddff]){2}", Le = "[\\ud800-\\udbff][\\udc00-\\udfff]", Re = "\\u200d", ze = Pe + "?", Be = "[" + Me + "]?", Ve = "(?:" + Re + "(?:" + [
+	Fe,
+	Ie,
+	Le
+].join("|") + ")" + Be + ze + ")*", He = Be + ze + Ve, Ue = "(?:" + [
+	Fe + T + "?",
+	T,
+	Ie,
+	Le,
+	Ne
+].join("|") + ")", We = RegExp(E + "(?=" + E + ")|" + Ue + He, "g");
+function Ge(e) {
+	return e.match(We) || [];
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_stringToArray.js
+function Ke(e) {
+	return Oe(e) ? Ge(e) : ke(e);
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_createCaseFirst.js
+function qe(e) {
+	return function(t) {
+		t = u(t);
+		var n = Oe(t) ? Ke(t) : void 0, r = n ? n[0] : t.charAt(0), i = n ? Ee(n, 1).join("") : t.slice(1);
+		return r[e]() + i;
+	};
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/upperFirst.js
+var Je = qe("toUpperCase");
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/capitalize.js
+function Ye(e) {
+	return Je(u(e).toLowerCase());
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_arrayReduce.js
+function Xe(e, t, n, r) {
+	var i = -1, a = e == null ? 0 : e.length;
+	for (r && a && (n = e[++i]); ++i < a;) n = t(n, e[i], i, e);
+	return n;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_basePropertyOf.js
+function Ze(e) {
+	return function(t) {
+		return e?.[t];
+	};
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_deburrLetter.js
+var Qe = Ze({
+	À: "A",
+	Á: "A",
+	Â: "A",
+	Ã: "A",
+	Ä: "A",
+	Å: "A",
+	à: "a",
+	á: "a",
+	â: "a",
+	ã: "a",
+	ä: "a",
+	å: "a",
+	Ç: "C",
+	ç: "c",
+	Ð: "D",
+	ð: "d",
+	È: "E",
+	É: "E",
+	Ê: "E",
+	Ë: "E",
+	è: "e",
+	é: "e",
+	ê: "e",
+	ë: "e",
+	Ì: "I",
+	Í: "I",
+	Î: "I",
+	Ï: "I",
+	ì: "i",
+	í: "i",
+	î: "i",
+	ï: "i",
+	Ñ: "N",
+	ñ: "n",
+	Ò: "O",
+	Ó: "O",
+	Ô: "O",
+	Õ: "O",
+	Ö: "O",
+	Ø: "O",
+	ò: "o",
+	ó: "o",
+	ô: "o",
+	õ: "o",
+	ö: "o",
+	ø: "o",
+	Ù: "U",
+	Ú: "U",
+	Û: "U",
+	Ü: "U",
+	ù: "u",
+	ú: "u",
+	û: "u",
+	ü: "u",
+	Ý: "Y",
+	ý: "y",
+	ÿ: "y",
+	Æ: "Ae",
+	æ: "ae",
+	Þ: "Th",
+	þ: "th",
+	ß: "ss",
+	Ā: "A",
+	Ă: "A",
+	Ą: "A",
+	ā: "a",
+	ă: "a",
+	ą: "a",
+	Ć: "C",
+	Ĉ: "C",
+	Ċ: "C",
+	Č: "C",
+	ć: "c",
+	ĉ: "c",
+	ċ: "c",
+	č: "c",
+	Ď: "D",
+	Đ: "D",
+	ď: "d",
+	đ: "d",
+	Ē: "E",
+	Ĕ: "E",
+	Ė: "E",
+	Ę: "E",
+	Ě: "E",
+	ē: "e",
+	ĕ: "e",
+	ė: "e",
+	ę: "e",
+	ě: "e",
+	Ĝ: "G",
+	Ğ: "G",
+	Ġ: "G",
+	Ģ: "G",
+	ĝ: "g",
+	ğ: "g",
+	ġ: "g",
+	ģ: "g",
+	Ĥ: "H",
+	Ħ: "H",
+	ĥ: "h",
+	ħ: "h",
+	Ĩ: "I",
+	Ī: "I",
+	Ĭ: "I",
+	Į: "I",
+	İ: "I",
+	ĩ: "i",
+	ī: "i",
+	ĭ: "i",
+	į: "i",
+	ı: "i",
+	Ĵ: "J",
+	ĵ: "j",
+	Ķ: "K",
+	ķ: "k",
+	ĸ: "k",
+	Ĺ: "L",
+	Ļ: "L",
+	Ľ: "L",
+	Ŀ: "L",
+	Ł: "L",
+	ĺ: "l",
+	ļ: "l",
+	ľ: "l",
+	ŀ: "l",
+	ł: "l",
+	Ń: "N",
+	Ņ: "N",
+	Ň: "N",
+	Ŋ: "N",
+	ń: "n",
+	ņ: "n",
+	ň: "n",
+	ŋ: "n",
+	Ō: "O",
+	Ŏ: "O",
+	Ő: "O",
+	ō: "o",
+	ŏ: "o",
+	ő: "o",
+	Ŕ: "R",
+	Ŗ: "R",
+	Ř: "R",
+	ŕ: "r",
+	ŗ: "r",
+	ř: "r",
+	Ś: "S",
+	Ŝ: "S",
+	Ş: "S",
+	Š: "S",
+	ś: "s",
+	ŝ: "s",
+	ş: "s",
+	š: "s",
+	Ţ: "T",
+	Ť: "T",
+	Ŧ: "T",
+	ţ: "t",
+	ť: "t",
+	ŧ: "t",
+	Ũ: "U",
+	Ū: "U",
+	Ŭ: "U",
+	Ů: "U",
+	Ű: "U",
+	Ų: "U",
+	ũ: "u",
+	ū: "u",
+	ŭ: "u",
+	ů: "u",
+	ű: "u",
+	ų: "u",
+	Ŵ: "W",
+	ŵ: "w",
+	Ŷ: "Y",
+	ŷ: "y",
+	Ÿ: "Y",
+	Ź: "Z",
+	Ż: "Z",
+	Ž: "Z",
+	ź: "z",
+	ż: "z",
+	ž: "z",
+	Ĳ: "IJ",
+	ĳ: "ij",
+	Œ: "Oe",
+	œ: "oe",
+	ŉ: "'n",
+	ſ: "s"
+}), $e = /[\xc0-\xd6\xd8-\xf6\xf8-\xff\u0100-\u017f]/g, et = RegExp("[\\u0300-\\u036f\\ufe20-\\ufe2f\\u20d0-\\u20ff]", "g");
+function tt(e) {
+	return e = u(e), e && e.replace($e, Qe).replace(et, "");
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_asciiWords.js
+var nt = /[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g;
+function rt(e) {
+	return e.match(nt) || [];
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_hasUnicodeWord.js
+var it = /[a-z][A-Z]|[A-Z]{2}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/;
+function at(e) {
+	return it.test(e);
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_unicodeWords.js
+var ot = "\\ud800-\\udfff", st = "\\u0300-\\u036f\\ufe20-\\ufe2f\\u20d0-\\u20ff", ct = "\\u2700-\\u27bf", lt = "a-z\\xdf-\\xf6\\xf8-\\xff", ut = "\\xac\\xb1\\xd7\\xf7", dt = "\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf", ft = "\\u2000-\\u206f", pt = " \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000", mt = "A-Z\\xc0-\\xd6\\xd8-\\xde", ht = "\\ufe0e\\ufe0f", gt = ut + dt + ft + pt, _t = "['’]", vt = "[" + gt + "]", yt = "[" + st + "]", bt = "\\d+", xt = "[" + ct + "]", St = "[" + lt + "]", D = "[^" + ot + gt + bt + ct + lt + mt + "]", Ct = "(?:" + yt + "|\\ud83c[\\udffb-\\udfff])", wt = "[^" + ot + "]", O = "(?:\\ud83c[\\udde6-\\uddff]){2}", k = "[\\ud800-\\udbff][\\udc00-\\udfff]", A = "[" + mt + "]", Tt = "\\u200d", j = "(?:" + St + "|" + D + ")", Et = "(?:" + A + "|" + D + ")", M = "(?:" + _t + "(?:d|ll|m|re|s|t|ve))?", N = "(?:" + _t + "(?:D|LL|M|RE|S|T|VE))?", P = Ct + "?", F = "[" + ht + "]?", Dt = "(?:" + Tt + "(?:" + [
+	wt,
+	O,
+	k
+].join("|") + ")" + F + P + ")*", Ot = "\\d*(?:1st|2nd|3rd|(?![123])\\dth)(?=\\b|[A-Z_])", kt = "\\d*(?:1ST|2ND|3RD|(?![123])\\dTH)(?=\\b|[a-z_])", At = F + P + Dt, jt = "(?:" + [
+	xt,
+	O,
+	k
+].join("|") + ")" + At, Mt = RegExp([
+	A + "?" + St + "+" + M + "(?=" + [
+		vt,
+		A,
+		"$"
+	].join("|") + ")",
+	Et + "+" + N + "(?=" + [
+		vt,
+		A + j,
+		"$"
+	].join("|") + ")",
+	A + "?" + j + "+" + M,
+	A + "+" + N,
+	kt,
+	Ot,
+	bt,
+	jt
+].join("|"), "g");
+function Nt(e) {
+	return e.match(Mt) || [];
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/words.js
+function Pt(e, t, n) {
+	return e = u(e), t = n ? void 0 : t, t === void 0 ? at(e) ? Nt(e) : rt(e) : e.match(t) || [];
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_createCompounder.js
+var Ft = RegExp("['’]", "g");
+function It(e) {
+	return function(t) {
+		return Xe(Pt(tt(t).replace(Ft, "")), e, "");
+	};
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/camelCase.js
+var Lt = It(function(e, t, n) {
+	return t = t.toLowerCase(), e + (n ? Ye(t) : t);
+}), I = l(o, "Set"), Rt = "__lodash_hash_undefined__";
+function zt(e) {
+	return this.__data__.set(e, Rt), this;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_setCacheHas.js
+function Bt(e) {
+	return this.__data__.has(e);
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_SetCache.js
+function L(e) {
+	var t = -1, n = e == null ? 0 : e.length;
+	for (this.__data__ = new s(); ++t < n;) this.add(e[t]);
+}
+L.prototype.add = L.prototype.push = zt, L.prototype.has = Bt;
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_cacheHas.js
+function R(e, t) {
+	return e.has(t);
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_setToArray.js
+function z(e) {
+	var t = -1, n = Array(e.size);
+	return e.forEach(function(e) {
+		n[++t] = e;
+	}), n;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/isArrayLikeObject.js
+function Vt(e) {
+	return i(e) && Ce(e);
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_arrayIncludesWith.js
+function Ht(e, t, n) {
+	for (var r = -1, i = e == null ? 0 : e.length; ++r < i;) if (n(t, e[r])) return !0;
+	return !1;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_baseIntersection.js
+var Ut = Math.min;
+function Wt(e, t, n) {
+	for (var r = n ? Ht : _e, i = e[0].length, a = e.length, o = a, s = Array(a), l = Infinity, u = []; o--;) {
+		var d = e[o];
+		o && t && (d = c(d, we(t))), l = Ut(d.length, l), s[o] = !n && (t || i >= 120 && d.length >= 120) ? new L(o && d) : void 0;
+	}
+	d = e[0];
+	var f = -1, p = s[0];
+	outer: for (; ++f < i && u.length < l;) {
+		var m = d[f], h = t ? t(m) : m;
+		if (m = n || m !== 0 ? m : 0, !(p ? R(p, h) : r(u, h, n))) {
+			for (o = a; --o;) {
+				var g = s[o];
+				if (!(g ? R(g, h) : r(e[o], h, n))) continue outer;
+			}
+			p && p.push(h), u.push(m);
+		}
+	}
+	return u;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/_castArrayLikeObject.js
+function Gt(e) {
+	return Vt(e) ? e : [];
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/intersection.js
+var Kt = be(function(e) {
+	var t = c(e, Gt);
+	return t.length && t[0] === e[0] ? Wt(t) : [];
+}), qt = I && 1 / z(new I([, -0]))[1] == Infinity ? function(e) {
+	return new I(e);
+} : ae, Jt = 200;
+function Yt(e, t, n) {
+	var r = -1, i = _e, a = e.length, o = !0, s = [], c = s;
+	if (n) o = !1, i = Ht;
+	else if (a >= Jt) {
+		var l = t ? null : qt(e);
+		if (l) return z(l);
+		o = !1, i = R, c = new L();
+	} else c = t ? [] : s;
+	outer: for (; ++r < a;) {
+		var u = e[r], d = t ? t(u) : u;
+		if (u = n || u !== 0 ? u : 0, o && d === d) {
+			for (var f = c.length; f--;) if (c[f] === d) continue outer;
+			t && c.push(d), s.push(u);
+		} else i(c, d, n) || (c !== s && c.push(d), s.push(u));
+	}
+	return s;
+}
+//#endregion
+//#region ../../node_modules/.pnpm/lodash-es@4.18.1/node_modules/lodash-es/uniq.js
+function Xt(e) {
+	return e && e.length ? Yt(e) : [];
+}
+//#endregion
+//#region src/helpers/resource/functions.ts
+var Zt = { complex: [
+	"tar.bz2",
+	"tar.gz",
+	"tar.xz"
+] }, Qt = (e) => Object.hasOwn(e, "ddate"), $t = (e) => Object.hasOwn(e, "highlights"), B = (e) => e.replace(/[^A-Za-z0-9\-_]/g, ""), en = (e, t) => !e || typeof e != "string" ? "" : e.indexOf("!") >= 0 ? e.split("!")[t] : "", V = (e) => en(e, 0), H = (e) => en(e, 1), tn = (e) => {
+	let t = e.extension || "", n = e.name || "";
+	if (!t.length) return n;
+	let r = n.lastIndexOf(`.${t}`);
+	return n.substring(0, r);
+}, U = (e) => {
+	let t = e.name.split(".");
+	if (t.length > 2) for (let e = 0; e < t.length; e++) {
+		let n = t.slice(e, t.length).join(".");
+		if (Zt.complex.includes(n)) return n;
+	}
+	return t.length < 2 ? "" : t[t.length - 1];
+}, nn = (e) => (0, v.basename)((0, v.dirname)(e.path)) || null, rn = (e) => typeof e.isShareRoot == "function" && e.isShareRoot(), W = (e) => {
+	if (!e) return e;
+	let t = {};
+	return Object.keys(e).forEach((n) => {
+		t[Lt(n)] = e[n];
+	}), t;
+};
+function an(e, t = []) {
+	let n = e.props[C.Name]?.toString() || (0, v.basename)(e.filename), r = e.props[C.FileId], i = e.type === "directory", a;
+	a = e.filename.startsWith("/files") || e.filename.startsWith("/space") ? e.filename.split("/").slice(3).join("/") : e.filename, a.startsWith("/") || (a = `/${a}`);
+	let o = U({
+		...e,
+		id: r,
+		name: n,
+		path: a
+	}), s = e.props[C.LockDiscovery], c, l, u;
+	s && (c = s[C.ActiveLock], l = c[C.LockOwner], u = c[C.LockTime]);
+	let d = [];
+	e.props[C.ShareTypes] && (d = e.props[C.ShareTypes]["share-type"], Array.isArray(d) || (d = [d]));
+	let f = {};
+	for (let n of t || []) {
+		let t = n.split(":").pop();
+		e.props[t] && (f[n] = e.props[t]);
+	}
+	let p = {
+		id: r,
+		fileId: r,
+		storageId: V(r),
+		parentFolderId: e.props[C.FileParent],
+		mimeType: e.props[C.MimeType],
+		name: n,
+		extension: o,
+		path: a,
+		webDavPath: e.filename,
+		type: i ? "folder" : e.type,
+		isFolder: i,
+		locked: !!c,
+		lockOwner: l,
+		lockTime: u,
+		processing: e.processing || !1,
+		mdate: e.props[C.LastModifiedDate],
+		size: i ? e.props[C.ContentSize]?.toString() || "0" : e.props[C.ContentLength]?.toString() || "0",
+		permissions: e.props[C.Permissions] || "",
+		starred: e.props[C.IsFavorite] === 1,
+		etag: e.props[C.ETag],
+		shareTypes: d,
+		privateLink: e.props[C.PrivateLink],
+		downloadURL: e.props[C.DownloadURL],
+		remoteItemId: e.props[C.RemoteItemId],
+		remoteItemPath: e.props[C.ShareRoot],
+		owner: {
+			id: e.props[C.OwnerId],
+			displayName: e.props[C.OwnerDisplayName]
+		},
+		tags: (e.props[C.Tags] || "").toString().split(",").filter(Boolean),
+		audio: W(e.props[C.Audio]),
+		location: W(e.props[C.Location]),
+		image: W(e.props[C.Image]),
+		photo: W(e.props[C.Photo]),
+		extraProps: f,
+		hasPreview: () => e.props[C.HasPreview] === 1,
+		canUpload: function() {
+			return this.permissions.indexOf(y.FolderCreateable) >= 0;
+		},
+		canDownload: function() {
+			return this.permissions.indexOf(y.SecureView) === -1;
+		},
+		canBeDeleted: function() {
+			return this.permissions.indexOf(y.Deletable) >= 0;
+		},
+		canRename: function() {
+			return this.permissions.indexOf(y.Renameable) >= 0;
+		},
+		canShare: function({ ability: e }) {
+			return e.can("create-all", "Share") && this.permissions.indexOf(y.Shareable) >= 0;
+		},
+		canCreate: function() {
+			return this.permissions.indexOf(y.FolderCreateable) >= 0;
+		},
+		canEditTags: function() {
+			return this.permissions.indexOf(y.Updateable) >= 0 || this.permissions.indexOf(y.FileUpdateable) >= 0 || this.permissions.indexOf(y.FolderCreateable) >= 0;
+		},
+		isMounted: function() {
+			return this.permissions.indexOf(y.Mounted) >= 0;
+		},
+		isReceivedShare: function() {
+			return this.permissions.indexOf(y.Shared) >= 0;
+		},
+		isShareRoot() {
+			return e.props[C.ShareRoot] ? e.filename.split("/").length === 3 : !1;
+		},
+		getDomSelector: () => B(r)
+	};
+	return Object.defineProperty(p, "nodeId", { get() {
+		return H(this.id);
+	} }), p;
+}
+function on(e) {
+	let t = e.type === "directory", n = e.props[C.TrashbinOriginalFilename]?.toString(), r = U({
+		name: n,
+		type: e.type
+	}), i = v.default.basename(e.filename);
+	return {
+		type: t ? "folder" : e.type,
+		isFolder: t,
+		ddate: e.props[C.TrashbinDeletedDate],
+		name: v.default.basename(n),
+		extension: r,
+		path: d(e.props[C.TrashbinOriginalLocation], { leadingSlash: !0 }),
+		id: i,
+		parentFolderId: e.props[C.FileParent],
+		webDavPath: "",
+		canUpload: () => !1,
+		canDownload: () => !1,
+		canBeDeleted: () => !0,
+		canBeRestored: function() {
+			return !0;
+		},
+		canRename: () => !1,
+		canShare: () => !1,
+		canCreate: () => !1,
+		isMounted: () => !1,
+		isReceivedShare: () => !1,
+		hasPreview: () => !1,
+		isShareRoot: () => !1,
+		getDomSelector: () => B(i)
+	};
+}
+//#endregion
+//#region src/helpers/share/constants.ts
+var sn = class {
+	static Read = 1;
+	static Update = 2;
+	static Create = 4;
+	static Delete = 8;
+	static Share = 16;
+}, G = /* @__PURE__ */ function(e) {
+	return e.createUpload = "libre.graph/driveItem/upload/create", e.createPermissions = "libre.graph/driveItem/permissions/create", e.createChildren = "libre.graph/driveItem/children/create", e.readBasic = "libre.graph/driveItem/basic/read", e.readPath = "libre.graph/driveItem/path/read", e.readQuota = "libre.graph/driveItem/quota/read", e.readContent = "libre.graph/driveItem/content/read", e.readChildren = "libre.graph/driveItem/children/read", e.readDeleted = "libre.graph/driveItem/deleted/read", e.readPermissions = "libre.graph/driveItem/permissions/read", e.readVersions = "libre.graph/driveItem/versions/read", e.updatePath = "libre.graph/driveItem/path/update", e.updateDeleted = "libre.graph/driveItem/deleted/update", e.updatePermissions = "libre.graph/driveItem/permissions/update", e.updateVersions = "libre.graph/driveItem/versions/update", e.deleteStandard = "libre.graph/driveItem/standard/delete", e.deleteDeleted = "libre.graph/driveItem/deleted/delete", e.deletePermissions = "libre.graph/driveItem/permissions/delete", e;
+}({}), K = (e) => e, q = class {
+	_key;
+	_value;
+	_label;
+	_icon;
+	constructor(e, t, n, r) {
+		this._key = e, this._value = t, this._label = n, this._icon = r;
+	}
+	get key() {
+		return this._key;
+	}
+	get value() {
+		return this._value;
+	}
+	get label() {
+		return this._label;
+	}
+	get icon() {
+		return this._icon;
+	}
+}, J = class {
+	static user = new q("user", 0, K("User"), "user");
+	static group = new q("group", 1, K("Group"), "group");
+	static link = new q("link", 3, K("Link"), "link");
+	static guest = new q("guest", 4, K("Guest"), "global");
+	static remote = new q("remote", 6, K("External"), "earth");
+	static individuals = [
+		this.user,
+		this.guest,
+		this.remote
+	];
+	static collectives = [this.group];
+	static unauthenticated = [this.link];
+	static authenticated = [
+		this.user,
+		this.group,
+		this.guest,
+		this.remote
+	];
+	static all = [
+		this.user,
+		this.group,
+		this.link,
+		this.guest,
+		this.remote
+	];
+	static isIndividual(e) {
+		return this.individuals.includes(e);
+	}
+	static isCollective(e) {
+		return this.collectives.includes(e);
+	}
+	static isUnauthenticated(e) {
+		return this.unauthenticated.includes(e);
+	}
+	static isAuthenticated(e) {
+		return this.authenticated.includes(e);
+	}
+	static getByValue(e) {
+		return this.all.find((t) => t.value === e);
+	}
+	static getByValues(e) {
+		return e.map((e) => this.getByValue(e));
+	}
+	static getByKeys(e) {
+		return e.map((e) => this.all.find((t) => t.key === e));
+	}
+	static getValues(e) {
+		return e.map((e) => e.value);
+	}
+	static containsAnyValue(e, t) {
+		return Kt(this.getValues(e), t).length > 0;
+	}
+}, cn = "a0ca6a90-a365-4782-871e-d44447bbc668", ln = "89f37a33-858b-45fa-8890-a1f2b27d90e1", un = (e) => e?.type === "space", Y = (e) => e?.driveType === "personal", dn = (e) => e?.driveType === "project", fn = (e) => e?.driveType === "share", pn = (e) => e?.driveType === "mountpoint", mn = (e) => e?.driveType === "public";
+//#endregion
+//#region src/helpers/space/functions.ts
+function X(e, t) {
+	return d("spaces", e, t, { leadingSlash: !0 });
+}
+function hn(e, t = "") {
+	return d("spaces", "trash-bin", e, t, { leadingSlash: !0 });
+}
+function gn(e, t) {
+	let n = e[{
+		image: "spaceImageData",
+		readme: "spaceReadmeData"
+	}[t]];
+	if (!n) return "";
+	let r = decodeURI(n.webDavUrl).split("/"), i = r.find((t) => t.startsWith(e.id));
+	return i ? r.slice(r.indexOf(i) + 1).join("/") : "";
+}
+function _n(e) {
+	return e.permissions.includes(G.deletePermissions);
+}
+var vn = (e, t) => e.root.permissions?.filter((e) => {
+	let n = [];
+	e["@libre.graph.permissions.actions"] && (n = e["@libre.graph.permissions.actions"]);
+	let r = t[e.roles?.[0]];
+	return r && !n.length && (n = r.rolePermissions.find(({ condition: e }) => e === "exists @Resource.Root")?.allowedResourceActions || []), n.includes(G.deletePermissions);
+});
+function yn(e) {
+	let t = e.publicLinkPassword, n = e.props?.[C.FileId], r = e.props?.[C.PublicLinkItemType], i = e.props?.[C.PublicLinkPermission], a = e.props?.[C.PublicLinkExpiration], o = e.props?.[C.PublicLinkShareDate], s = e.props?.[C.PublicLinkShareOwner], c = e.publicLinkType, l, u;
+	return c === "ocm" ? (l = `ocm/${e.id}`, u = _(e.id)) : (l = `public/${e.id}`, u = g(e.id)), Object.assign(Z({
+		...e,
+		driveType: "public",
+		driveAlias: l,
+		webDavPath: u
+	}), {
+		...n && { fileId: n },
+		...t && { publicLinkPassword: t },
+		...r && { publicLinkItemType: r },
+		...i && { publicLinkPermission: parseInt(i) },
+		...a && { publicLinkExpiration: a },
+		...o && { publicLinkShareDate: o },
+		...s && { publicLinkShareOwner: s },
+		publicLinkType: c
+	});
+}
+function bn({ driveAliasPrefix: e, id: t, shareName: n, serverUrl: r }) {
+	let i = Z({
+		id: t,
+		driveAlias: `${e}/${n}`,
+		driveType: "share",
+		name: n,
+		serverUrl: r
+	});
+	return i.rename = (t) => {
+		i.driveAlias = `${e}/${t}`, i.name = t;
+	}, i;
+}
+function Z(e) {
+	let t, n;
+	e.special && (t = e.special.find((e) => e.specialFolder.name === "image"), n = e.special.find((e) => e.specialFolder.name === "readme"), t && (t.webDavUrl = decodeURI(t.webDavUrl)), n && (n.webDavUrl = decodeURI(n.webDavUrl)));
+	let r = e.root?.deleted?.state === "trashed", i = d(e.webDavPath || X(e.id), { leadingSlash: !0 }), a = d(e.serverUrl, "remote.php/dav", i), o = d(e.webDavTrashPath || hn(e.id), { leadingSlash: !0 }), s = d(e.serverUrl, "remote.php/dav", o), c = {
+		id: e.id,
+		fileId: e.id,
+		storageId: e.id,
+		mimeType: "",
+		name: e.name,
+		description: e.description,
+		extension: "",
+		path: "/",
+		webDavPath: i,
+		webDavTrashPath: o,
+		driveAlias: e.driveAlias,
+		driveType: e.driveType,
+		type: "space",
+		isFolder: !0,
+		mdate: e.lastModifiedDateTime,
+		size: e.quota?.used || 0,
+		tags: [],
+		permissions: "",
+		starred: !1,
+		etag: "",
+		shareTypes: [],
+		privateLink: e.webUrl,
+		downloadURL: "",
+		owner: e.owner?.user,
+		disabled: r,
+		root: e.root,
+		spaceQuota: e.quota,
+		spaceImageData: t,
+		spaceReadmeData: n,
+		hasTrashedItems: e["@libre.graph.hasTrashedItems"] || !1,
+		graphPermissions: void 0,
+		canUpload: function({ user: e } = {}) {
+			return Y(this) && this.isOwner(e) ? !0 : this.graphPermissions?.includes(G.createUpload);
+		},
+		canDownload: function() {
+			return !0;
+		},
+		canBeDeleted: function({ ability: e } = {}) {
+			return this.disabled ? e?.can("delete-all", "Drive") ? !0 : this.graphPermissions?.includes(G.deletePermissions) : !1;
+		},
+		canRename: function({ ability: e } = {}) {
+			return e?.can("update-all", "Drive") ? !0 : this.graphPermissions?.includes(G.deletePermissions);
+		},
+		canEditDescription: function({ ability: e } = {}) {
+			return e?.can("update-all", "Drive") ? !0 : this.graphPermissions?.includes(G.deletePermissions);
+		},
+		canRestore: function({ ability: e } = {}) {
+			return this.disabled ? e?.can("update-all", "Drive") ? !0 : this.graphPermissions?.includes(G.deletePermissions) : !1;
+		},
+		canDisable: function({ ability: e } = {}) {
+			return this.disabled ? !1 : e?.can("delete-all", "Drive") ? !0 : this.graphPermissions?.includes(G.deletePermissions);
+		},
+		canShare: function() {
+			return this.graphPermissions?.includes(G.createPermissions);
+		},
+		canEditImage: function() {
+			return this.disabled ? !1 : this.graphPermissions?.includes(G.deletePermissions);
+		},
+		canEditReadme: function() {
+			return this.disabled ? !1 : this.graphPermissions?.includes(G.deletePermissions);
+		},
+		canRestoreFromTrashbin: function() {
+			return this.graphPermissions?.includes(G.updateDeleted);
+		},
+		canDeleteFromTrashBin: function({ user: e } = {}) {
+			return Y(this) && this.isOwner(e) ? !0 : this.graphPermissions?.includes(G.deletePermissions);
+		},
+		canListVersions: function({ user: e } = {}) {
+			return Y(this) && this.isOwner(e) ? !0 : this.graphPermissions?.includes(G.readVersions);
+		},
+		canCreate: function() {
+			return !0;
+		},
+		canEditTags: function() {
+			return !1;
+		},
+		isMounted: function() {
+			return !0;
+		},
+		isReceivedShare: function() {
+			return !1;
+		},
+		isShareRoot: function() {
+			return [
+				"share",
+				"mountpoint",
+				"public"
+			].includes(e.driveType);
+		},
+		getDomSelector: () => B(e.id),
+		getDriveAliasAndItem({ path: e }) {
+			return d(this.driveAlias, e, { leadingSlash: !1 });
+		},
+		getWebDavUrl({ path: e }) {
+			return d(a, e);
+		},
+		getWebDavTrashUrl({ path: e }) {
+			return d(s, e);
+		},
+		isOwner(e) {
+			return e?.id === this.owner?.id;
+		}
+	};
+	return Object.defineProperty(c, "nodeId", { get() {
+		return H(this.id);
+	} }), c;
+}
+function xn(e) {
+	return {
+		id: e.spaceImageData.id,
+		name: e.spaceImageData.name,
+		etag: e.spaceImageData.eTag,
+		extension: U({ name: e.spaceImageData.name }),
+		mimeType: e.spaceImageData.file.mimeType,
+		type: "file",
+		webDavPath: d(e.webDavPath, ".space", e.spaceImageData.name),
+		hasPreview: () => !0,
+		canDownload: () => !0
+	};
+}
+//#endregion
+//#region src/helpers/share/functions.ts
+var Q = (e) => Object.hasOwn(e, "sharedWith"), Sn = (e) => Q(e) && e.outgoing, Cn = (e) => Q(e) && !e.outgoing, wn = (e) => Object.hasOwn(e, "role"), Tn = (e) => !Object.hasOwn(e, "role"), En = ({ driveItem: e, graphRoles: t }) => e.remoteItem?.permissions.reduce((e, n) => (n.roles?.forEach((n) => {
+	let r = t[n];
+	r && !e.some(({ id: e }) => e === r.id) && e.push(r);
+}), e), []), Dn = ({ driveItem: e, shareRoles: t }) => {
+	if (!t.length) {
+		let t = e.remoteItem?.permissions.reduce((e, t) => {
+			let n = t["@libre.graph.permissions.actions"];
+			return n && e.push(...n), e;
+		}, []);
+		return [...new Set(t)];
+	}
+	let n = t.reduce((e, t) => (t.rolePermissions.forEach((t) => {
+		e.push(...t.allowedResourceActions);
+	}), e), []);
+	return [...new Set(n)];
+};
+function On({ driveItem: e, graphRoles: t, serverUrl: n }) {
+	let r = e.name || e.remoteItem.name, i = V(e.remoteItem.id), a = e.remoteItem.permissions.map((e) => {
+		let { grantedToV2: t } = e;
+		return {
+			...t.group || t.user,
+			shareType: $(e)
+		};
+	}), o = e.remoteItem.permissions.reduce((e, t) => {
+		let n = t.invitation.invitedBy.user;
+		return e.some(({ id: e }) => e === n.id) || e.push(n), e;
+	}, []), s = Xt(e.remoteItem.permissions.map($));
+	o.some((e) => e["@libre.graph.userType"] === "Federated") && (s = [J.remote.value]);
+	let c = En({
+		driveItem: e,
+		graphRoles: t
+	}), l = Dn({
+		driveItem: e,
+		shareRoles: c
+	}), u = {
+		id: e.id,
+		remoteItemId: e.remoteItem.id,
+		driveId: e.parentReference?.driveId,
+		path: "/",
+		name: r,
+		fileId: e.remoteItem.id,
+		size: e.size,
+		storageId: i,
+		parentFolderId: e.parentReference?.id,
+		sdate: e.remoteItem.permissions[0].createdDateTime,
+		tags: [],
+		webDavPath: X(e.remoteItem.id, "/"),
+		sharedBy: o,
+		owner: e.remoteItem.createdBy?.user,
+		sharedWith: a,
+		shareTypes: s,
+		isFolder: !!e.folder,
+		type: e.folder ? "folder" : "file",
+		mimeType: e.file?.mimeType || "httpd/unix-directory",
+		mdate: e.lastModifiedDateTime ? new Date(e.lastModifiedDateTime).toUTCString() : void 0,
+		syncEnabled: e["@client.synchronize"],
+		hidden: e["@UI.Hidden"],
+		shareRoles: c,
+		sharePermissions: l,
+		outgoing: !1,
+		privateLink: d(n, "f", e.remoteItem.id),
+		hasPreview: () => !!e.thumbnails,
+		canRename: () => e["@client.synchronize"],
+		canDownload: () => l.includes(G.readContent),
+		canUpload: () => l.includes(G.createUpload),
+		canCreate: () => l.includes(G.createChildren),
+		canBeDeleted: () => l.includes(G.deleteStandard),
+		canEditTags: () => l.includes(G.createUpload),
+		isMounted: () => !1,
+		isReceivedShare: () => !0,
+		canShare: () => !1,
+		isShareRoot: () => !0,
+		getDomSelector: () => B(e.id)
+	};
+	return u.extension = U(u), u;
+}
+function kn({ driveItem: e, user: t, serverUrl: n }) {
+	let r = V(e.id), i = d(e.parentReference.path, e.name), a = {
+		id: e.id,
+		driveId: e.parentReference?.driveId,
+		path: i,
+		name: e.name,
+		fileId: e.id,
+		size: e.size,
+		storageId: r,
+		parentFolderId: e.parentReference?.id,
+		sdate: e.permissions[0].createdDateTime,
+		tags: [],
+		webDavPath: X(r, i),
+		sharedBy: [{
+			id: t.id,
+			displayName: t.displayName
+		}],
+		owner: {
+			id: t.id,
+			displayName: t.displayName
+		},
+		sharedWith: e.permissions.map((e) => {
+			if (e.link) return {
+				id: e.id,
+				displayName: e.link["@libre.graph.displayName"],
+				shareType: J.link.value
+			};
+			let t = $(e);
+			return {
+				...e.grantedToV2.user || e.grantedToV2.group,
+				shareType: t
+			};
+		}),
+		shareTypes: e.permissions.map($),
+		isFolder: !!e.folder,
+		type: e.folder ? "folder" : "file",
+		mimeType: e.file?.mimeType || "httpd/unix-directory",
+		outgoing: !0,
+		privateLink: d(n, "f", e.id),
+		hasPreview: () => !!e.thumbnails,
+		canRename: () => !0,
+		canDownload: () => !0,
+		canUpload: () => !0,
+		canCreate: () => !0,
+		canBeDeleted: () => !0,
+		canEditTags: () => !0,
+		isMounted: () => !1,
+		isShareRoot: () => !1,
+		isReceivedShare: () => !0,
+		canShare: () => !0,
+		getDomSelector: () => B(e.id)
+	};
+	return a.extension = U(a), a;
+}
+function An({ graphPermission: e, graphRoles: t, resourceId: n, indirect: r = !1 }) {
+	let i = t[e.roles?.[0]], a = e.invitation?.invitedBy?.user;
+	return {
+		id: e.id,
+		resourceId: n,
+		indirect: r,
+		shareType: $(e),
+		role: i,
+		sharedBy: {
+			id: a?.id,
+			displayName: a?.displayName
+		},
+		sharedWith: e.grantedToV2.user || e.grantedToV2.group,
+		permissions: e["@libre.graph.permissions.actions"] ? e["@libre.graph.permissions.actions"] : i.rolePermissions.flatMap((e) => e.allowedResourceActions),
+		createdDateTime: e.createdDateTime,
+		expirationDateTime: e.expirationDateTime
+	};
+}
+function jn({ graphPermission: e, resourceId: t, indirect: n = !1 }) {
+	let r = e.invitation?.invitedBy?.user;
+	return {
+		id: e.id,
+		resourceId: t,
+		indirect: n,
+		shareType: J.link.value,
+		sharedBy: {
+			id: r?.id,
+			displayName: r?.displayName
+		},
+		hasPassword: e.hasPassword,
+		createdDateTime: e.createdDateTime,
+		expirationDateTime: e.expirationDateTime,
+		displayName: e.link["@libre.graph.displayName"],
+		isQuickLink: e.link["@libre.graph.quickLink"],
+		type: e.link.type,
+		webUrl: e.link.webUrl,
+		preventsDownload: e.link.preventsDownload
+	};
+}
+function $({ link: e, grantedToV2: t }) {
+	return e ? J.link.value : t?.group ? J.group.value : t?.user?.["@libre.graph.userType"] === "Federated" ? J.remote.value : J.user.value;
+}
+//#endregion
+export { f as $, J as A, V as B, pn as C, fn as D, mn as E, B as F, y as G, rn as H, U as I, _ as J, re as K, tn as L, sn as M, on as N, un as O, an as P, p as Q, H as R, cn as S, dn as T, Qt as U, $t as V, ee as W, h as X, g as Y, m as Z, hn as _, Dn as a, _n as b, Cn as c, Q as d, yn as f, X as g, xn as h, kn as i, G as j, q as k, Tn as l, Z as m, On as n, En as o, bn as p, C as q, jn as r, wn as s, An as t, Sn as u, gn as v, Y as w, ln as x, vn as y, nn as z };

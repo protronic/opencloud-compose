@@ -1,0 +1,88 @@
+import { PublicLinkType } from '@opencloud-eu/web-client';
+import { HttpClient } from '../../http';
+import { z } from 'zod';
+export declare const webFingerResponseSchema: z.ZodObject<{
+    subject: z.ZodString;
+    links: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        rel: z.ZodString;
+        href: z.ZodOptional<z.ZodString>;
+    }, z.core.$strip>>>;
+    properties: z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnion<readonly [z.ZodString, z.ZodArray<z.ZodString>]>>>;
+}, z.core.$strip>;
+interface WebfingerDiscoveryData {
+    authority: string;
+    client_id: string;
+    scope: string;
+}
+export declare const useAuthStore: import("pinia").StoreDefinition<"auth", Pick<{
+    accessToken: import("vue").Ref<string, string>;
+    sessionId: import("vue").Ref<string, string>;
+    idpContextReady: import("vue").Ref<boolean, boolean>;
+    userContextReady: import("vue").Ref<boolean, boolean>;
+    publicLinkToken: import("vue").Ref<string, string>;
+    publicLinkPassword: import("vue").Ref<string, string>;
+    publicLinkType: import("vue").Ref<PublicLinkType, PublicLinkType>;
+    publicLinkContextReady: import("vue").Ref<boolean, boolean>;
+    webfingerDiscoveryData: import("vue").Ref<WebfingerDiscoveryData, WebfingerDiscoveryData>;
+    setAccessToken: (value: string) => void;
+    setSessionId: (value: string) => void;
+    setIdpContextReady: (value: boolean) => void;
+    setUserContextReady: (value: boolean) => void;
+    setPublicLinkContext: (context: {
+        publicLinkToken: string;
+        publicLinkPassword: string;
+        publicLinkType: PublicLinkType;
+        publicLinkContextReady: boolean;
+    }) => void;
+    clearUserContext: () => void;
+    clearPublicLinkContext: () => void;
+    loadWebfingerDiscoveryData: (serverUrl: string, client: HttpClient) => Promise<void>;
+}, "publicLinkPassword" | "publicLinkType" | "accessToken" | "sessionId" | "idpContextReady" | "userContextReady" | "publicLinkToken" | "publicLinkContextReady" | "webfingerDiscoveryData">, Pick<{
+    accessToken: import("vue").Ref<string, string>;
+    sessionId: import("vue").Ref<string, string>;
+    idpContextReady: import("vue").Ref<boolean, boolean>;
+    userContextReady: import("vue").Ref<boolean, boolean>;
+    publicLinkToken: import("vue").Ref<string, string>;
+    publicLinkPassword: import("vue").Ref<string, string>;
+    publicLinkType: import("vue").Ref<PublicLinkType, PublicLinkType>;
+    publicLinkContextReady: import("vue").Ref<boolean, boolean>;
+    webfingerDiscoveryData: import("vue").Ref<WebfingerDiscoveryData, WebfingerDiscoveryData>;
+    setAccessToken: (value: string) => void;
+    setSessionId: (value: string) => void;
+    setIdpContextReady: (value: boolean) => void;
+    setUserContextReady: (value: boolean) => void;
+    setPublicLinkContext: (context: {
+        publicLinkToken: string;
+        publicLinkPassword: string;
+        publicLinkType: PublicLinkType;
+        publicLinkContextReady: boolean;
+    }) => void;
+    clearUserContext: () => void;
+    clearPublicLinkContext: () => void;
+    loadWebfingerDiscoveryData: (serverUrl: string, client: HttpClient) => Promise<void>;
+}, never>, Pick<{
+    accessToken: import("vue").Ref<string, string>;
+    sessionId: import("vue").Ref<string, string>;
+    idpContextReady: import("vue").Ref<boolean, boolean>;
+    userContextReady: import("vue").Ref<boolean, boolean>;
+    publicLinkToken: import("vue").Ref<string, string>;
+    publicLinkPassword: import("vue").Ref<string, string>;
+    publicLinkType: import("vue").Ref<PublicLinkType, PublicLinkType>;
+    publicLinkContextReady: import("vue").Ref<boolean, boolean>;
+    webfingerDiscoveryData: import("vue").Ref<WebfingerDiscoveryData, WebfingerDiscoveryData>;
+    setAccessToken: (value: string) => void;
+    setSessionId: (value: string) => void;
+    setIdpContextReady: (value: boolean) => void;
+    setUserContextReady: (value: boolean) => void;
+    setPublicLinkContext: (context: {
+        publicLinkToken: string;
+        publicLinkPassword: string;
+        publicLinkType: PublicLinkType;
+        publicLinkContextReady: boolean;
+    }) => void;
+    clearUserContext: () => void;
+    clearPublicLinkContext: () => void;
+    loadWebfingerDiscoveryData: (serverUrl: string, client: HttpClient) => Promise<void>;
+}, "setAccessToken" | "setSessionId" | "setIdpContextReady" | "setUserContextReady" | "setPublicLinkContext" | "clearUserContext" | "clearPublicLinkContext" | "loadWebfingerDiscoveryData">>;
+export type AuthStore = ReturnType<typeof useAuthStore>;
+export {};

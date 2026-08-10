@@ -1,0 +1,27 @@
+import PQueue from 'p-queue';
+export declare const useAvatarsStore: import("pinia").StoreDefinition<"avatars", Pick<{
+    avatarMap: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    getAvatar: (userId: string) => string;
+    addAvatar: (userId: string, avatar: string) => void;
+    removeAvatar: (userId: string) => void;
+    reset: () => void;
+    avatarsQueue: import("vue").Raw<PQueue<import("p-queue").PriorityQueue, import("p-queue").QueueAddOptions>>;
+    pendingAvatarsRequests: Map<string, Promise<any>>;
+}, "avatarMap" | "avatarsQueue" | "pendingAvatarsRequests">, Pick<{
+    avatarMap: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    getAvatar: (userId: string) => string;
+    addAvatar: (userId: string, avatar: string) => void;
+    removeAvatar: (userId: string) => void;
+    reset: () => void;
+    avatarsQueue: import("vue").Raw<PQueue<import("p-queue").PriorityQueue, import("p-queue").QueueAddOptions>>;
+    pendingAvatarsRequests: Map<string, Promise<any>>;
+}, never>, Pick<{
+    avatarMap: import("vue").Ref<Record<string, string>, Record<string, string>>;
+    getAvatar: (userId: string) => string;
+    addAvatar: (userId: string, avatar: string) => void;
+    removeAvatar: (userId: string) => void;
+    reset: () => void;
+    avatarsQueue: import("vue").Raw<PQueue<import("p-queue").PriorityQueue, import("p-queue").QueueAddOptions>>;
+    pendingAvatarsRequests: Map<string, Promise<any>>;
+}, "reset" | "getAvatar" | "addAvatar" | "removeAvatar">>;
+export type AvatarsStore = ReturnType<typeof useAvatarsStore>;

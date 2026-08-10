@@ -1,0 +1,24 @@
+import { Updates } from '../../types';
+export declare const useUpdatesStore: import("pinia").StoreDefinition<"updates", Pick<{
+    updates: import("vue").Ref<Updates, Updates>;
+    isLoading: import("vue").Ref<boolean, boolean>;
+    hasError: import("vue").Ref<boolean, boolean>;
+    setUpdates: (data: Updates) => void;
+    setHasError: (value: boolean) => void;
+    setIsLoading: (value: boolean) => void;
+}, "hasError" | "isLoading" | "updates">, Pick<{
+    updates: import("vue").Ref<Updates, Updates>;
+    isLoading: import("vue").Ref<boolean, boolean>;
+    hasError: import("vue").Ref<boolean, boolean>;
+    setUpdates: (data: Updates) => void;
+    setHasError: (value: boolean) => void;
+    setIsLoading: (value: boolean) => void;
+}, never>, Pick<{
+    updates: import("vue").Ref<Updates, Updates>;
+    isLoading: import("vue").Ref<boolean, boolean>;
+    hasError: import("vue").Ref<boolean, boolean>;
+    setUpdates: (data: Updates) => void;
+    setHasError: (value: boolean) => void;
+    setIsLoading: (value: boolean) => void;
+}, "setUpdates" | "setHasError" | "setIsLoading">>;
+export type UpdatesStore = ReturnType<typeof useUpdatesStore>;

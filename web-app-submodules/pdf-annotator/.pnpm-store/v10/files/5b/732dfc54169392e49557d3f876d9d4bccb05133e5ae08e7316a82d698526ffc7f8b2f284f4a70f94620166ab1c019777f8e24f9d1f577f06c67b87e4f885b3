@@ -1,0 +1,6 @@
+import { Resource } from '@opencloud-eu/web-client';
+import { SortField } from '../../composables/sort';
+import { Language } from 'vue3-gettext';
+export declare const sortFields: SortField[];
+export declare const determineResourceTilesSortFields: (firstResource: Resource) => SortField[];
+export declare const translateSortFields: (fields: SortField[], { $gettext }: Language) => SortField[];

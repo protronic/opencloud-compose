@@ -1,0 +1,372 @@
+import { Cn as e, Ht as t, Jt as n, Mt as r, O as i, Ot as a, Qt as o, c as s, dn as c, f as l, g as u, hn as d, i as f, nn as p, nt as m, ot as h, sn as g, t as _, v, w as y, yn as b } from "./generated-DpuGzXYs.js";
+import { u as x } from "./toString-9BJo4tor.js";
+import { m as S, r as C, t as w } from "./helpers-BuCcZhiF.js";
+//#region src/graph/users/users.ts
+var T = ({ axiosClient: t, config: n }) => {
+	let r = c(n, n.basePath, t), i = e(n, n.basePath, t), s = o(n, n.basePath, t), l = a(n, n.basePath, t), u = d(n, n.basePath, t);
+	return {
+		async getUser(e, t, n) {
+			let { data: i } = await r.getUser(e, t?.select ? new Set([...t.select]) : null, t?.expand ? new Set([...t.expand]) : new Set([
+				"drive",
+				"memberOf",
+				"appRoleAssignments"
+			]), n);
+			return i;
+		},
+		async createUser(e, t) {
+			let { data: n } = await i.createUser(e, t);
+			return n;
+		},
+		async editUser(e, t, n) {
+			let { data: i } = await r.updateUser(e, t, n);
+			return i;
+		},
+		async deleteUser(e, t, n) {
+			await r.deleteUser(e, t, n);
+		},
+		async listUsers(e, t) {
+			let { data: { value: n } } = await i.listUsers(e?.search, e?.filter, e?.orderBy ? new Set([...e.orderBy]) : null, e?.select ? new Set([...e.select]) : null, e?.expand ? new Set([...e.expand]) : null, t);
+			return n;
+		},
+		async getMe(e, t) {
+			let { data: n } = await s.getOwnUser(e?.expand ? new Set([...e.expand]) : new Set(["memberOf"]), t);
+			return n;
+		},
+		async editMe(e, t) {
+			let { data: n } = await s.updateOwnUser(e, t);
+			return n;
+		},
+		async changeOwnPassword(e, t) {
+			await l.changeOwnPassword(e, t);
+		},
+		async exportPersonalData(e, t, n) {
+			await r.exportPersonalData(e, t, n);
+		},
+		async createUserAppRoleAssignment(e, t, n) {
+			let { data: r } = await u.userCreateAppRoleAssignments(e, t, n);
+			return r;
+		}
+	};
+}, E = ({ axiosClient: e, config: t }) => {
+	let n = m(t, t.basePath, e), r = h(t, t.basePath, e);
+	return {
+		async getGroup(e, t, r) {
+			let { data: i } = await n.getGroup(e, t?.select ? new Set([...t.select]) : null, t?.expand ? new Set([...t.expand]) : new Set(["members"]), r);
+			return i;
+		},
+		async createGroup(e, t) {
+			let { data: n } = await r.createGroup(e, t);
+			return n;
+		},
+		async editGroup(e, t, r) {
+			let { data: i } = await n.updateGroup(e, t, r);
+			return i;
+		},
+		async deleteGroup(e, t, r) {
+			await n.deleteGroup(e, t, r);
+		},
+		async listGroups(e, t) {
+			let { data: { value: n } } = await r.listGroups(e?.search, e?.orderBy ? new Set([...e.orderBy]) : null, e?.select ? new Set([...e.select]) : null, e?.expand ? new Set([...e.expand]) : null, t);
+			return n;
+		},
+		async addMember(e, r, i) {
+			await n.addMember(e, { "@odata.id": x(t.basePath, "v1.0", "users", r) }, i);
+		},
+		async deleteMember(e, t, r, i) {
+			await n.deleteMember(e, t, r, i);
+		}
+	};
+}, D = ({ axiosClient: e, config: t }) => {
+	let n = s(t, t.basePath, e);
+	return {
+		async getApplication(e, t) {
+			let { data: r } = await n.getApplication(e, t);
+			return r;
+		},
+		async listApplications(e) {
+			let { data: { value: t } } = await n.listApplications(e);
+			return t || [];
+		}
+	};
+}, O = (e) => new URL(e.webUrl).origin, k = ({ axiosClient: e, config: n }) => {
+	let r = u(n, n.basePath, e), i = new t(n, n.basePath, e), a = new v(n, n.basePath, e);
+	return {
+		async getDrive(e, t, n) {
+			let { data: i } = await r.getDrive(e, t?.select ? new Set([...t.select]) : null, n);
+			return S({
+				...i,
+				serverUrl: O(i)
+			});
+		},
+		async createDrive(e, t) {
+			let { data: n } = await r.createDrive(e, t);
+			return S({
+				...n,
+				serverUrl: O(n)
+			});
+		},
+		async updateDrive(e, t, n) {
+			let { data: i } = await r.updateDrive(e, t, n);
+			return S({
+				...i,
+				serverUrl: O(i)
+			});
+		},
+		async disableDrive(e, t, n) {
+			await r.deleteDrive(e, t, n);
+		},
+		async deleteDrive(e, t, n) {
+			await r.deleteDrive(e, t, {
+				headers: {
+					...n?.headers && n.headers || {},
+					Purge: "T"
+				},
+				...n && { requestOptions: n } || {}
+			});
+		},
+		async listMyDrives(e, t) {
+			let { data: { value: n } } = await i.listMyDrivesBeta(e?.orderBy, e?.filter, e?.expand, e?.select ? new Set([...e.select]) : null, t);
+			return n.map((e) => S({
+				...e,
+				serverUrl: O(e)
+			}));
+		},
+		async listAllDrives(e, t) {
+			let { data: { value: n } } = await a.listAllDrivesBeta(e?.orderBy, e?.filter, e?.expand, e?.select ? new Set([...e.select]) : null, t);
+			return n.map((e) => S({
+				...e,
+				serverUrl: O(e)
+			}));
+		}
+	};
+}, A = ({ axiosClient: e, config: t }) => {
+	let n = l(t, t.basePath, e), a = i(t, t.basePath, e), o = r(t, t.basePath, e);
+	return {
+		async getDriveItem(e, t, r) {
+			let { data: i } = await n.getDriveItem(e, t, r);
+			return i;
+		},
+		async createDriveItem(e, t, n) {
+			let { data: r } = await a.createDriveItem(e, t, n);
+			return r;
+		},
+		async updateDriveItem(e, t, r, i) {
+			let { data: a } = await n.updateDriveItem(e, t, r, i);
+			return a;
+		},
+		async deleteDriveItem(e, t, r) {
+			await n.deleteDriveItem(e, t, r);
+		},
+		async followDriveItem(e, t) {
+			let { data: n } = await o.followDriveItem(e, t);
+			return n;
+		},
+		async unfollowDriveItem(e, t) {
+			await o.unfollowDriveItem(e, t);
+		},
+		async listSharedByMe(e, t) {
+			let { data: n } = await o.listSharedByMe(e?.expand, t);
+			return n?.value || [];
+		},
+		async listSharedWithMe(e, t) {
+			let { data: n } = await o.listSharedWithMe(e?.expand, t);
+			return n?.value || [];
+		}
+	};
+}, j = ({ axiosClient: e, config: t }) => {
+	let n = g(t, t.basePath, e);
+	return {
+		async listTags(e) {
+			let { data: { value: t } } = await n.getTags(e);
+			return t || [];
+		},
+		async assignTags(e, t) {
+			await n.assignTags(e, t);
+		},
+		async unassignTags(e, t) {
+			await n.unassignTags(e, t);
+		}
+	};
+}, M = ({ axiosClient: e, config: t }) => {
+	let n = f(t, t.basePath, e);
+	return { async listActivities(e, t) {
+		let { data: { value: r } } = await n.getActivities(e, t);
+		return r || [];
+	} };
+}, N = ({ axiosClient: e, config: t }) => {
+	let n = i(t, t.basePath, e), r = p(t, t.basePath, e), a = y(t, t.basePath, e);
+	return {
+		async getPermission(e, t, n, r, i) {
+			let { data: o } = await a.getPermission(e, t, n, i);
+			return o.link ? C({
+				graphPermission: o,
+				resourceId: t
+			}) : w({
+				graphPermission: o,
+				resourceId: t,
+				graphRoles: r || {}
+			});
+		},
+		async listPermissions(e, t, r, i, o) {
+			let s;
+			if (e === t) {
+				let { data: t } = await n.listPermissionsSpaceRoot(e, i?.filter, i?.select ? new Set([...i.select]) : null, i?.count, i?.top || 0, o);
+				s = t;
+			} else {
+				let { data: n } = await a.listPermissions(e, t, i?.filter, i?.select ? new Set([...i.select]) : null, i?.count, i?.top || 0, o);
+				s = n;
+			}
+			let c = s.value || [], l = s["@libre.graph.permissions.actions.allowedValues"], u = s["@libre.graph.permissions.roles.allowedValues"], d = s["@odata.count"];
+			return {
+				shares: c.map((e) => e.link ? C({
+					graphPermission: e,
+					resourceId: t
+				}) : w({
+					graphPermission: e,
+					resourceId: t,
+					graphRoles: r || {}
+				})),
+				allowedActions: l,
+				allowedRoles: u,
+				count: d
+			};
+		},
+		async updatePermission(e, t, r, i, o, s) {
+			let c;
+			if (e === t) {
+				let { data: t } = await n.updatePermissionSpaceRoot(e, r, i, s);
+				c = t;
+			} else {
+				let { data: n } = await a.updatePermission(e, t, r, i, s);
+				c = n;
+			}
+			return c.link ? C({
+				graphPermission: c,
+				resourceId: t
+			}) : w({
+				graphPermission: c,
+				resourceId: t,
+				graphRoles: o || {}
+			});
+		},
+		async deletePermission(e, t, r, i) {
+			if (e === t) {
+				await n.deletePermissionSpaceRoot(e, r, i);
+				return;
+			}
+			await a.deletePermission(e, t, r, i);
+		},
+		async createInvite(e, t, r, i, o) {
+			let s;
+			if (e === t) {
+				let { data: t } = await n.inviteSpaceRoot(e, r, o);
+				s = t.value?.[0];
+			} else {
+				let { data: n } = await a.invite(e, t, r, o);
+				s = n.value?.[0];
+			}
+			if (!s) throw Error("no permission returned");
+			return w({
+				graphPermission: s,
+				resourceId: t,
+				graphRoles: i || {}
+			});
+		},
+		async createLink(e, t, r, i) {
+			let o;
+			if (e === t) {
+				let { data: t } = await n.createLinkSpaceRoot(e, r, i);
+				o = t;
+			} else {
+				let { data: n } = await a.createLink(e, t, r, i);
+				o = n;
+			}
+			return C({
+				graphPermission: o,
+				resourceId: t
+			});
+		},
+		async setPermissionPassword(e, t, r, i, o) {
+			let s;
+			if (e === t) {
+				let { data: t } = await n.setPermissionPasswordSpaceRoot(e, r, i, o);
+				s = t;
+			} else {
+				let { data: n } = await a.setPermissionPassword(e, t, r, i, o);
+				s = n;
+			}
+			return C({
+				graphPermission: s,
+				resourceId: t
+			});
+		},
+		async listRoleDefinitions(e) {
+			let { data: t } = await r.listPermissionRoleDefinitions(e);
+			return t;
+		}
+	};
+}, P = ({ axiosClient: e, config: t }) => {
+	let r = n(t, t.basePath, e), i = b(t, t.basePath, e);
+	return {
+		async getOwnUserPhoto(e) {
+			let { data: t } = await r.getOwnUserPhoto(e);
+			return t;
+		},
+		async deleteOwnUserPhoto(e) {
+			let { data: t } = await r.deleteOwnUserPhoto(e);
+			return t;
+		},
+		async updateOwnUserPhotoPatch(e, t) {
+			let { data: n } = await r.updateOwnUserPhotoPatch(e, t);
+			return n;
+		},
+		async getUserPhoto(e, t) {
+			let { data: n } = await i.getUserPhoto(e, t);
+			return n;
+		}
+	};
+}, F = (e, t) => {
+	let n = new URL(e);
+	n.pathname = [...n.pathname.split("/"), "graph"].filter(Boolean).join("/");
+	let r = new _({ basePath: n.href });
+	return {
+		activities: M({
+			axiosClient: t,
+			config: r
+		}),
+		applications: D({
+			axiosClient: t,
+			config: r
+		}),
+		tags: j({
+			axiosClient: t,
+			config: r
+		}),
+		drives: k({
+			axiosClient: t,
+			config: r
+		}),
+		driveItems: A({
+			axiosClient: t,
+			config: r
+		}),
+		users: T({
+			axiosClient: t,
+			config: r
+		}),
+		groups: E({
+			axiosClient: t,
+			config: r
+		}),
+		permissions: N({
+			axiosClient: t,
+			config: r
+		}),
+		photos: P({
+			axiosClient: t,
+			config: r
+		})
+	};
+};
+//#endregion
+export { F as t };

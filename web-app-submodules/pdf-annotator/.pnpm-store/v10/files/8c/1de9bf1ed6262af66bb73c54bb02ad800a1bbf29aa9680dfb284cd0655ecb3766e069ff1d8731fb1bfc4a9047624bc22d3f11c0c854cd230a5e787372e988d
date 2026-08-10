@@ -1,0 +1,24 @@
+import { PasswordPolicy } from '../../helpers';
+export interface Props {
+    disabled?: boolean;
+    generatePasswordMethod?: (...args: unknown[]) => string;
+    hasError?: boolean;
+    passwordPolicy?: PasswordPolicy;
+    teleportId?: string;
+    value?: string;
+}
+declare const __VLS_export: import("vue").DefineComponent<Props, {
+    focus: () => void;
+    select: () => void;
+    setSelectionRange: (start: number, end: number) => void;
+}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {
+    passwordChallengeCompleted: (...args: any[]) => void;
+    passwordChallengeFailed: (...args: any[]) => void;
+    passwordGenerated: (...args: any[]) => void;
+}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{
+    onPasswordChallengeCompleted?: (...args: any[]) => any;
+    onPasswordChallengeFailed?: (...args: any[]) => any;
+    onPasswordGenerated?: (...args: any[]) => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;
+declare const _default: typeof __VLS_export;
+export default _default;

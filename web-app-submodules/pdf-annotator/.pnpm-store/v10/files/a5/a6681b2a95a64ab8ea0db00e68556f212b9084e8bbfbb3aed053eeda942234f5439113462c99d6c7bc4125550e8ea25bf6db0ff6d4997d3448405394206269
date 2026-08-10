@@ -1,0 +1,15 @@
+import { Resource } from '@opencloud-eu/web-client';
+import { ResourceRouteResolverOptions } from '../filesList';
+export declare const useFolderLink: (options?: ResourceRouteResolverOptions) => {
+    getPathPrefix: (resource: Resource) => string;
+    getFolderLink: (resource: Resource) => import("vue-router").RouteLocationNamedRaw;
+    getParentFolderLink: (resource: Resource) => import("vue-router").RouteLocationNamedRaw;
+    getParentFolderName: (resource: Resource) => string;
+    getParentFolderLinkIconAdditionalAttributes: (resource: Resource) => {
+        name: string;
+        'fill-type': string;
+    } | {
+        name?: undefined;
+        'fill-type'?: undefined;
+    };
+};

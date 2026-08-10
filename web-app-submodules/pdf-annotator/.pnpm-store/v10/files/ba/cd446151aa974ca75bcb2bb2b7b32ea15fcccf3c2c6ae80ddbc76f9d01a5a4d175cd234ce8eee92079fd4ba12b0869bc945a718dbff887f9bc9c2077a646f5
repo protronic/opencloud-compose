@@ -1,0 +1,28 @@
+import { Ref } from 'vue';
+type LocationOption = {
+    id: string;
+    title: string;
+    enabled: Ref<boolean> | boolean;
+};
+declare const _default: typeof __VLS_export;
+export default _default;
+declare const __VLS_export: import("vue").DefineComponent<import("vue").ExtractPropTypes<{
+    currentFolderAvailable: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+}>, {
+    currentSelection: Ref<LocationOption, LocationOption>;
+    currentSelectionTitle: import("vue").ComputedRef<string>;
+    onOptionSelected: (option: LocationOption) => void;
+    locationOptions: import("vue").ComputedRef<LocationOption[]>;
+}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, "update:modelValue"[], "update:modelValue", import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
+    currentFolderAvailable: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
+}>> & Readonly<{
+    "onUpdate:modelValue"?: (...args: any[]) => any;
+}>, {
+    currentFolderAvailable: boolean;
+}, {}, {}, {}, string, import("vue").ComponentProvideOptions, true, {}, any>;

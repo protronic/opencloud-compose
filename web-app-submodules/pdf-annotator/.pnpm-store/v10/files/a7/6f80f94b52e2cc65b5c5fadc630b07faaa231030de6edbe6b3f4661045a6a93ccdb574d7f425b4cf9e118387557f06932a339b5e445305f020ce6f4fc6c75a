@@ -1,0 +1,6 @@
+/**
+ * just a dummy function to trick gettext tools
+ *
+ * @param msg
+ */
+export declare function $gettext(msg: string): string;

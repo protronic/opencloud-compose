@@ -1,0 +1,2 @@
+export declare function isPromiseFulfilled<T>(result: PromiseSettledResult<T>): result is PromiseFulfilledResult<T>;
+export declare function isPromiseRejected<T>(result: PromiseSettledResult<T>): result is PromiseRejectedResult;

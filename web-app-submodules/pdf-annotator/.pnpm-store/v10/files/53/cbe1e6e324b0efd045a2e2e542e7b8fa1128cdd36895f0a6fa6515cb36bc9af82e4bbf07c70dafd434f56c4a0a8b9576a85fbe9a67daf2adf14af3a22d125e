@@ -1,0 +1,23 @@
+import { Resource } from '@opencloud-eu/web-client';
+import { RouteLocationRaw } from 'vue-router';
+type __VLS_Props = {
+    resource: Resource;
+    pathPrefix?: string;
+    link?: RouteLocationRaw;
+    isPathDisplayed?: boolean;
+    parentFolderLink?: RouteLocationRaw;
+    parentFolderName?: string;
+    parentFolderLinkIconAdditionalAttributes?: Record<string, unknown>;
+    isExtensionDisplayed?: boolean;
+    isThumbnailDisplayed?: boolean;
+    isIconDisplayed?: boolean;
+    isResourceClickable?: boolean;
+    isFavoriteDisplayed?: boolean;
+};
+declare const __VLS_export: import("vue").DefineComponent<__VLS_Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {} & {
+    click: (event: MouseEvent) => any;
+}, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{
+    onClick?: (event: MouseEvent) => any;
+}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const _default: typeof __VLS_export;
+export default _default;

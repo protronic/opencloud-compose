@@ -1,0 +1,13 @@
+import { ExtensionRegistry } from '../piniaStores';
+import { AppNavigationItem } from '../../apps';
+export interface NavItem extends Omit<AppNavigationItem, 'name'> {
+    name: string;
+    active: boolean;
+}
+export declare const getExtensionNavItems: ({ extensionRegistry, appId }: {
+    extensionRegistry: ExtensionRegistry;
+    appId: string;
+}) => AppNavigationItem[];
+export declare const useNavItems: () => {
+    navItems: import("vue").ComputedRef<NavItem[]>;
+};

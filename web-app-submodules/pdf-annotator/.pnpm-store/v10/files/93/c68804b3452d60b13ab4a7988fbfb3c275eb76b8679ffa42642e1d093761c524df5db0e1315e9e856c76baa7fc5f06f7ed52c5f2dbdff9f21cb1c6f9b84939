@@ -1,0 +1,3 @@
+import { Ref } from 'vue';
+import { ParamValue } from './types';
+export declare const useRouteParam: (name: string, defaultValue?: ParamValue) => Ref<ParamValue>;

@@ -1,0 +1,8 @@
+import { Ref } from 'vue';
+import { QueryValue } from './types';
+export interface RouteQueryPersistedOptions {
+    name: string;
+    defaultValue: QueryValue;
+    storagePrefix?: string;
+}
+export declare const useRouteQueryPersisted: (options: RouteQueryPersistedOptions) => Ref<QueryValue>;

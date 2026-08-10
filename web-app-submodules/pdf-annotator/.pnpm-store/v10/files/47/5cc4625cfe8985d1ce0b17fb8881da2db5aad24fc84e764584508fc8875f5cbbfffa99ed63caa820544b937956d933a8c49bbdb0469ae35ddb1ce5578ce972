@@ -1,0 +1,40 @@
+import { Props as OcDropProps } from '../OcDrop/OcDrop.vue';
+import { ContextualHelperDataListItem } from '../../helpers';
+export interface Props {
+    /**
+     * @docs Title of the info drop.
+     */
+    title: string;
+    /**
+     * @docs Element ID of the info drop.
+     */
+    dropId?: string;
+    /**
+     * @docs Text at the end of the info drop.
+     */
+    endText?: string;
+    /**
+     * @docs List of items to display in the info drop. Please refer to the component source for the `ContextualHelperDataListItem` type definition.
+     */
+    list?: ContextualHelperDataListItem[];
+    /**
+     * @docs Event that triggers the info drop.
+     * @default 'click'
+     */
+    mode?: OcDropProps['mode'];
+    /**
+     * @docs Link at the end of the info drop.
+     */
+    readMoreLink?: string;
+    /**
+     * @docs Text to display in the info drop.
+     */
+    text?: string;
+    /**
+     * @docs CSS selector for the element to be used as toggle. By default, the preceding element is used.
+     */
+    toggle?: string;
+}
+declare const __VLS_export: import("vue").DefineComponent<Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<Props> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
+declare const _default: typeof __VLS_export;
+export default _default;
