@@ -46,13 +46,27 @@ APPS_DIR="${APPS_DIR/#\~/$HOME}"
 
 # Resolved on the host and handed into the containerised builds: the pnpm
 # container only mounts the app directory, so git metadata is unavailable
-# there (consumed by pdf-annotator's build-info.ts for its about dialog).
-PDFA_DIR="${SUBMODULES_DIR}/pdf-annotator"
-PDFA_GIT_COMMIT="${PDFA_GIT_COMMIT:-$(git -C "${PDFA_DIR}" rev-parse --short=10 HEAD 2>/dev/null || true)}"
-if [[ -n "${PDFA_GIT_COMMIT}" && "${PDFA_GIT_COMMIT}" != *-dirty ]] \
-  && [[ -n "$(git -C "${PDFA_DIR}" status --porcelain 2>/dev/null)" ]]; then
-  PDFA_GIT_COMMIT="${PDFA_GIT_COMMIT}-dirty"
-fi
+# there (consumed by *-info.ts for about dialogs).
+resolve_git_commit() {
+  local dir="$1"
+  local current="${2:-}"
+  if [[ -n "${current}" ]]; then
+    printf '%s' "${current}"
+    return
+  fi
+  local commit
+  commit="$(git -C "${dir}" rev-parse --short=10 HEAD 2>/dev/null || true)"
+  if [[ -z "${commit}" ]]; then
+    return
+  fi
+  if [[ "${commit}" != *-dirty ]] && [[ -n "$(git -C "${dir}" status --porcelain 2>/dev/null)" ]]; then
+    commit="${commit}-dirty"
+  fi
+  printf '%s' "${commit}"
+}
+
+PDFA_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/pdf-annotator" "${PDFA_GIT_COMMIT:-}")"
+BB_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/blockberry-editor" "${BB_GIT_COMMIT:-}")"
 
 usage() {
   cat <<EOF
@@ -221,6 +235,7 @@ run_pnpm_build() {
     -e CI=true \
     -e HOME=/tmp \
     -e PDFA_GIT_COMMIT="${PDFA_GIT_COMMIT}" \
+    -e BB_GIT_COMMIT="${BB_GIT_COMMIT}" \
     -v "${source_dir}:/work" \
     -w /work \
     "${PNPM_IMAGE}" \
