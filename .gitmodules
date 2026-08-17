@@ -20,3 +20,7 @@
 [submodule "web-app-submodules/pdf-annotator"]
 	path = web-app-submodules/pdf-annotator
 	url = git@github.com:protronic/pdf-annotator.git
+[submodule "web-app-submodules/webapp-lsm6"]
+	path = web-app-submodules/webapp-lsm6
+	url = git@gitlab:prot-lsm6/webapp-lsm6-k.git
+	branch = master
