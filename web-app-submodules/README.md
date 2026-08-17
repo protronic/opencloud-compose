@@ -11,6 +11,7 @@ opencloud-3dviewer/dist                  →   OC_APPS_DIR/3dviewer/
 opencloud-web-calendar/dist              →   OC_APPS_DIR/web-calendar/
 blockberry-editor/dist/web               →   OC_APPS_DIR/blockberry-editor/
 pdf-annotator/dist/web                   →   OC_APPS_DIR/pdf-annotator/
+webapp-lsm6/dist/web                     →   OC_APPS_DIR/webapp-lsm6/
 web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpresentation-viewer/
                                                               ↓
                                                    OpenCloud container
@@ -23,6 +24,9 @@ web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpr
   views PDFs with pdf.js, offers the pdf.js annotation tools (highlight, free text, ink, stamp)
   and saves the annotated PDF back to OpenCloud through the regular file interface instead of a
   browser download
+- **`webapp-lsm6`** (`git@gitlab:prot-lsm6/webapp-lsm6-k.git`, branch `feature/opencloud-lsmprj`)
+  opens and saves `.lsmprj` files via the Angular app's Projekt laden/speichern functions.
+  Opt-in build only: `./web-app-submodules/build-web-extensions.sh webapp-lsm6`
 - **Build output** stays in each submodule's `dist/` directory (`dist/web` for blockberry-editor)
 - **`OC_APPS_DIR`** is the directory OpenCloud reads extensions from (default: `./config/opencloud/apps`)
 - The build script **cleans** `OC_APPS_DIR` (except `.gitkeep`) and **copies** each built app into it (no symlinks)

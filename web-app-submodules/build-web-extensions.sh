@@ -8,6 +8,7 @@ PNPM_IMAGE="${PNPM_IMAGE:-ghcr.io/pnpm/pnpm:11.9.0}"
 PRESENTATION_IMAGE="${PRESENTATION_IMAGE:-node:20-bookworm}"
 NODE_VERSION="${NODE_VERSION:-24}"
 PRESENTATION_VIEWER_APP="mdpresentation-viewer"
+LSM6_APP="webapp-lsm6"
 
 MONOREPO_APP_NAMES=(
   arcade
@@ -67,6 +68,7 @@ resolve_git_commit() {
 
 PDFA_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/pdf-annotator" "${PDFA_GIT_COMMIT:-}")"
 BB_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/blockberry-editor" "${BB_GIT_COMMIT:-}")"
+LSM6_GIT_REF="${LSM6_GIT_REF:-$(git -C "${SUBMODULES_DIR}/${LSM6_APP}" describe --tags --always --dirty 2>/dev/null || true)}"
 
 usage() {
   cat <<EOF
@@ -90,6 +92,7 @@ Standalone submodule repos (aliases in parentheses):
   blockberry-editor (blockberry)
   pdf-annotator
   mdpresentation-viewer (presentation-viewer, web-app-presentation-viewer)
+  webapp-lsm6 (lsm6) — opt-in only, needs private pro-* npm packages
 
 Options:
   -a, --all       Build every web-extensions app plus all standalone extensions
@@ -171,6 +174,11 @@ resolve_app_name() {
     return 0
   fi
 
+  if [[ "${input}" == "${LSM6_APP}" || "${input}" == "lsm6" ]]; then
+    echo "${LSM6_APP}"
+    return 0
+  fi
+
   return 1
 }
 
@@ -183,6 +191,7 @@ list_available_apps() {
     printf '  %s (%s)\n' "${entry%%|*}" "$(standalone_relative_dir "${entry%%|*}")"
   done
   echo "  ${PRESENTATION_VIEWER_APP} (web-app-presentation-viewer)"
+  echo "  ${LSM6_APP} (lsm6) — opt-in, Angular + Vue wrapper"
 }
 
 standalone_relative_dir() {
@@ -364,6 +373,52 @@ build_presentation_viewer() {
 
 PRESENTATION_VIEWER_DIST=""
 presentation_build_dir=""
+LSM6_DIST=""
+
+build_webapp_lsm6() {
+  local source_dir="${SUBMODULES_DIR}/${LSM6_APP}"
+  local angular_dist="${source_dir}/dist/webapp-lsm6"
+  local web_dist="${source_dir}/dist/web"
+
+  echo "Building Angular app for ${LSM6_APP} in ${PRESENTATION_IMAGE} container..."
+  docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -e CI=true \
+    -e HOME=/tmp \
+    -e npm_config_cache=/tmp/npm-cache \
+    -e OC_LSM6_BASE_HREF="/assets/apps/${LSM6_APP}/app/" \
+    -e LSM6_GIT_REF="${LSM6_GIT_REF}" \
+    -v "${source_dir}:/work" \
+    -w /work \
+    "${PRESENTATION_IMAGE}" \
+    bash -c '
+      set -euo pipefail
+      npm install
+      npx ng build --configuration production --base-href "${OC_LSM6_BASE_HREF}" --deploy-url "${OC_LSM6_BASE_HREF}"
+      python3 scripts/rewrite-oc-index.py dist/webapp-lsm6/index.html "${OC_LSM6_BASE_HREF}"
+    '
+
+  echo "Building OpenCloud wrapper for ${LSM6_APP} in ${PNPM_IMAGE} container..."
+  docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -e CI=true \
+    -e HOME=/tmp \
+    -v "${source_dir}:/work" \
+    -w /work/oc \
+    "${PNPM_IMAGE}" \
+    bash -c "pnpm runtime set node ${NODE_VERSION} -g && pnpm install --frozen-lockfile && pnpm build"
+
+  if [[ ! -d "${angular_dist}" ]]; then
+    echo "Angular build output missing: ${angular_dist}" >&2
+    exit 1
+  fi
+
+  mkdir -p "${web_dist}/app"
+  cp -a "${angular_dist}/." "${web_dist}/app/"
+
+  LSM6_DIST="${web_dist}"
+  verify_mf_remote_entry "${LSM6_APP}" "${LSM6_DIST}"
+}
 
 cleanup_presentation_build_dir() {
   [[ -n "${presentation_build_dir}" && -d "${presentation_build_dir}" ]] || return 0
@@ -408,6 +463,7 @@ done
 MONOREPO_APPS=()
 STANDALONE_PNPM_APPS=()
 BUILD_PRESENTATION=false
+BUILD_LSM6=false
 
 if [[ "${BUILD_ALL}" == true ]]; then
   MONOREPO_APPS=("${MONOREPO_APP_NAMES[@]}")
@@ -435,6 +491,8 @@ elif [[ ${#SELECTED_APPS[@]} -gt 0 ]]; then
       fi
     elif [[ "${resolved_app}" == "${PRESENTATION_VIEWER_APP}" ]]; then
       BUILD_PRESENTATION=true
+    elif [[ "${resolved_app}" == "${LSM6_APP}" ]]; then
+      BUILD_LSM6=true
     fi
   done
 else
@@ -455,6 +513,9 @@ fi
 DEPLOY_APPS=("${MONOREPO_APPS[@]}" "${STANDALONE_PNPM_APPS[@]}")
 if [[ "${BUILD_PRESENTATION}" == true ]]; then
   DEPLOY_APPS+=("${PRESENTATION_VIEWER_APP}")
+fi
+if [[ "${BUILD_LSM6}" == true ]]; then
+  DEPLOY_APPS+=("${LSM6_APP}")
 fi
 
 if [[ ${#DEPLOY_APPS[@]} -eq 0 ]]; then
@@ -495,6 +556,12 @@ if [[ "${BUILD_PRESENTATION}" == true && ! -d "${PRESENTATION_VIEWER_DIR}" ]]; t
   exit 1
 fi
 
+LSM6_DIR="${SUBMODULES_DIR}/${LSM6_APP}"
+if [[ "${BUILD_LSM6}" == true && ! -d "${LSM6_DIR}" ]]; then
+  echo "Standalone submodule not found: ${LSM6_APP}. Run: git submodule update --init --recursive" >&2
+  exit 1
+fi
+
 echo "Deploy target: ${APPS_DIR} (OC_APPS_DIR)"
 echo "Selected apps: ${DEPLOY_APPS[*]}"
 clean_app_targets "${DEPLOY_APPS[@]}"
@@ -511,6 +578,10 @@ if [[ "${BUILD_PRESENTATION}" == true ]]; then
   build_presentation_viewer
 fi
 
+if [[ "${BUILD_LSM6}" == true ]]; then
+  build_webapp_lsm6
+fi
+
 for app in "${MONOREPO_APPS[@]}"; do
   deploy_dist "${app}" "$(monorepo_package_dir "${app}")/dist"
 done
@@ -521,6 +592,10 @@ done
 
 if [[ "${BUILD_PRESENTATION}" == true ]]; then
   deploy_dist "${PRESENTATION_VIEWER_APP}" "${PRESENTATION_VIEWER_DIST}"
+fi
+
+if [[ "${BUILD_LSM6}" == true ]]; then
+  deploy_dist "${LSM6_APP}" "${LSM6_DIST}"
 fi
 
 echo "Done. Built extensions are available under ${APPS_DIR} (OC_APPS_DIR)."

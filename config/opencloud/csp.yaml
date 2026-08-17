@@ -10,6 +10,8 @@ directives:
     - 'https://${IDP_DOMAIN|keycloak.opencloud.test}${TRAEFIK_PORT_HTTPS}/'
     - 'https://update.opencloud.eu/'
     - 'https://tile.openstreetmap.org/'
+    - 'https://mft.protronic-gmbh.de/'
+    - 'wss://mft.protronic-gmbh.de/'
   default-src:
     - '''none'''
   font-src:
@@ -45,6 +47,7 @@ directives:
   script-src:
     - '''self'''
     - '''unsafe-inline'''
+    - '''unsafe-eval'''
     - 'https://${IDP_DOMAIN|keycloak.opencloud.test}${TRAEFIK_PORT_HTTPS}/'
   style-src:
     - '''self'''

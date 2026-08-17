@@ -23,4 +23,4 @@
 [submodule "web-app-submodules/webapp-lsm6"]
 	path = web-app-submodules/webapp-lsm6
 	url = git@gitlab:prot-lsm6/webapp-lsm6-k.git
-	branch = master
+	branch = feature/opencloud-lsmprj
