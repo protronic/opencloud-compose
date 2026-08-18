@@ -235,6 +235,37 @@ is_standalone_pnpm_app() {
   standalone_relative_dir "${deploy_name}" >/dev/null 2>&1
 }
 
+add_resolved_app() {
+  local resolved_app="$1"
+
+  if is_monorepo_app "${resolved_app}"; then
+    if [[ " ${MONOREPO_APPS[*]:-} " != *" ${resolved_app} "* ]]; then
+      MONOREPO_APPS+=("${resolved_app}")
+    fi
+  elif is_standalone_pnpm_app "${resolved_app}"; then
+    if [[ " ${STANDALONE_PNPM_APPS[*]:-} " != *" ${resolved_app} "* ]]; then
+      STANDALONE_PNPM_APPS+=("${resolved_app}")
+    fi
+  elif [[ "${resolved_app}" == "${PRESENTATION_VIEWER_APP}" ]]; then
+    BUILD_PRESENTATION=true
+  elif [[ "${resolved_app}" == "${LSM6_APP}" ]]; then
+    BUILD_LSM6=true
+  fi
+}
+
+add_app_from_input() {
+  local raw_app="$1"
+  local resolved_app=""
+
+  if ! resolved_app="$(resolve_app_name "${raw_app}")"; then
+    echo "Unknown app: ${raw_app}" >&2
+    echo >&2
+    list_available_apps >&2
+    exit 1
+  fi
+  add_resolved_app "${resolved_app}"
+}
+
 run_pnpm_build() {
   local source_dir="$1"
   local install_flags="${2:---frozen-lockfile}"
@@ -473,39 +504,19 @@ if [[ "${BUILD_ALL}" == true ]]; then
   BUILD_PRESENTATION=true
 elif [[ ${#SELECTED_APPS[@]} -gt 0 ]]; then
   for raw_app in "${SELECTED_APPS[@]}"; do
-    resolved_app=""
-    if ! resolved_app="$(resolve_app_name "${raw_app}")"; then
-      echo "Unknown app: ${raw_app}" >&2
-      echo >&2
-      list_available_apps >&2
-      exit 1
-    fi
-
-    if is_monorepo_app "${resolved_app}"; then
-      if [[ " ${MONOREPO_APPS[*]:-} " != *" ${resolved_app} "* ]]; then
-        MONOREPO_APPS+=("${resolved_app}")
-      fi
-    elif is_standalone_pnpm_app "${resolved_app}"; then
-      if [[ " ${STANDALONE_PNPM_APPS[*]:-} " != *" ${resolved_app} "* ]]; then
-        STANDALONE_PNPM_APPS+=("${resolved_app}")
-      fi
-    elif [[ "${resolved_app}" == "${PRESENTATION_VIEWER_APP}" ]]; then
-      BUILD_PRESENTATION=true
-    elif [[ "${resolved_app}" == "${LSM6_APP}" ]]; then
-      BUILD_LSM6=true
-    fi
+    add_app_from_input "${raw_app}"
   done
 else
   if [[ -n "${OC_WEB_APPS:-}" ]]; then
     OC_WEB_APPS="${OC_WEB_APPS//,/ }"
     for app in ${OC_WEB_APPS}; do
       [[ -n "${app}" ]] || continue
-      MONOREPO_APPS+=("$(normalize_monorepo_app "${app}")")
+      add_app_from_input "${app}"
     done
   fi
 
   for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
-    STANDALONE_PNPM_APPS+=("${entry%%|*}")
+    add_resolved_app "${entry%%|*}"
   done
   BUILD_PRESENTATION=true
 fi
