@@ -12,6 +12,7 @@ directives:
     - 'https://tile.openstreetmap.org/'
     - 'https://mft.protronic-gmbh.de/'
     - 'wss://mft.protronic-gmbh.de/'
+    - 'https://couch.protronic-gmbh.de/'
   default-src:
     - '''none'''
   font-src:
