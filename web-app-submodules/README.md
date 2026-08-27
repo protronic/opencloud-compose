@@ -11,6 +11,7 @@ opencloud-3dviewer/dist                  →   OC_APPS_DIR/3dviewer/
 opencloud-web-calendar/dist              →   OC_APPS_DIR/web-calendar/
 blockberry-editor/dist/web               →   OC_APPS_DIR/blockberry-editor/
 pdf-annotator/dist/web                   →   OC_APPS_DIR/pdf-annotator/
+typst-editor/dist/web                    →   OC_APPS_DIR/typst-editor/
 webapp-lsm6/dist/web                     →   OC_APPS_DIR/webapp-lsm6/
 web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpresentation-viewer/
                                                               ↓
@@ -24,6 +25,9 @@ web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpr
   views PDFs with pdf.js, offers the pdf.js annotation tools (highlight, free text, ink, stamp)
   and saves the annotated PDF back to OpenCloud through the regular file interface instead of a
   browser download
+- **`typst-editor`** lives directly in this repository (no submodule); it edits Typst documents
+  (`.typ`) with CodeMirror and an in-browser typst.ts WASM compiler for the live preview, bundles
+  the DejaVu fonts (no CDN access needed) and saves through the regular OpenCloud file interface
 - **`webapp-lsm6`** (`git@gitlab:prot-lsm6/webapp-lsm6-k.git`, branch `feature/opencloud-lsmprj`)
   opens and saves `.lsmprj` files via the Angular app's Projekt laden/speichern functions.
   Opt-in build only: `./web-app-submodules/build-web-extensions.sh webapp-lsm6`

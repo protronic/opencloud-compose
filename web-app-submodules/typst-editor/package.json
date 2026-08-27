@@ -1,0 +1,44 @@
+{
+  "name": "@protronic/typst-editor",
+  "version": "1.0.0",
+  "description": "OpenCloud web extension that edits Typst documents with live preview and saves them back to OpenCloud storage",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build",
+    "check:types": "vue-tsc --noEmit -p tsconfig.app.json",
+    "check": "pnpm run build && pnpm run check:types"
+  },
+  "keywords": [
+    "opencloud",
+    "typst",
+    "editor"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@codemirror/commands": "^6.11.0",
+    "@codemirror/state": "^6.7.1",
+    "@codemirror/view": "^6.43.9",
+    "@myriaddreamin/typst-ts-renderer": "^0.7.0",
+    "@myriaddreamin/typst-ts-web-compiler": "^0.7.0",
+    "@myriaddreamin/typst.ts": "^0.7.0",
+    "codemirror": "^6.0.2",
+    "dejavu-fonts-ttf": "^2.37.3",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@opencloud-eu/extension-sdk": "7.1.2",
+    "@opencloud-eu/tsconfig": "^7.0.0",
+    "@opencloud-eu/web-client": "7.0.0",
+    "@opencloud-eu/web-pkg": "7.0.0",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "playwright-core": "^1.62.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.4",
+    "vue-router": "^5.0.0",
+    "vue-tsc": "^3.0.0",
+    "vue3-gettext": "^4.0.0-beta.1"
+  },
+  "packageManager": "pnpm@10.33.3"
+}

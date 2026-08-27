@@ -33,6 +33,7 @@ STANDALONE_PNPM_SUBMODULES=(
   "web-calendar|opencloud-web-calendar"
   "blockberry-editor|blockberry-editor|dist/web"
   "pdf-annotator|pdf-annotator|dist/web"
+  "typst-editor|typst-editor|dist/web"
 )
 
 if [[ -f "${ROOT_DIR}/.env" ]]; then
@@ -68,6 +69,7 @@ resolve_git_commit() {
 
 PDFA_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/pdf-annotator" "${PDFA_GIT_COMMIT:-}")"
 BB_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/blockberry-editor" "${BB_GIT_COMMIT:-}")"
+TYPST_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/typst-editor" "${TYPST_GIT_COMMIT:-}")"
 LSM6_GIT_REF="${LSM6_GIT_REF:-$(git -C "${SUBMODULES_DIR}/${LSM6_APP}" describe --tags --always --dirty 2>/dev/null || true)}"
 
 usage() {
@@ -91,6 +93,7 @@ Standalone submodule repos (aliases in parentheses):
   web-calendar (opencloud-web-calendar, calendar)
   blockberry-editor (blockberry)
   pdf-annotator
+  typst-editor (in-tree, no submodule)
   mdpresentation-viewer (presentation-viewer, web-app-presentation-viewer)
   webapp-lsm6 (lsm6) — opt-in only, needs private pro-* npm packages
 
@@ -276,6 +279,7 @@ run_pnpm_build() {
     -e HOME=/tmp \
     -e PDFA_GIT_COMMIT="${PDFA_GIT_COMMIT}" \
     -e BB_GIT_COMMIT="${BB_GIT_COMMIT}" \
+    -e TYPST_GIT_COMMIT="${TYPST_GIT_COMMIT}" \
     -v "${source_dir}:/work" \
     -w /work \
     "${PNPM_IMAGE}" \
