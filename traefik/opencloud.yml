@@ -12,7 +12,10 @@ services:
       - "traefik.http.routers.opencloud.entrypoints=https"
       - "traefik.http.routers.opencloud.rule=Host(`${OC_DOMAIN:-cloud.opencloud.test}`)"
       - "traefik.http.routers.opencloud.service=opencloud"
-      - "traefik.http.routers.opencloud.middlewares=hsts-header"
+      # gzip shrinks the large web-extension assets (e.g. the 28 MB typst
+      # compiler wasm compresses to about a third) on first load.
+      - "traefik.http.middlewares.gzip-compress.compress=true"
+      - "traefik.http.routers.opencloud.middlewares=hsts-header,gzip-compress"
       - "traefik.http.services.opencloud.loadbalancer.server.port=9200"
       - "traefik.http.routers.opencloud.${TRAEFIK_SERVICES_TLS_CONFIG}"
   traefik:

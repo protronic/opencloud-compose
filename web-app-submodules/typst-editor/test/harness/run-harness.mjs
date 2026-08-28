@@ -62,6 +62,33 @@ try {
     {timeout: 30000},
   );
 
+  // 4b. The formatting toolbar wraps the selection and undo reverts it.
+  await page.click('.cm-content');
+  await page.keyboard.press('Control+End');
+  await page.click('button[title="Fett"]');
+  await page.waitForTimeout(200);
+  const afterBold = await page.evaluate(() => document.querySelector('.cm-content')?.textContent ?? '');
+  check(afterBold.includes('**'), 'bold button should insert asterisks');
+  await page.click('button[title="Rückgängig"]');
+  await page.waitForTimeout(200);
+  const afterUndo = await page.evaluate(() => document.querySelector('.cm-content')?.textContent ?? '');
+  check(!afterUndo.includes('**'), 'undo should revert the bold markers');
+
+  // 4c. The preview zoom control scales the preview.
+  await page.click('.preview-zoom button[title="Vergrößern"]');
+  const zoomLabel = await page.textContent('.preview-zoom span');
+  check(zoomLabel?.includes('120'), `zoom should show 120%, got "${zoomLabel}"`);
+  await page.click('.preview-zoom button[title="Verkleinern"]');
+
+  // 4d. PDF export hands a download to the browser.
+  const downloadPromise = page.waitForEvent('download', {timeout: 30000});
+  await page.click('button[title="Als PDF exportieren"]');
+  const download = await downloadPromise;
+  check(
+    download.suggestedFilename().endsWith('.pdf'),
+    `pdf export should download a .pdf, got "${download.suggestedFilename()}"`,
+  );
+
   // 5. The save button triggers the wrapper save.
   await page.click('button[title="In OpenCloud speichern"]');
   await page.waitForFunction(() => window.__harness.saves > 0, null, {timeout: 10000});
@@ -90,7 +117,7 @@ if (problems.length) {
   console.error(`✗ typst-editor harness\n  ${problems.join('\n  ')}`);
   console.error(consoleLines.slice(-30).join('\n'));
 } else {
-  console.log('✓ typst-editor harness: render, compile, edit, emit, save, error-recovery');
+  console.log('✓ typst-editor harness: render, compile, edit, format, zoom, pdf, emit, save, error-recovery');
 }
 
 await browser.close();

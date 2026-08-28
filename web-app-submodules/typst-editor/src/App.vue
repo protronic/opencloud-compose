@@ -3,10 +3,73 @@
     <header class="toolbar">
       <span class="app-label">Typst</span>
       <span class="separator" aria-hidden="true" />
+      <template v-if="!isReadOnly">
+        <div class="toolbar-group" aria-label="Verlauf">
+          <button type="button" class="tb-btn" title="Rückgängig" @click="runUndo">↶</button>
+          <button type="button" class="tb-btn" title="Wiederholen" @click="runRedo">↷</button>
+        </div>
+        <span class="separator" aria-hidden="true" />
+        <div class="toolbar-group" aria-label="Formatierung">
+          <button
+            type="button"
+            class="tb-btn"
+            title="Überschrift"
+            @click="insertLinePrefix('= ')"
+          >
+            H
+          </button>
+          <button type="button" class="tb-btn bold" title="Fett" @click="wrapSelection('*')">
+            B
+          </button>
+          <button
+            type="button"
+            class="tb-btn italic"
+            title="Kursiv"
+            @click="wrapSelection('_')"
+          >
+            I
+          </button>
+          <button type="button" class="tb-btn mono" title="Code" @click="wrapSelection('`')">
+            &lt;&gt;
+          </button>
+          <button type="button" class="tb-btn" title="Liste" @click="insertLinePrefix('- ')">
+            ≔
+          </button>
+          <button
+            type="button"
+            class="tb-btn"
+            title="Nummerierte Liste"
+            @click="insertLinePrefix('+ ')"
+          >
+            ⒈
+          </button>
+          <button
+            type="button"
+            class="tb-btn"
+            title="Link"
+            @click="insertSnippet('#link(&quot;https://&quot;)[', ']')"
+          >
+            🔗
+          </button>
+          <button type="button" class="tb-btn" title="Formel" @click="wrapSelection('$ ', ' $')">
+            Σ
+          </button>
+        </div>
+        <span class="separator" aria-hidden="true" />
+      </template>
       <span v-if="statusText" class="status-hint" :class="{error: compileFailed}">
         {{ statusText }}
       </span>
       <span class="spacer" />
+      <button
+        type="button"
+        class="tb-btn-text"
+        title="Als PDF exportieren"
+        :disabled="!ready || exporting"
+        @click="exportPdf"
+      >
+        PDF
+      </button>
       <template v-if="!isReadOnly">
         <button
           type="button"
@@ -32,11 +95,38 @@
       </button>
     </header>
 
-    <main class="panes">
-      <div ref="editorElement" class="editor-pane" />
+    <main ref="panesElement" class="panes">
+      <div class="editor-pane" :style="{flexBasis: `${editorPct}%`}">
+        <div ref="editorElement" class="editor-host" />
+      </div>
+      <div
+        class="pane-divider"
+        title="Teilung anpassen"
+        @pointerdown="onDividerDown"
+        @pointermove="onDividerMove"
+        @pointerup="onDividerUp"
+        @pointercancel="onDividerUp"
+      />
       <div class="preview-pane">
         <div v-if="compileError" class="error-banner">{{ compileError }}</div>
-        <div ref="previewElement" class="typst-preview" />
+        <div v-if="!ready" class="boot-hint">
+          <span class="boot-spinner" aria-hidden="true" />
+          <strong>Typst wird vorbereitet …</strong>
+          <span>
+            Der Typst-Compiler (~28&nbsp;MB) wird beim ersten Öffnen heruntergeladen und danach
+            aus dem Browser-Cache geladen.
+          </span>
+        </div>
+        <div class="preview-zoom" role="group" aria-label="Vorschau-Zoom">
+          <button type="button" title="Verkleinern" @click="zoomPreview(-1)">−</button>
+          <span>{{ Math.round(previewZoom * 100) }}%</span>
+          <button type="button" title="Vergrößern" @click="zoomPreview(1)">+</button>
+        </div>
+        <div
+          ref="previewElement"
+          class="typst-preview"
+          :style="{width: `${previewZoom * 100}%`}"
+        />
       </div>
       <div v-if="aboutOpen" class="about-backdrop" @pointerdown.self="aboutOpen = false">
         <div class="about-dialog" role="dialog" aria-label="Über Typst Editor">
@@ -77,7 +167,7 @@ import fontMath from 'dejavu-fonts-ttf/ttf/DejaVuMathTeXGyre.ttf?url';
 import {basicSetup} from 'codemirror';
 import {EditorView, keymap} from '@codemirror/view';
 import {EditorState} from '@codemirror/state';
-import {indentWithTab} from '@codemirror/commands';
+import {indentWithTab, redo, undo} from '@codemirror/commands';
 import type {Resource} from '@opencloud-eu/web-client';
 import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
 
@@ -106,6 +196,7 @@ const aboutInfo = {
   }),
 };
 
+const panesElement = ref<HTMLElement>();
 const editorElement = ref<HTMLDivElement>();
 const previewElement = ref<HTMLDivElement>();
 const ready = ref(false);
@@ -113,8 +204,11 @@ const compiling = ref(false);
 const compileFailed = ref(false);
 const compileError = ref('');
 const saving = ref(false);
+const exporting = ref(false);
 const dirty = ref(false);
 const aboutOpen = ref(false);
+const previewZoom = ref(1);
+const editorPct = ref(50);
 
 let editorView: EditorView | undefined;
 let emitTimer = 0;
@@ -123,11 +217,13 @@ let compileQueued = false;
 let compileRunning = false;
 let lastEmitted: string | undefined;
 let destroyed = false;
+let dividerPointer: number | null = null;
 
 const statusText = computed(() => {
   if (!ready.value) return 'Typst wird geladen …';
   if (compiling.value) return 'Kompiliere …';
   if (compileFailed.value) return 'Kompilierfehler';
+  if (exporting.value) return 'PDF wird erstellt …';
   if (saving.value) return 'Speichern …';
   if (dirty.value) return 'Änderungen ausstehend';
   return '';
@@ -277,6 +373,92 @@ function saveToOpenCloud(): void {
   }, 800);
 }
 
+async function exportPdf(): Promise<void> {
+  if (!editorView || exporting.value) return;
+  exporting.value = true;
+  try {
+    await $typst.addSource('/doc.typ', editorView.state.doc.toString());
+    const bytes = await $typst.pdf({mainFilePath: '/main.typ'});
+    if (!bytes) throw new Error('leere PDF-Ausgabe');
+    const url = URL.createObjectURL(new Blob([bytes as BlobPart], {type: 'application/pdf'}));
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = (props.resource?.name ?? 'dokument.typ').replace(/\.typ$/i, '') + '.pdf';
+    anchor.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  } catch (err) {
+    compileFailed.value = true;
+    compileError.value = formatCompileError(err);
+  } finally {
+    exporting.value = false;
+  }
+}
+
+// --- Editor helpers (typst.app-style formatting toolbar) --------------------
+
+function wrapSelection(prefix: string, suffix = prefix): void {
+  if (!editorView || props.isReadOnly) return;
+  const {from, to} = editorView.state.selection.main;
+  const selected = editorView.state.sliceDoc(from, to);
+  editorView.dispatch({
+    changes: {from, to, insert: `${prefix}${selected}${suffix}`},
+    selection: {anchor: from + prefix.length, head: from + prefix.length + selected.length},
+  });
+  editorView.focus();
+}
+
+function insertSnippet(prefix: string, suffix: string): void {
+  wrapSelection(prefix, suffix);
+}
+
+function insertLinePrefix(prefix: string): void {
+  if (!editorView || props.isReadOnly) return;
+  const {state} = editorView;
+  const range = state.selection.main;
+  const fromLine = state.doc.lineAt(range.from);
+  const toLine = state.doc.lineAt(range.to);
+  const changes = [];
+  for (let lineNo = fromLine.number; lineNo <= toLine.number; lineNo++) {
+    changes.push({from: state.doc.line(lineNo).from, insert: prefix});
+  }
+  editorView.dispatch({changes});
+  editorView.focus();
+}
+
+function runUndo(): void {
+  if (editorView) undo(editorView);
+  editorView?.focus();
+}
+
+function runRedo(): void {
+  if (editorView) redo(editorView);
+  editorView?.focus();
+}
+
+// --- Preview zoom and pane divider ------------------------------------------
+
+function zoomPreview(direction: number): void {
+  const next = previewZoom.value * (direction > 0 ? 1.2 : 1 / 1.2);
+  previewZoom.value = Math.min(3, Math.max(0.4, Math.round(next * 100) / 100));
+}
+
+function onDividerDown(event: PointerEvent): void {
+  dividerPointer = event.pointerId;
+  (event.target as HTMLElement).setPointerCapture(event.pointerId);
+  event.preventDefault();
+}
+
+function onDividerMove(event: PointerEvent): void {
+  if (dividerPointer !== event.pointerId || !panesElement.value) return;
+  const rect = panesElement.value.getBoundingClientRect();
+  const pct = ((event.clientX - rect.left) / rect.width) * 100;
+  editorPct.value = Math.min(80, Math.max(20, pct));
+}
+
+function onDividerUp(event: PointerEvent): void {
+  if (dividerPointer === event.pointerId) dividerPointer = null;
+}
+
 function setEditorContent(text: string): void {
   if (!editorView) return;
   const current = editorView.state.doc.toString();
@@ -380,7 +562,8 @@ onBeforeUnmount(() => {
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  flex-wrap: wrap;
   min-height: 40px;
   padding: 4px 10px;
   background: var(--toolbar-bg);
@@ -392,6 +575,43 @@ onBeforeUnmount(() => {
 .app-label {
   font-weight: 600;
   color: var(--accent);
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tb-btn {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--toolbar-text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tb-btn:hover:enabled {
+  background: var(--button-hover);
+}
+
+.tb-btn.bold {
+  font-weight: 700;
+}
+
+.tb-btn.italic {
+  font-style: italic;
+}
+
+.tb-btn.mono {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
 }
 
 .separator {
@@ -441,27 +661,112 @@ onBeforeUnmount(() => {
 }
 
 .editor-pane {
-  flex: 1 1 50%;
+  flex: 0 0 50%;
   min-width: 0;
   overflow: hidden;
   background: var(--field-bg);
-  border-right: 1px solid var(--toolbar-border);
 }
 
-.editor-pane :deep(.cm-editor) {
+.editor-host {
   height: 100%;
+}
+
+.editor-host :deep(.cm-editor) {
+  height: 100%;
+}
+
+.pane-divider {
+  flex: 0 0 5px;
+  cursor: col-resize;
+  background: var(--toolbar-border);
+  touch-action: none;
+}
+
+.pane-divider:hover {
+  background: var(--accent);
 }
 
 .preview-pane {
   position: relative;
-  flex: 1 1 50%;
+  flex: 1 1 auto;
   min-width: 0;
   overflow: auto;
   background: var(--body-bg);
 }
 
-.typst-preview {
+.boot-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 340px;
+  margin: 15vh auto 0;
   padding: 16px;
+  border: 1px solid var(--toolbar-border);
+  border-radius: 8px;
+  background: var(--toolbar-bg);
+  color: var(--toolbar-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.boot-hint strong {
+  color: var(--toolbar-text);
+}
+
+.boot-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--toolbar-border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: typst-spin 0.9s linear infinite;
+}
+
+@keyframes typst-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.preview-zoom {
+  position: sticky;
+  top: 8px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: 12px;
+  padding: 2px 6px;
+  border: 1px solid var(--toolbar-border);
+  border-radius: 6px;
+  background: var(--toolbar-bg);
+  color: var(--toolbar-text);
+  font-size: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.preview-zoom button {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.preview-zoom button:hover {
+  background: var(--button-hover);
+}
+
+.typst-preview {
+  min-width: 100%;
+  padding: 0 16px 16px;
+  box-sizing: border-box;
 }
 
 .typst-preview :deep(svg) {
