@@ -7,7 +7,7 @@ type HarnessState = {
   emitted: string[];
   saves: number;
   pdfSaves: Array<{path: string; size: number; head: number[]}>;
-  wikiNav: Array<{from: string; to: string}>;
+  wikiNav: Array<{space: string | null; to: string}>;
   errors: string[];
 };
 
@@ -35,11 +35,6 @@ ocContext.savePdf = async (_space, path, content) => {
   });
 };
 
-// Mocks the router bridge: wiki link clicks must resolve and land here.
-ocContext.openTyp = (currentResourcePath, targetResourcePath) => {
-  window.__harness.wikiNav.push({from: currentResourcePath, to: targetResourcePath});
-};
-
 window.addEventListener('error', (event) => {
   window.__harness.errors.push(String(event.error ?? event.message));
 });
@@ -59,19 +54,39 @@ Weiter zur #link("zweite-seite.typ")[zweiten Seite] oder ins
 #link("https://typst.app")[Typst-Web].
 `;
 
+const currentContent = ref<string>(sampleTypst);
+const resource = ref({
+  id: 'res-typ-1',
+  name: 'notizen.typ',
+  path: '/notizen.typ',
+  size: sampleTypst.length,
+  extension: 'typ',
+  mimeType: 'text/plain',
+} as unknown as Resource);
+
+// Mocks the router bridge: wiki link clicks must resolve and land here. The
+// mock then simulates the AppWrapper reload after navigation - resource
+// first, content afterwards, like the real wrapper - with an empty document
+// (the "new page" case).
+ocContext.openTyp = async (space, targetResourcePath) => {
+  window.__harness.wikiNav.push({
+    space: (space as {id?: string})?.id ?? null,
+    to: targetResourcePath,
+  });
+  resource.value = {
+    ...resource.value,
+    id: `res-${targetResourcePath}`,
+    name: targetResourcePath.split('/').pop() ?? targetResourcePath,
+    path: targetResourcePath,
+  } as unknown as Resource;
+  await Promise.resolve();
+  currentContent.value = '';
+};
+
 // Mimics @opencloud-eu/web-pkg AppWrapper for text files: currentContent is
 // the fetched string; update:currentContent flows back; save triggers PUT.
 const Host = defineComponent({
   setup() {
-    const currentContent = ref<string>(sampleTypst);
-    const resource = {
-      id: 'res-typ-1',
-      name: 'notizen.typ',
-      path: '/notizen.typ',
-      size: sampleTypst.length,
-      extension: 'typ',
-      mimeType: 'text/plain',
-    } as unknown as Resource;
     const space = {id: 'space-1', name: 'Testspace'} as unknown as Parameters<
       NonNullable<typeof ocContext.savePdf>
     >[0];
@@ -80,7 +95,7 @@ const Host = defineComponent({
       h(App, {
         currentContent: currentContent.value,
         isReadOnly: false,
-        resource,
+        resource: resource.value,
         space,
         onSave: () => {
           window.__harness.saves += 1;
@@ -105,6 +120,15 @@ app.mount('#host');
 // unmounted and a fresh instance mounts against the shared typst singleton.
 window.__remount = () => {
   app.unmount();
+  currentContent.value = sampleTypst;
+  resource.value = {
+    id: 'res-typ-1',
+    name: 'notizen.typ',
+    path: '/notizen.typ',
+    size: sampleTypst.length,
+    extension: 'typ',
+    mimeType: 'text/plain',
+  } as unknown as Resource;
   app = createApp(Host);
   app.mount('#host');
 };

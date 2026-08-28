@@ -264,15 +264,17 @@ const previewStyle = computed(() =>
 function toggleViewMode(): void {
   if (props.isReadOnly) return;
   viewMode.value = !viewMode.value;
-  if (!viewMode.value) {
-    // CodeMirror was mounted inside a v-show-hidden pane and needs a
-    // re-measure once the pane becomes visible.
-    window.requestAnimationFrame(() => {
-      editorView?.requestMeasure();
-      editorView?.focus();
-    });
-  }
 }
+
+watch(viewMode, (isViewing) => {
+  if (isViewing) return;
+  // CodeMirror was mounted inside a v-show-hidden pane and needs a
+  // re-measure once the pane becomes visible.
+  window.requestAnimationFrame(() => {
+    editorView?.requestMeasure();
+    editorView?.focus();
+  });
+});
 
 function contentToString(value: ContentValue | undefined): string {
   if (typeof value === 'string') return value;
@@ -496,17 +498,29 @@ function resolveWikiPath(currentPath: string, target: string): string | null {
   return parts.length ? `/${parts.join('/')}` : null;
 }
 
-function openWikiTarget(target: string): void {
+async function openWikiTarget(target: string): Promise<void> {
   const currentPath = props.resource?.path ?? '/';
   const resolved = resolveWikiPath(currentPath, target);
   if (!resolved || resolved === currentPath) return;
+  if (!ocContext.openTyp || !props.space) {
+    pdfNotice.value = 'Wiki-Navigation außerhalb von OpenCloud nicht verfügbar';
+    window.setTimeout(() => (pdfNotice.value = ''), 4000);
+    return;
+  }
   // Flush pending edits before leaving the page.
   if (!props.isReadOnly && dirty.value) {
     window.clearTimeout(emitTimer);
     emitContent();
     emit('save');
   }
-  ocContext.openTyp?.(currentPath, resolved);
+  pdfNotice.value = `Öffne ${resolved.split('/').pop()} …`;
+  try {
+    await ocContext.openTyp(props.space, resolved);
+    pdfNotice.value = '';
+  } catch (err) {
+    pdfNotice.value = `Navigation fehlgeschlagen: ${formatCompileError(err)}`;
+    window.setTimeout(() => (pdfNotice.value = ''), 6000);
+  }
 }
 
 function onPreviewClick(event: MouseEvent): void {
@@ -519,7 +533,7 @@ function onPreviewClick(event: MouseEvent): void {
   event.stopPropagation();
   // In-document anchors (#label) have no wiki target.
   if (!href || href.startsWith('#')) return;
-  openWikiTarget(href);
+  void openWikiTarget(href);
 }
 
 // --- Editor helpers (typst.app-style formatting toolbar) --------------------
@@ -596,11 +610,35 @@ function setEditorContent(text: string): void {
   });
 }
 
+// The wrapped component is reused when the wiki navigation swaps the route
+// to another .typ file: the wrapper first updates the resource, then loads
+// and passes the new content. The flag defers the mode reset to the moment
+// the new content actually arrives.
+let pendingDocSwitch = false;
+
+watch(
+  () => props.resource?.id ?? props.resource?.path,
+  (id, previous) => {
+    if (id !== previous) pendingDocSwitch = true;
+  },
+);
+
 watch(
   () => props.currentContent,
   (value) => {
     if (value === undefined || value === null) return;
     const text = contentToString(value);
+    if (pendingDocSwitch) {
+      pendingDocSwitch = false;
+      lastEmitted = text;
+      dirty.value = false;
+      setEditorContent(text);
+      // Wiki flow: existing pages open for reading, new (empty) pages for
+      // writing.
+      viewMode.value = props.isReadOnly || text.trim().length > 0;
+      scheduleCompile();
+      return;
+    }
     // Ignore the echo of our own update:currentContent emissions.
     if (text === lastEmitted) return;
     lastEmitted = text;

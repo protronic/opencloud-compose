@@ -27,22 +27,42 @@ export default defineWebApplication({
     }
 
     try {
-      // Wiki navigation: jump to another .typ file of the same space by
-      // swapping the file part of the current route's driveAliasAndItem.
+      // Wiki navigation: open another .typ file of the same space. The route
+      // is built the same way the host builds file routes - via the space's
+      // drive alias plus the target's fileId - instead of string surgery on
+      // the current URL. A missing target is created empty first, so wiki
+      // links to new pages open the editor on a fresh document.
+      const clientService = useClientService();
       const router = useRouter();
-      ocContext.openTyp = (currentResourcePath, targetResourcePath) => {
+      ocContext.openTyp = async (space, targetResourcePath) => {
+        let fileId: string | undefined;
+        try {
+          const info = await clientService.webdav.getFileInfo(space, {
+            path: targetResourcePath,
+          });
+          fileId = info.fileId ?? info.id;
+        } catch {
+          const created = await clientService.webdav.putFileContents(space, {
+            path: targetResourcePath,
+            content: '',
+          });
+          fileId = created.fileId ?? created.id;
+        }
         const route = router.currentRoute.value;
-        const param = route.params.driveAliasAndItem;
-        const current = Array.isArray(param) ? param.join('/') : String(param ?? '');
-        const normalized = currentResourcePath.replace(/^\//, '');
-        if (!current.endsWith(normalized)) return;
-        const prefix = current.slice(0, current.length - normalized.length);
-        void router.push({
+        // The stale fileId of the current document would send the AppWrapper's
+        // replaceInvalidFileRoute back to the old file.
+        const query = {...route.query};
+        delete query.fileId;
+        if (fileId) query.fileId = fileId;
+        await router.push({
           name: route.name ?? routeName,
           params: {
-            driveAliasAndItem: prefix + targetResourcePath.replace(/^\//, ''),
+            ...route.params,
+            driveAliasAndItem: space.getDriveAliasAndItem({
+              path: targetResourcePath,
+            } as Parameters<typeof space.getDriveAliasAndItem>[0]),
           },
-          query: route.query,
+          query,
         });
       };
     } catch {

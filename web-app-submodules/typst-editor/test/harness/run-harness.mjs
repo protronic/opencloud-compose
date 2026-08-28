@@ -40,29 +40,6 @@ try {
     'preview should render the heading text',
   );
 
-  // 1b. Clicking the wiki link navigates inside OpenCloud (mocked router
-  // bridge) instead of opening a new tab.
-  const linkInfo = await page.evaluate(() => {
-    const shadow = document.querySelector('.typst-preview')?.shadowRoot;
-    const anchors = [...(shadow?.querySelectorAll('a') ?? [])];
-    const hrefOf = (a) => a.getAttribute('href') ?? a.getAttribute('xlink:href') ?? '';
-    const wiki = anchors.find((a) => hrefOf(a).includes('zweite-seite'));
-    const target = wiki?.querySelector('rect') ?? wiki;
-    target?.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true}));
-    return {anchorCount: anchors.length, wikiHref: wiki ? hrefOf(wiki) : null};
-  });
-  check(
-    linkInfo.wikiHref !== null,
-    `preview should contain the wiki link (found ${linkInfo.anchorCount} links)`,
-  );
-  await page.waitForFunction(() => window.__harness.wikiNav.length > 0, null, {timeout: 5000});
-  const nav = await page.evaluate(() => window.__harness.wikiNav.at(-1));
-  check(nav?.from === '/notizen.typ', `wiki nav origin should be /notizen.typ, got "${nav?.from}"`);
-  check(
-    nav?.to === '/zweite-seite.typ',
-    `wiki nav target should resolve to /zweite-seite.typ, got "${nav?.to}"`,
-  );
-
   // 2. Switching to edit mode shows the CodeMirror source.
   await page.click('button:has-text("Bearbeiten")');
   await page.waitForSelector('.cm-content', {timeout: 20000});
@@ -156,6 +133,50 @@ try {
     `typst styles must not leak (host svg fill is "${iconVisible.svgFill}")`,
   );
 
+  // 6c. A real mouse click on the wiki link (hit-testing through the shadow
+  // DOM) navigates via the mocked router bridge; the mock swaps in an empty
+  // "new page", which must open in edit mode.
+  const linkBox = await page.evaluate(() => {
+    const shadow = document.querySelector('.typst-preview')?.shadowRoot;
+    const anchors = [...(shadow?.querySelectorAll('a') ?? [])];
+    const hrefOf = (a) => a.getAttribute('href') ?? a.getAttribute('xlink:href') ?? '';
+    const wiki = anchors.find((a) => hrefOf(a).includes('zweite-seite'));
+    if (!wiki) return {count: anchors.length};
+    const rect = wiki.getBoundingClientRect();
+    return {
+      count: anchors.length,
+      href: hrefOf(wiki),
+      x: rect.x + rect.width / 2,
+      y: rect.y + rect.height / 2,
+    };
+  });
+  check(
+    linkBox.href !== undefined,
+    `preview should contain the wiki link (found ${linkBox.count} links)`,
+  );
+  if (linkBox.href !== undefined) {
+    await page.mouse.click(linkBox.x, linkBox.y);
+  }
+  await page.waitForFunction(() => window.__harness.wikiNav.length > 0, null, {timeout: 5000});
+  const nav = await page.evaluate(() => window.__harness.wikiNav.at(-1));
+  check(nav?.space === 'space-1', `wiki nav should carry the space, got "${nav?.space}"`);
+  check(
+    nav?.to === '/zweite-seite.typ',
+    `wiki nav target should resolve to /zweite-seite.typ, got "${nav?.to}"`,
+  );
+  await page.waitForTimeout(500);
+  check(
+    await page.locator('.editor-pane').isVisible(),
+    'empty new wiki page should open in edit mode',
+  );
+  const newPageSource = await page.evaluate(
+    () => document.querySelector('.cm-content')?.textContent ?? 'missing',
+  );
+  check(
+    newPageSource.trim() === '',
+    `new wiki page should start empty, got "${newPageSource.slice(0, 60)}"`,
+  );
+
   // 7. Remounting (second open) must not throw on the shared singleton;
   // the fresh instance starts in reading mode again.
   await page.evaluate(() => window.__remount());
@@ -173,7 +194,7 @@ if (problems.length) {
   console.error(`✗ typst-editor harness\n  ${problems.join('\n  ')}`);
   console.error(consoleLines.slice(-30).join('\n'));
 } else {
-  console.log('✓ typst-editor harness: render, compile, wiki-link, view-toggle, edit, format, zoom, pdf, emit, save, error-recovery, remount');
+  console.log('✓ typst-editor harness: render, compile, view-toggle, edit, format, zoom, pdf, emit, save, error-recovery, wiki-link, wiki-new-page, remount');
 }
 
 await browser.close();
