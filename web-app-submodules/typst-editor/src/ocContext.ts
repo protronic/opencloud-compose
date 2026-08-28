@@ -9,4 +9,6 @@ type SavePdfFn = (space: SpaceResource, path: string, content: ArrayBuffer) => P
  * does not need to import @opencloud-eu/web-pkg, which only exists as a
  * shared module inside the OpenCloud host.
  */
-export const ocContext: {savePdf?: SavePdfFn} = {};
+type OpenTypFn = (currentResourcePath: string, targetResourcePath: string) => void;
+
+export const ocContext: {savePdf?: SavePdfFn; openTyp?: OpenTypFn} = {};

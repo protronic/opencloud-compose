@@ -25,13 +25,13 @@ const check = (condition, message) => {
 try {
   await page.goto('http://localhost:5301/', {waitUntil: 'networkidle'});
 
-  // 1. Editor mounts with the sample source.
-  await page.waitForSelector('.cm-content', {timeout: 20000});
-  const source = await page.textContent('.cm-content');
-  check(source?.includes('Testdokument'), 'editor should show the sample source');
-
-  // 2. The WASM pipeline compiles the document to an SVG preview.
+  // 1. Existing documents open in the wiki reading mode: preview only,
+  // compiled by the WASM pipeline, editor pane hidden.
   await page.waitForSelector('.typst-preview svg', {timeout: 60000});
+  check(
+    !(await page.locator('.editor-pane').isVisible()),
+    'reading mode should hide the editor pane',
+  );
   const previewText = await page.evaluate(
     () => document.querySelector('.typst-preview')?.shadowRoot?.textContent ?? '',
   );
@@ -39,6 +39,35 @@ try {
     (previewText ?? '').replace(/\s+/g, '').includes('Testdokument'),
     'preview should render the heading text',
   );
+
+  // 1b. Clicking the wiki link navigates inside OpenCloud (mocked router
+  // bridge) instead of opening a new tab.
+  const linkInfo = await page.evaluate(() => {
+    const shadow = document.querySelector('.typst-preview')?.shadowRoot;
+    const anchors = [...(shadow?.querySelectorAll('a') ?? [])];
+    const hrefOf = (a) => a.getAttribute('href') ?? a.getAttribute('xlink:href') ?? '';
+    const wiki = anchors.find((a) => hrefOf(a).includes('zweite-seite'));
+    const target = wiki?.querySelector('rect') ?? wiki;
+    target?.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true}));
+    return {anchorCount: anchors.length, wikiHref: wiki ? hrefOf(wiki) : null};
+  });
+  check(
+    linkInfo.wikiHref !== null,
+    `preview should contain the wiki link (found ${linkInfo.anchorCount} links)`,
+  );
+  await page.waitForFunction(() => window.__harness.wikiNav.length > 0, null, {timeout: 5000});
+  const nav = await page.evaluate(() => window.__harness.wikiNav.at(-1));
+  check(nav?.from === '/notizen.typ', `wiki nav origin should be /notizen.typ, got "${nav?.from}"`);
+  check(
+    nav?.to === '/zweite-seite.typ',
+    `wiki nav target should resolve to /zweite-seite.typ, got "${nav?.to}"`,
+  );
+
+  // 2. Switching to edit mode shows the CodeMirror source.
+  await page.click('button:has-text("Bearbeiten")');
+  await page.waitForSelector('.cm-content', {timeout: 20000});
+  const source = await page.textContent('.cm-content');
+  check(source?.includes('Testdokument'), 'editor should show the sample source');
 
   // 3. Editing emits updated content through the AppWrapper contract.
   await page.click('.cm-content');
@@ -127,10 +156,12 @@ try {
     `typst styles must not leak (host svg fill is "${iconVisible.svgFill}")`,
   );
 
-  // 7. Remounting (second open) must not throw on the shared singleton.
+  // 7. Remounting (second open) must not throw on the shared singleton;
+  // the fresh instance starts in reading mode again.
   await page.evaluate(() => window.__remount());
-  await page.waitForSelector('.cm-content', {timeout: 20000});
   await page.waitForSelector('.typst-preview svg', {timeout: 60000});
+  await page.click('button:has-text("Bearbeiten")');
+  await page.waitForSelector('.cm-content', {timeout: 20000});
 
   const errors = await page.evaluate(() => window.__harness.errors);
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
@@ -142,7 +173,7 @@ if (problems.length) {
   console.error(`✗ typst-editor harness\n  ${problems.join('\n  ')}`);
   console.error(consoleLines.slice(-30).join('\n'));
 } else {
-  console.log('✓ typst-editor harness: render, compile, edit, format, zoom, pdf, emit, save, error-recovery, remount');
+  console.log('✓ typst-editor harness: render, compile, wiki-link, view-toggle, edit, format, zoom, pdf, emit, save, error-recovery, remount');
 }
 
 await browser.close();

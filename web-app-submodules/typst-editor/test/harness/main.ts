@@ -7,6 +7,7 @@ type HarnessState = {
   emitted: string[];
   saves: number;
   pdfSaves: Array<{path: string; size: number; head: number[]}>;
+  wikiNav: Array<{from: string; to: string}>;
   errors: string[];
 };
 
@@ -21,6 +22,7 @@ window.__harness = {
   emitted: [],
   saves: 0,
   pdfSaves: [],
+  wikiNav: [],
   errors: [],
 };
 
@@ -31,6 +33,11 @@ ocContext.savePdf = async (_space, path, content) => {
     size: content.byteLength,
     head: Array.from(new Uint8Array(content.slice(0, 5))),
   });
+};
+
+// Mocks the router bridge: wiki link clicks must resolve and land here.
+ocContext.openTyp = (currentResourcePath, targetResourcePath) => {
+  window.__harness.wikiNav.push({from: currentResourcePath, to: targetResourcePath});
 };
 
 window.addEventListener('error', (event) => {
@@ -47,6 +54,9 @@ const sampleTypst = `#set page(width: 10cm, height: auto, margin: 1cm)
 Dies ist ein *Typst*-Beispiel mit einer Formel:
 
 $ integral_0^1 x^2 dif x = 1/3 $
+
+Weiter zur #link("zweite-seite.typ")[zweiten Seite] oder ins
+#link("https://typst.app")[Typst-Web].
 `;
 
 // Mimics @opencloud-eu/web-pkg AppWrapper for text files: currentContent is

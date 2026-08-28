@@ -3,6 +3,7 @@ import {
   AppWrapperRoute,
   defineWebApplication,
   useClientService,
+  useRouter,
 } from '@opencloud-eu/web-pkg';
 import {useGettext} from 'vue3-gettext';
 import App from './App.vue';
@@ -23,6 +24,29 @@ export default defineWebApplication({
       };
     } catch {
       ocContext.savePdf = undefined;
+    }
+
+    try {
+      // Wiki navigation: jump to another .typ file of the same space by
+      // swapping the file part of the current route's driveAliasAndItem.
+      const router = useRouter();
+      ocContext.openTyp = (currentResourcePath, targetResourcePath) => {
+        const route = router.currentRoute.value;
+        const param = route.params.driveAliasAndItem;
+        const current = Array.isArray(param) ? param.join('/') : String(param ?? '');
+        const normalized = currentResourcePath.replace(/^\//, '');
+        if (!current.endsWith(normalized)) return;
+        const prefix = current.slice(0, current.length - normalized.length);
+        void router.push({
+          name: route.name ?? routeName,
+          params: {
+            driveAliasAndItem: prefix + targetResourcePath.replace(/^\//, ''),
+          },
+          query: route.query,
+        });
+      };
+    } catch {
+      ocContext.openTyp = undefined;
     }
 
     const routes = [

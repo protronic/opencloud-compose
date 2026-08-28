@@ -3,7 +3,7 @@
     <header class="toolbar">
       <span class="app-label">Typst</span>
       <span class="separator" aria-hidden="true" />
-      <template v-if="!isReadOnly">
+      <template v-if="!isReadOnly && !viewMode">
         <div class="toolbar-group" aria-label="Verlauf">
           <button type="button" class="tb-btn" title="Rückgängig" @click="runUndo">↶</button>
           <button type="button" class="tb-btn" title="Wiederholen" @click="runRedo">↷</button>
@@ -54,6 +54,14 @@
           <button type="button" class="tb-btn" title="Formel" @click="wrapSelection('$ ', ' $')">
             Σ
           </button>
+          <button
+            type="button"
+            class="tb-btn mono"
+            title="Wiki-Link zu einer .typ-Datei"
+            @click="insertSnippet('#link(&quot;seite.typ&quot;)[', ']')"
+          >
+            [[]]
+          </button>
         </div>
         <span class="separator" aria-hidden="true" />
       </template>
@@ -61,6 +69,15 @@
         {{ statusText }}
       </span>
       <span class="spacer" />
+      <button
+        v-if="!isReadOnly"
+        type="button"
+        class="tb-btn-text"
+        :title="viewMode ? 'Zum Bearbeiten wechseln' : 'Zum Lesemodus wechseln'"
+        @click="toggleViewMode"
+      >
+        {{ viewMode ? 'Bearbeiten' : 'Lesemodus' }}
+      </button>
       <button
         type="button"
         class="tb-btn-text"
@@ -96,10 +113,11 @@
     </header>
 
     <main ref="panesElement" class="panes">
-      <div class="editor-pane" :style="{flexBasis: `${editorPct}%`}">
+      <div v-show="!viewMode" class="editor-pane" :style="{flexBasis: `${editorPct}%`}">
         <div ref="editorElement" class="editor-host" />
       </div>
       <div
+        v-show="!viewMode"
         class="pane-divider"
         title="Teilung anpassen"
         @pointerdown="onDividerDown"
@@ -107,7 +125,7 @@
         @pointerup="onDividerUp"
         @pointercancel="onDividerUp"
       />
-      <div class="preview-pane">
+      <div class="preview-pane" :class="{reading: viewMode}">
         <div v-if="compileError" class="error-banner">{{ compileError }}</div>
         <div v-if="!ready" class="boot-hint">
           <span class="boot-spinner" aria-hidden="true" />
@@ -122,11 +140,7 @@
           <span>{{ Math.round(previewZoom * 100) }}%</span>
           <button type="button" title="Vergrößern" @click="zoomPreview(1)">+</button>
         </div>
-        <div
-          ref="previewElement"
-          class="typst-preview"
-          :style="{width: `${previewZoom * 100}%`}"
-        />
+        <div ref="previewElement" class="typst-preview" :style="previewStyle" />
       </div>
       <div v-if="aboutOpen" class="about-backdrop" @pointerdown.self="aboutOpen = false">
         <div class="about-dialog" role="dialog" aria-label="Über Typst Editor">
@@ -212,6 +226,11 @@ const aboutOpen = ref(false);
 const previewZoom = ref(1);
 const pdfNotice = ref('');
 const editorPct = ref(50);
+// Wiki reading mode: existing documents open as rendered page, empty (new)
+// documents jump straight into the editor. Read-only always stays in view.
+const viewMode = ref(
+  props.isReadOnly || contentToString(props.currentContent).trim().length > 0,
+);
 
 let editorView: EditorView | undefined;
 let previewContainer: HTMLDivElement | undefined;
@@ -233,6 +252,27 @@ const statusText = computed(() => {
   if (dirty.value) return 'Änderungen ausstehend';
   return '';
 });
+
+// In reading mode the page gets a fixed, centered column instead of filling
+// the pane; the zoom control scales that column width.
+const previewStyle = computed(() =>
+  viewMode.value
+    ? {width: `${Math.round(previewZoom.value * 850)}px`}
+    : {width: `${previewZoom.value * 100}%`},
+);
+
+function toggleViewMode(): void {
+  if (props.isReadOnly) return;
+  viewMode.value = !viewMode.value;
+  if (!viewMode.value) {
+    // CodeMirror was mounted inside a v-show-hidden pane and needs a
+    // re-measure once the pane becomes visible.
+    window.requestAnimationFrame(() => {
+      editorView?.requestMeasure();
+      editorView?.focus();
+    });
+  }
+}
 
 function contentToString(value: ContentValue | undefined): string {
   if (typeof value === 'string') return value;
@@ -428,6 +468,60 @@ async function exportPdf(): Promise<void> {
   }
 }
 
+// --- Wiki navigation ---------------------------------------------------------
+
+/**
+ * Resolves a wiki link target from the rendered document against the
+ * directory of the currently open .typ file. Accepts `seite`, `seite.typ`,
+ * `./unter/seite.typ`, `../andere.typ` and space-absolute `/wiki/seite.typ`;
+ * a missing .typ extension is appended. Returns null when the target
+ * escapes the space root.
+ */
+function resolveWikiPath(currentPath: string, target: string): string | null {
+  let path = (target.split('#')[0] ?? '').split('?')[0]?.trim() ?? '';
+  if (!path) return null;
+  if (!/\.typ$/i.test(path)) path += '.typ';
+  const baseDir = currentPath.replace(/[^/]*$/, '');
+  const combined = path.startsWith('/') ? path : baseDir + path;
+  const parts: string[] = [];
+  for (const segment of combined.split('/')) {
+    if (!segment || segment === '.') continue;
+    if (segment === '..') {
+      if (!parts.length) return null;
+      parts.pop();
+      continue;
+    }
+    parts.push(segment);
+  }
+  return parts.length ? `/${parts.join('/')}` : null;
+}
+
+function openWikiTarget(target: string): void {
+  const currentPath = props.resource?.path ?? '/';
+  const resolved = resolveWikiPath(currentPath, target);
+  if (!resolved || resolved === currentPath) return;
+  // Flush pending edits before leaving the page.
+  if (!props.isReadOnly && dirty.value) {
+    window.clearTimeout(emitTimer);
+    emitContent();
+    emit('save');
+  }
+  ocContext.openTyp?.(currentPath, resolved);
+}
+
+function onPreviewClick(event: MouseEvent): void {
+  const anchor = (event.target as Element | null)?.closest?.('a');
+  if (!anchor) return;
+  const href = anchor.getAttribute('href') ?? anchor.getAttribute('xlink:href') ?? '';
+  // Absolute URLs (https:, mailto:, …) keep the typst default: new tab.
+  if (/^[a-z][a-z0-9+.-]*:/i.test(href)) return;
+  event.preventDefault();
+  event.stopPropagation();
+  // In-document anchors (#label) have no wiki target.
+  if (!href || href.startsWith('#')) return;
+  openWikiTarget(href);
+}
+
 // --- Editor helpers (typst.app-style formatting toolbar) --------------------
 
 function wrapSelection(prefix: string, suffix = prefix): void {
@@ -532,6 +626,9 @@ onMounted(() => {
     '</style>' +
     '<div class="typst-doc-host"></div>';
   previewContainer = shadow.querySelector('.typst-doc-host') as HTMLDivElement;
+  // Wiki links: clicks on relative .typ targets navigate inside OpenCloud
+  // instead of opening a new tab.
+  previewContainer.addEventListener('click', onPreviewClick);
 
   const initial = contentToString(props.currentContent);
   lastEmitted = initial;
@@ -562,6 +659,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   destroyed = true;
+  previewContainer?.removeEventListener('click', onPreviewClick);
   previewContainer = undefined;
   window.clearTimeout(emitTimer);
   window.clearTimeout(compileTimer);
@@ -817,6 +915,13 @@ onBeforeUnmount(() => {
   min-width: 100%;
   padding: 0 16px 16px;
   box-sizing: border-box;
+}
+
+.preview-pane.reading .typst-preview {
+  min-width: 0;
+  max-width: 100%;
+  margin: 0 auto;
+  padding-top: 16px;
 }
 
 .error-banner {
