@@ -1,0 +1,55 @@
+{
+  "name": "@protronic/typst-wysiwyg",
+  "version": "1.0.0",
+  "description": "OpenCloud web extension embedding the ortic/typst-wysiwyg block editor for Typst documents",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build && vite build --config vite.app.config.ts",
+    "check:types": "vue-tsc --noEmit -p tsconfig.wrapper.json && tsc --noEmit -p app/tsconfig.json",
+    "check": "pnpm run build && pnpm run check:types"
+  },
+  "keywords": [
+    "opencloud",
+    "typst",
+    "wysiwyg",
+    "editor"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@myriaddreamin/typst-ts-renderer": "^0.7.0",
+    "@myriaddreamin/typst-ts-web-compiler": "^0.7.0",
+    "@myriaddreamin/typst.ts": "^0.7.0",
+    "@tiptap/core": "^2.27.2",
+    "@tiptap/extension-color": "^2.27.2",
+    "@tiptap/extension-heading": "^2.27.2",
+    "@tiptap/extension-highlight": "^2.27.2",
+    "@tiptap/extension-image": "^2.27.2",
+    "@tiptap/extension-link": "^2.27.2",
+    "@tiptap/extension-placeholder": "^2.27.2",
+    "@tiptap/extension-table": "^2.27.2",
+    "@tiptap/extension-table-cell": "^2.27.2",
+    "@tiptap/extension-table-header": "^2.27.2",
+    "@tiptap/extension-table-row": "^2.27.2",
+    "@tiptap/extension-text-style": "^2.27.2",
+    "@tiptap/pm": "^2.27.2",
+    "@tiptap/starter-kit": "^2.27.2",
+    "dejavu-fonts-ttf": "^2.37.3",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@opencloud-eu/extension-sdk": "7.1.2",
+    "@opencloud-eu/tsconfig": "^7.0.0",
+    "@opencloud-eu/web-client": "7.0.0",
+    "@opencloud-eu/web-pkg": "7.0.0",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "playwright-core": "^1.62.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.4",
+    "vue-router": "^5.0.0",
+    "vue-tsc": "^3.0.0",
+    "vue3-gettext": "^4.0.0-beta.1"
+  },
+  "packageManager": "pnpm@10.33.3"
+}

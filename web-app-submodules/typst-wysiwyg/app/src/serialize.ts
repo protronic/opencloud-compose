@@ -1,0 +1,300 @@
+// Serialize a ProseMirror document (the content layer) to Typst markup.
+// One-way only. Unknown nodes fall back to their text content so serialization
+// never throws.
+
+import type { Node as PMNode, Mark } from '@tiptap/pm/model';
+
+/** Escape text for Typst MARKUP mode so it renders literally. Brackets are
+ *  escaped too so text never closes a surrounding content block ([...]).
+ *
+ *  Beyond the inline markers (`*`, `_`, `` ` ``, …) we also escape the chars
+ *  that start block constructs at the beginning of a line — `=` (heading),
+ *  `-`/`+` (lists), `/` (term list) — because a text run can land at a line
+ *  start (e.g. after a hard break or when split into its own paragraph) and
+ *  would silently turn into a heading or list item. `-` and `/` are dangerous
+ *  mid-line too: `--`/`---`/`-?` are symbol shorthands (en/em dash, soft
+ *  hyphen) and `//`/`/*` start comments. Escaping them keeps the output
+ *  faithful to what the user typed (WYSIWYG). */
+export function escapeMarkup(s: string): string {
+  return s.replace(/([\\#$*_`<>@~[\]=+/-])/g, '\\$1');
+}
+
+function quote(s: string): string {
+  return '"' + s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+}
+
+/** A Typst string literal that survives any content (newlines, quotes, ticks). */
+function rawString(s: string): string {
+  return '"' + s
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\r\n?/g, '\n')
+    .replace(/\n/g, '\\n')
+    .replace(/\t/g, '\\t') + '"';
+}
+
+/** A CSS color (hex or rgb()) -> a Typst color expression. */
+function typstColor(v: string): string {
+  const t = v.trim();
+  if (/^#[0-9a-fA-F]{3,8}$/.test(t)) return `rgb("${t}")`;
+  const m = t.match(/rgba?\(([^)]+)\)/i);
+  if (m) {
+    const [r, g, b] = m[1].split(',').map((s) => Math.round(parseFloat(s.trim())));
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+  return `rgb("${t}")`;
+}
+
+/** Apply inline marks to a single text run. */
+function applyMarks(text: string, marks: readonly Mark[]): string {
+  // `code` is verbatim (raw). Use backtick raw, but fall back to #raw() with a
+  // quoted string when the text itself contains a backtick.
+  if (marks.some((m) => m.type.name === 'code')) {
+    return text.includes('`') ? `#raw(${quote(text)})` : '`' + text + '`';
+  }
+  let t = escapeMarkup(text);
+  let href: string | null = null;
+  let color: string | null = null;
+  let highlight: string | null = null;
+  let highlighted = false;
+  for (const m of marks) {
+    switch (m.type.name) {
+      // Function form (not *…* / _…_) so it works mid-word too: Typst markup
+      // markers only delimit at word boundaries — a `*` wedged between letters
+      // (e.g. *wor*ld from bolding part of a word) is literal, leaving the
+      // strong unclosed and breaking compilation.
+      case 'bold': t = `#strong[${t}]`; break;
+      case 'italic': t = `#emph[${t}]`; break;
+      case 'strike': t = `#strike[${t}]`; break;
+      case 'textStyle': if (m.attrs.color) color = m.attrs.color as string; break;
+      case 'highlight': highlighted = true; highlight = (m.attrs.color as string) ?? null; break;
+      case 'link': href = (m.attrs.href as string) ?? null; break;
+    }
+  }
+  if (color) t = `#text(fill: ${typstColor(color)})[${t}]`;
+  if (highlighted) t = highlight ? `#highlight(fill: ${typstColor(highlight)})[${t}]` : `#highlight[${t}]`;
+  if (href) t = `#link(${quote(href)})[${t}]`;
+  return t;
+}
+
+/** Serialize inline content (text + hardBreaks) of a block node. */
+function inline(node: PMNode): string {
+  let out = '';
+  node.forEach((child) => {
+    if (child.isText) out += applyMarks(child.text ?? '', child.marks);
+    else if (child.type.name === 'hardBreak') out += ' \\\n';
+    else if (child.type.name === 'footnote') out += `#footnote[${escapeMarkup((child.attrs.content as string) || '')}]`;
+    else if (child.type.name === 'mathInline') out += `$${(child.attrs.src as string) || ''}$`;
+    // #ref(<key>) rather than @key: the @ form greedily eats trailing word
+    // characters ("@smith2020Quarterly"), so use the explicit, terminated form.
+    else if (child.type.name === 'reference') out += `#ref(<${(child.attrs.target as string) || ''}>)`;
+    else out += inline(child); // defensive
+  });
+  return out;
+}
+
+function indentLines(s: string, pad: string): string {
+  return s
+    .split('\n')
+    .map((l) => (l.length ? pad + l : l))
+    .join('\n');
+}
+
+function serializeList(node: PMNode, marker: string, depth: number): string {
+  const pad = '  '.repeat(depth);
+  const lines: string[] = [];
+  node.forEach((item) => {
+    // A listItem holds a paragraph (its text) and optionally nested lists.
+    let leadDone = false;
+    item.forEach((child) => {
+      const name = child.type.name;
+      if (name === 'bulletList' || name === 'orderedList') {
+        lines.push(serializeList(child, name === 'orderedList' ? '+' : '-', depth + 1));
+      } else if (!leadDone) {
+        lines.push(`${pad}${marker} ${inline(child)}`);
+        leadDone = true;
+      } else {
+        lines.push(`${pad}  ${inline(child)}`);
+      }
+    });
+  });
+  return lines.join('\n');
+}
+
+function serializeBlock(node: PMNode): string {
+  switch (node.type.name) {
+    case 'heading': {
+      const label = (node.attrs.label as string) || '';
+      return `${'='.repeat(node.attrs.level as number)} ${inline(node)}${label ? ` <${label}>` : ''}`;
+    }
+    case 'paragraph':
+      return inline(node);
+    case 'bulletList':
+      return serializeList(node, '-', 0);
+    case 'orderedList':
+      return serializeList(node, '+', 0);
+    case 'blockquote':
+      return `#quote(block: true)[${childrenJoined(node, ' ')}]`;
+    case 'codeBlock':
+      return node.textContent; // raw Typst escape hatch — verbatim
+    case 'codeListing': {
+      // #raw with a string argument can't break out of a delimiter the way a
+      // ```fence``` can (e.g. when the code itself contains triple backticks),
+      // so it's robust against any content.
+      const code = node.textContent;
+      const lang = ((node.attrs.language as string) || '').trim();
+      const langArg = lang && lang !== 'text' ? `, lang: ${quote(lang)}` : '';
+      return `#raw(${rawString(code)}, block: true${langArg})`;
+    }
+    case 'horizontalRule':
+      return '#line(length: 100%)';
+    case 'callout': {
+      const inner = childrenBlocks(node).join('\n\n');
+      return `#callout[\n${indentLines(inner, '  ')}\n]`;
+    }
+    case 'columns': {
+      const inner = childrenBlocks(node).join('\n\n');
+      return `#columns(${(node.attrs.count as number) ?? 2})[\n${indentLines(inner, '  ')}\n]`;
+    }
+    case 'table': {
+      const table = serializeTable(node);
+      const caption = node.attrs.caption as string | null;
+      const label = node.attrs.label as string | null;
+      if (!caption && !label) return table;
+      // Captioned/labelled table → #figure(table(…), caption: […]) <label>.
+      // Inside #figure(...) the arg is code mode, so drop the leading `#`.
+      const indented = table.replace(/^#/, '').split('\n').map((l) => '  ' + l).join('\n');
+      const cap = caption ? `,\n  caption: [${escapeMarkup(caption)}]` : '';
+      const fig = `#figure(\n${indented}${cap},\n)`;
+      return label ? `${fig} <${label}>` : fig;
+    }
+    case 'image': {
+      const path = (node.attrs.path as string) || (node.attrs.src as string) || '';
+      if (!path || path.startsWith('data:')) return ''; // need a real VFS path
+      const alt = (node.attrs.alt as string) || '';
+      const width = (node.attrs.width as number) ?? 80;
+      const border = node.attrs.border as boolean;
+      const label = (node.attrs.label as string) || '';
+      let core = `image(${quote(path)}, width: ${width}%)`;
+      if (border) core = `box(stroke: 0.75pt + rgb("#888888"), inset: 0pt)[#${core}]`;
+      // A caption or a label requires the #figure wrapper; the label trails it.
+      const body = alt ? `#figure(${core}, caption: [${escapeMarkup(alt)}])`
+        : label ? `#figure(${core})`
+        : `#${core}`;
+      return label ? `${body} <${label}>` : body;
+    }
+    case 'mathBlock':
+      return `$ ${(node.attrs.src as string) || ''} $`;
+    case 'pageBreak':
+      return '#pagebreak()';
+    default:
+      return inline(node);
+  }
+}
+
+/** A table cell's content as a Typst `[...]` (or `table.cell(..)[...]`) argument. */
+function serializeCell(cell: PMNode, bold = false): string {
+  const blocks = childrenBlocks(cell);
+  let content = blocks.length === 1 ? blocks[0] : blocks.join('\n\n');
+  // Header cells render bold (the editor bolds them too). #strong[…] is
+  // idempotent — re-import strips it — unlike wrapping in *…* which would
+  // double up on content that is already bold.
+  if (bold && content.trim()) content = `#strong[${content}]`;
+  const colspan = (cell.attrs.colspan as number) ?? 1;
+  const rowspan = (cell.attrs.rowspan as number) ?? 1;
+  if (colspan > 1 || rowspan > 1) {
+    const spans: string[] = [];
+    if (colspan > 1) spans.push(`colspan: ${colspan}`);
+    if (rowspan > 1) spans.push(`rowspan: ${rowspan}`);
+    return `table.cell(${spans.join(', ')})[${content}]`;
+  }
+  return `[${content}]`;
+}
+
+/**
+ * Build the Typst `columns:` spec. We use fractional (`fr`) widths so the table
+ * fills the page width like it does in the editor. Resized columns keep their
+ * proportions; otherwise columns are equal (`1fr`).
+ */
+function tableColumns(firstRow: PMNode): string {
+  const widths: (number | null)[] = [];
+  firstRow.forEach((cell) => {
+    const cw = cell.attrs.colwidth as number[] | null;
+    const span = (cell.attrs.colspan as number) ?? 1;
+    for (let i = 0; i < span; i++) widths.push(cw && cw[i] ? cw[i] : null);
+  });
+  const spec = widths.some((w) => w == null)
+    ? widths.map(() => '1fr')
+    : widths.map((w) => `${w}fr`);
+  return `(${spec.join(', ')})`;
+}
+
+function isHeaderRow(row: PMNode): boolean {
+  if (row.childCount === 0) return false;
+  let all = true;
+  row.forEach((cell) => { if (cell.type.name !== 'tableHeader') all = false; });
+  return all;
+}
+
+/** Build the Typst `fill:` closure for the header row and/or zebra striping. */
+function tableFill(header: boolean, striped: boolean): string | null {
+  const header0 = header ? 'rgb("#f3f4f7")' : null;
+  const even = striped ? 'rgb("#f8f9fb")' : null;
+  if (!header0 && !even) return null;
+  const clauses: string[] = [];
+  if (header0) clauses.push(`if row == 0 { ${header0} }`);
+  if (even) clauses.push(`${clauses.length ? 'else ' : ''}if calc.even(row) { ${even} }`);
+  return `(col, row) => ${clauses.join(' ')}`;
+}
+
+function serializeTable(node: PMNode): string {
+  const rows: PMNode[] = [];
+  node.forEach((r) => rows.push(r));
+  if (!rows.length) return '#table()';
+
+  const headerFirst = isHeaderRow(rows[0]);
+  const striped = node.attrs.striped as boolean;
+  const borders = (node.attrs.borders as string) || 'all';
+  const rawArgs = node.attrs.rawArgs as string | null;
+
+  const lines: string[] = [`#table(`];
+  if (rawArgs) {
+    // Imported table: re-emit its original styling args verbatim.
+    lines.push(`  ${rawArgs},`);
+  } else {
+    // Editor-created table: borders, the same cell padding, a gray fill behind a
+    // bold header row, and optional zebra striping.
+    const stroke =
+      borders === 'none' ? 'none'
+      : borders === 'horizontal' ? '(x: none, y: 0.5pt + rgb("#cdd2dc"))'
+      : '0.5pt + rgb("#cdd2dc")';
+    lines.push(`  columns: ${tableColumns(rows[0])},`, `  stroke: ${stroke},`, `  inset: (x: 8pt, y: 5pt),`);
+    const fill = tableFill(headerFirst, striped);
+    if (fill) lines.push(`  fill: ${fill},`);
+  }
+
+  rows.forEach((row, ri) => {
+    const header = isHeaderRow(row);
+    const cells: string[] = [];
+    row.forEach((cell) => cells.push(serializeCell(cell, header)));
+    // The first header row uses Typst's `table.header(...)` for proper semantics.
+    if (header && ri === 0) lines.push(`  table.header(${cells.join(', ')}),`);
+    else lines.push(`  ${cells.join(', ')},`);
+  });
+  lines.push(`)`);
+  return lines.join('\n');
+}
+
+function childrenBlocks(node: PMNode): string[] {
+  const out: string[] = [];
+  node.forEach((child) => out.push(serializeBlock(child)));
+  return out;
+}
+function childrenJoined(node: PMNode, sep: string): string {
+  return childrenBlocks(node).join(sep);
+}
+
+/** Serialize the whole document: top-level blocks separated by blank lines. */
+export function serializeContent(doc: PMNode): string {
+  return childrenBlocks(doc).join('\n\n');
+}

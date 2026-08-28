@@ -34,6 +34,7 @@ STANDALONE_PNPM_SUBMODULES=(
   "blockberry-editor|blockberry-editor|dist/web"
   "pdf-annotator|pdf-annotator|dist/web"
   "typst-editor|typst-editor|dist/web"
+  "typst-wysiwyg|typst-wysiwyg|dist/web"
 )
 
 if [[ -f "${ROOT_DIR}/.env" ]]; then
@@ -94,6 +95,7 @@ Standalone submodule repos (aliases in parentheses):
   blockberry-editor (blockberry)
   pdf-annotator
   typst-editor (in-tree, no submodule)
+  typst-wysiwyg (in-tree, no submodule; vendored ortic/typst-wysiwyg)
   mdpresentation-viewer (presentation-viewer, web-app-presentation-viewer)
   webapp-lsm6 (lsm6) — opt-in only, needs private pro-* npm packages
 
