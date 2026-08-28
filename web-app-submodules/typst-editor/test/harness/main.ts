@@ -1,10 +1,12 @@
 import {createApp, defineComponent, h, ref} from 'vue';
 import type {Resource} from '@opencloud-eu/web-client';
 import App from '../../src/App.vue';
+import {ocContext} from '../../src/ocContext';
 
 type HarnessState = {
   emitted: string[];
   saves: number;
+  pdfSaves: Array<{path: string; size: number; head: number[]}>;
   errors: string[];
 };
 
@@ -18,7 +20,17 @@ declare global {
 window.__harness = {
   emitted: [],
   saves: 0,
+  pdfSaves: [],
   errors: [],
+};
+
+// Mocks the OpenCloud WebDAV bridge: the PDF export must land here.
+ocContext.savePdf = async (_space, path, content) => {
+  window.__harness.pdfSaves.push({
+    path,
+    size: content.byteLength,
+    head: Array.from(new Uint8Array(content.slice(0, 5))),
+  });
 };
 
 window.addEventListener('error', (event) => {
@@ -50,12 +62,16 @@ const Host = defineComponent({
       extension: 'typ',
       mimeType: 'text/plain',
     } as unknown as Resource;
+    const space = {id: 'space-1', name: 'Testspace'} as unknown as Parameters<
+      NonNullable<typeof ocContext.savePdf>
+    >[0];
 
     return () =>
       h(App, {
         currentContent: currentContent.value,
         isReadOnly: false,
         resource,
+        space,
         onSave: () => {
           window.__harness.saves += 1;
         },

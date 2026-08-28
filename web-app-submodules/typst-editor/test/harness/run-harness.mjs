@@ -82,14 +82,14 @@ try {
   check(zoomLabel?.includes('120'), `zoom should show 120%, got "${zoomLabel}"`);
   await page.click('.preview-zoom button[title="Verkleinern"]');
 
-  // 4d. PDF export hands a download to the browser.
-  const downloadPromise = page.waitForEvent('download', {timeout: 30000});
-  await page.click('button[title="Als PDF exportieren"]');
-  const download = await downloadPromise;
-  check(
-    download.suggestedFilename().endsWith('.pdf'),
-    `pdf export should download a .pdf, got "${download.suggestedFilename()}"`,
-  );
+  // 4d. PDF export writes the compiled PDF next to the .typ in OpenCloud.
+  await page.click('button[title="Als PDF nach OpenCloud exportieren"]');
+  await page.waitForFunction(() => window.__harness.pdfSaves.length > 0, null, {timeout: 30000});
+  const pdfSave = await page.evaluate(() => window.__harness.pdfSaves.at(-1));
+  check(pdfSave?.path === '/notizen.pdf', `pdf should land at /notizen.pdf, got "${pdfSave?.path}"`);
+  const pdfHead = String.fromCharCode(...(pdfSave?.head ?? []));
+  check(pdfHead === '%PDF-', `pdf content should start with %PDF-, got "${pdfHead}"`);
+  check((pdfSave?.size ?? 0) > 1000, `pdf suspiciously small: ${pdfSave?.size} bytes`);
 
   // 5. The save button triggers the wrapper save.
   await page.click('button[title="In OpenCloud speichern"]');

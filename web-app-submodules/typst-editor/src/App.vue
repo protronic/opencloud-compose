@@ -64,7 +64,7 @@
       <button
         type="button"
         class="tb-btn-text"
-        title="Als PDF exportieren"
+        title="Als PDF nach OpenCloud exportieren"
         :disabled="!ready || exporting"
         @click="exportPdf"
       >
@@ -168,7 +168,8 @@ import {basicSetup} from 'codemirror';
 import {EditorView, keymap} from '@codemirror/view';
 import {EditorState} from '@codemirror/state';
 import {indentWithTab, redo, undo} from '@codemirror/commands';
-import type {Resource} from '@opencloud-eu/web-client';
+import type {Resource, SpaceResource} from '@opencloud-eu/web-client';
+import {ocContext} from './ocContext';
 import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
 
 type ContentValue = string | ArrayBuffer | Uint8Array;
@@ -178,6 +179,7 @@ const props = withDefaults(
     currentContent: ContentValue;
     isReadOnly?: boolean;
     resource: Resource;
+    space?: SpaceResource;
   }>(),
   {isReadOnly: false},
 );
@@ -208,6 +210,7 @@ const exporting = ref(false);
 const dirty = ref(false);
 const aboutOpen = ref(false);
 const previewZoom = ref(1);
+const pdfNotice = ref('');
 const editorPct = ref(50);
 
 let editorView: EditorView | undefined;
@@ -225,6 +228,7 @@ const statusText = computed(() => {
   if (compiling.value) return 'Kompiliere …';
   if (compileFailed.value) return 'Kompilierfehler';
   if (exporting.value) return 'PDF wird erstellt …';
+  if (pdfNotice.value) return pdfNotice.value;
   if (saving.value) return 'Speichern …';
   if (dirty.value) return 'Änderungen ausstehend';
   return '';
@@ -392,15 +396,33 @@ async function exportPdf(): Promise<void> {
     await $typst.addSource('/doc.typ', editorView.state.doc.toString());
     const bytes = await $typst.pdf({mainFilePath: '/main.typ'});
     if (!bytes) throw new Error('leere PDF-Ausgabe');
-    const url = URL.createObjectURL(new Blob([bytes as BlobPart], {type: 'application/pdf'}));
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = (props.resource?.name ?? 'dokument.typ').replace(/\.typ$/i, '') + '.pdf';
-    anchor.click();
-    window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    // Exact-size ArrayBuffer: the WebDAV transport sends `view.buffer`.
+    const content =
+      bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength
+        ? (bytes.buffer as ArrayBuffer)
+        : (bytes.slice().buffer as ArrayBuffer);
+    const pdfName = (props.resource?.name ?? 'dokument.typ').replace(/\.typ$/i, '') + '.pdf';
+    if (ocContext.savePdf && props.space) {
+      // Write the PDF next to the .typ file in OpenCloud.
+      const pdfPath = (props.resource?.path ?? `/${pdfName}`).replace(/\.typ$/i, '.pdf');
+      await ocContext.savePdf(props.space, pdfPath, content);
+      pdfNotice.value = `PDF gespeichert: ${pdfName}`;
+    } else {
+      // Outside the OpenCloud runtime: hand the PDF to the browser.
+      const url = URL.createObjectURL(new Blob([content], {type: 'application/pdf'}));
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = pdfName;
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      pdfNotice.value = `PDF heruntergeladen: ${pdfName}`;
+    }
+    window.setTimeout(() => {
+      pdfNotice.value = '';
+    }, 4000);
   } catch (err) {
     compileFailed.value = true;
-    compileError.value = formatCompileError(err);
+    compileError.value = `PDF-Export fehlgeschlagen: ${formatCompileError(err)}`;
   } finally {
     exporting.value = false;
   }
