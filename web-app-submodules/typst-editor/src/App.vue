@@ -79,6 +79,15 @@
         {{ viewMode ? 'Bearbeiten' : 'Lesemodus' }}
       </button>
       <button
+        v-if="wysiwygAvailable"
+        type="button"
+        class="tb-btn-text"
+        title="Im WYSIWYG-Editor öffnen"
+        @click="openInWysiwyg"
+      >
+        WYSIWYG
+      </button>
+      <button
         type="button"
         class="tb-btn-text"
         title="Als PDF nach OpenCloud exportieren"
@@ -523,6 +532,28 @@ async function openWikiTarget(target: string): Promise<void> {
   }
 }
 
+// Set once at mount: the bridge is filled by index.ts before the component
+// exists (or by the harness mock), never later.
+const wysiwygAvailable = ref(false);
+
+async function openInWysiwyg(): Promise<void> {
+  if (!ocContext.openInWysiwyg) return;
+  // Flush pending edits before handing the file to the other editor.
+  if (!props.isReadOnly && dirty.value) {
+    window.clearTimeout(emitTimer);
+    emitContent();
+    emit('save');
+  }
+  pdfNotice.value = 'Öffne WYSIWYG-Editor …';
+  try {
+    await ocContext.openInWysiwyg();
+    pdfNotice.value = '';
+  } catch (err) {
+    pdfNotice.value = `Wechsel fehlgeschlagen: ${formatCompileError(err)}`;
+    window.setTimeout(() => (pdfNotice.value = ''), 6000);
+  }
+}
+
 function onPreviewClick(event: MouseEvent): void {
   const anchor = (event.target as Element | null)?.closest?.('a');
   if (!anchor) return;
@@ -648,6 +679,7 @@ watch(
 );
 
 onMounted(() => {
+  wysiwygAvailable.value = !!ocContext.openInWysiwyg;
   configureTypst();
 
   // The typst SVG output embeds global style rules (e.g. `svg { fill:

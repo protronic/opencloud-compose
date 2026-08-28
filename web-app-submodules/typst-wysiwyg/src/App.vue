@@ -7,6 +7,15 @@
       </span>
       <span class="spacer" />
       <button
+        v-if="sourceEditorAvailable"
+        type="button"
+        class="tb-btn-text"
+        title="Im Quelltext-Editor öffnen"
+        @click="openInSource"
+      >
+        Quelltext
+      </button>
+      <button
         v-if="!isReadOnly"
         type="button"
         class="tb-btn-text"
@@ -30,6 +39,7 @@
 <script setup lang="ts">
 import type {Resource} from '@opencloud-eu/web-client';
 import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
+import {ocContext} from './ocContext';
 
 type ContentValue = string | ArrayBuffer | Uint8Array;
 
@@ -54,9 +64,13 @@ const saving = ref(false);
 const hasError = ref(false);
 const errorText = ref('');
 const savedFlash = ref(false);
+const sourceEditorAvailable = ref(false);
 
 let lastEmitted: string | undefined;
 let savedFlashTimer = 0;
+// Set while waiting for the editor's content reply before switching to the
+// source editor, so unsent edits are flushed first.
+let pendingSourceSwitch = false;
 
 /**
  * The vendored editor app is built as static files into wysiwyg/ next to
@@ -104,6 +118,32 @@ function requestSave(): void {
   postToEditor({type: 'typwys:request-content'});
 }
 
+async function switchToSource(): Promise<void> {
+  if (!ocContext.openInSource) return;
+  try {
+    await ocContext.openInSource();
+  } catch (err) {
+    hasError.value = true;
+    errorText.value = `Wechsel fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`;
+    window.setTimeout(() => {
+      hasError.value = false;
+      errorText.value = '';
+    }, 6000);
+  }
+}
+
+function openInSource(): void {
+  if (!ocContext.openInSource) return;
+  if (!props.isReadOnly && editorReady.value) {
+    // Flush the editor's current state (also triggers the wrapper save)
+    // before the route switch tears the iframe down.
+    pendingSourceSwitch = true;
+    postToEditor({type: 'typwys:request-content'});
+    return;
+  }
+  void switchToSource();
+}
+
 function onMessage(event: MessageEvent): void {
   if (event.source !== frameElement.value?.contentWindow) return;
   const msg = event.data as {type?: string; text?: string; explicit?: boolean; message?: string} | null;
@@ -127,6 +167,10 @@ function onMessage(event: MessageEvent): void {
       savedFlash.value = true;
       window.clearTimeout(savedFlashTimer);
       savedFlashTimer = window.setTimeout(() => (savedFlash.value = false), 1500);
+      if (pendingSourceSwitch) {
+        pendingSourceSwitch = false;
+        void switchToSource();
+      }
     }
     return;
   }
@@ -149,6 +193,7 @@ watch(
 );
 
 onMounted(() => {
+  sourceEditorAvailable.value = !!ocContext.openInSource;
   window.addEventListener('message', onMessage);
 });
 

@@ -11,7 +11,13 @@ type SavePdfFn = (space: SpaceResource, path: string, content: ArrayBuffer) => P
  *
  * openTyp navigates to another .typ file of the given space, creating the
  * file empty first when it does not exist yet (wiki "new page" flow).
+ * openInWysiwyg switches the currently open file to the typst-wysiwyg app.
  */
 type OpenTypFn = (space: SpaceResource, targetResourcePath: string) => Promise<void>;
+type OpenInWysiwygFn = () => Promise<void>;
 
-export const ocContext: {savePdf?: SavePdfFn; openTyp?: OpenTypFn} = {};
+export const ocContext: {
+  savePdf?: SavePdfFn;
+  openTyp?: OpenTypFn;
+  openInWysiwyg?: OpenInWysiwygFn;
+} = {};

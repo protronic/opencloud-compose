@@ -1,10 +1,12 @@
 import {createApp, defineComponent, h, ref} from 'vue';
 import type {Resource} from '@opencloud-eu/web-client';
 import App from '../../src/App.vue';
+import {ocContext} from '../../src/ocContext';
 
 type HarnessState = {
   emitted: string[];
   saves: number;
+  sourceSwitches: number;
   errors: string[];
 };
 
@@ -17,7 +19,14 @@ declare global {
 window.__harness = {
   emitted: [],
   saves: 0,
+  sourceSwitches: 0,
   errors: [],
+};
+
+// Mocks the app-switch bridge: the Quelltext toolbar button must land here
+// after the pre-switch content flush.
+ocContext.openInSource = async () => {
+  window.__harness.sourceSwitches += 1;
 };
 
 window.addEventListener('error', (event) => {

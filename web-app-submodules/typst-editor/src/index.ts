@@ -69,6 +69,23 @@ export default defineWebApplication({
       ocContext.openTyp = undefined;
     }
 
+    try {
+      // Hand the current file over to the typst-wysiwyg extension: same
+      // driveAliasAndItem and query (same file, same fileId), only the
+      // route changes.
+      const router = useRouter();
+      ocContext.openInWysiwyg = async () => {
+        const wysiwygRoute = 'typst-wysiwyg-file';
+        if (!router.hasRoute(wysiwygRoute)) {
+          throw new Error('Die Typst-WYSIWYG-Erweiterung ist nicht installiert');
+        }
+        const route = router.currentRoute.value;
+        await router.push({name: wysiwygRoute, params: route.params, query: route.query});
+      };
+    } catch {
+      ocContext.openInWysiwyg = undefined;
+    }
+
     const routes = [
       {
         path: '/:driveAliasAndItem(.*)?',

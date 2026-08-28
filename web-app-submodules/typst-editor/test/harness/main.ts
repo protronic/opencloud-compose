@@ -8,6 +8,7 @@ type HarnessState = {
   saves: number;
   pdfSaves: Array<{path: string; size: number; head: number[]}>;
   wikiNav: Array<{space: string | null; to: string}>;
+  wysiwygSwitches: number;
   errors: string[];
 };
 
@@ -23,6 +24,7 @@ window.__harness = {
   saves: 0,
   pdfSaves: [],
   wikiNav: [],
+  wysiwygSwitches: 0,
   errors: [],
 };
 
@@ -81,6 +83,11 @@ ocContext.openTyp = async (space, targetResourcePath) => {
   } as unknown as Resource;
   await Promise.resolve();
   currentContent.value = '';
+};
+
+// Mocks the app-switch bridge: the WYSIWYG toolbar button must land here.
+ocContext.openInWysiwyg = async () => {
+  window.__harness.wysiwygSwitches += 1;
 };
 
 // Mimics @opencloud-eu/web-pkg AppWrapper for text files: currentContent is

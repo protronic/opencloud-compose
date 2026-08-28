@@ -75,6 +75,17 @@ try {
   await page.click('button[title="In OpenCloud speichern"]');
   await page.waitForFunction(() => window.__harness.saves > 0, null, {timeout: 10000});
 
+  // 3b. The Quelltext button flushes the content (save) and then switches
+  // to the source editor via the mocked router bridge.
+  const savesBeforeSwitch = await page.evaluate(() => window.__harness.saves);
+  await page.click('button[title="Im Quelltext-Editor öffnen"]');
+  await page.waitForFunction(() => window.__harness.sourceSwitches > 0, null, {timeout: 10000});
+  const savesAfterSwitch = await page.evaluate(() => window.__harness.saves);
+  check(
+    savesAfterSwitch > savesBeforeSwitch,
+    'switching to the source editor should flush a save first',
+  );
+
   // 4. The live preview compiles with the bundled fonts (no CDN access in
   // this environment - a font fetch to jsdelivr would fail and leave the
   // preview empty).
@@ -90,7 +101,7 @@ if (problems.length) {
   console.error(`✗ typst-wysiwyg harness\n  ${problems.join('\n  ')}`);
   console.error(consoleLines.slice(-40).join('\n'));
 } else {
-  console.log('✓ typst-wysiwyg harness: boot, import, edit, emit, save, preview');
+  console.log('✓ typst-wysiwyg harness: boot, import, edit, emit, save, source-switch, preview');
 }
 
 await browser.close();

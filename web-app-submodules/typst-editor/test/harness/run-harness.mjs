@@ -177,6 +177,11 @@ try {
     `new wiki page should start empty, got "${newPageSource.slice(0, 60)}"`,
   );
 
+  // 6d. The WYSIWYG toolbar button hands the file over via the app-switch
+  // bridge (mocked router).
+  await page.click('button[title="Im WYSIWYG-Editor öffnen"]');
+  await page.waitForFunction(() => window.__harness.wysiwygSwitches > 0, null, {timeout: 5000});
+
   // 7. Remounting (second open) must not throw on the shared singleton;
   // the fresh instance starts in reading mode again.
   await page.evaluate(() => window.__remount());
@@ -194,7 +199,7 @@ if (problems.length) {
   console.error(`✗ typst-editor harness\n  ${problems.join('\n  ')}`);
   console.error(consoleLines.slice(-30).join('\n'));
 } else {
-  console.log('✓ typst-editor harness: render, compile, view-toggle, edit, format, zoom, pdf, emit, save, error-recovery, wiki-link, wiki-new-page, remount');
+  console.log('✓ typst-editor harness: render, compile, view-toggle, edit, format, zoom, pdf, emit, save, error-recovery, wiki-link, wiki-new-page, wysiwyg-switch, remount');
 }
 
 await browser.close();
