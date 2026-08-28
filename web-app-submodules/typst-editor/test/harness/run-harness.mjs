@@ -32,7 +32,9 @@ try {
 
   // 2. The WASM pipeline compiles the document to an SVG preview.
   await page.waitForSelector('.typst-preview svg', {timeout: 60000});
-  const previewText = await page.textContent('.typst-preview');
+  const previewText = await page.evaluate(
+    () => document.querySelector('.typst-preview')?.shadowRoot?.textContent ?? '',
+  );
   check(
     (previewText ?? '').replace(/\s+/g, '').includes('Testdokument'),
     'preview should render the heading text',
@@ -56,7 +58,7 @@ try {
     () =>
       document
         .querySelector('.typst-preview')
-        ?.textContent?.replace(/\s+/g, ' ')
+        ?.shadowRoot?.textContent?.replace(/\s+/g, ' ')
         .includes('Neuer Absatz'),
     null,
     {timeout: 30000},
@@ -105,6 +107,24 @@ try {
     () => !document.querySelector('.error-banner'),
     null,
     {timeout: 30000},
+  );
+
+  // 6b. The preview styles must not leak into the host document: an icon
+  // svg outside the app keeps its fill (the reported disappearing close X).
+  const iconVisible = await page.evaluate(() => {
+    const probe = document.createElement('div');
+    probe.innerHTML =
+      '<svg id="host-icon-probe" width="16" height="16"><path d="M2 2 L14 14 M14 2 L2 14"/></svg>';
+    document.body.append(probe);
+    const path = probe.querySelector('path');
+    const fill = path ? getComputedStyle(path).fill : 'missing';
+    const svgFill = getComputedStyle(probe.querySelector('svg')).fill;
+    probe.remove();
+    return {fill, svgFill};
+  });
+  check(
+    iconVisible.svgFill !== 'none',
+    `typst styles must not leak (host svg fill is "${iconVisible.svgFill}")`,
   );
 
   // 7. Remounting (second open) must not throw on the shared singleton.

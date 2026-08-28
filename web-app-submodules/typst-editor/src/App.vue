@@ -211,6 +211,7 @@ const previewZoom = ref(1);
 const editorPct = ref(50);
 
 let editorView: EditorView | undefined;
+let previewContainer: HTMLDivElement | undefined;
 let emitTimer = 0;
 let compileTimer = 0;
 let compileQueued = false;
@@ -309,8 +310,8 @@ async function compileNow(): Promise<void> {
   try {
     await $typst.addSource('/doc.typ', source);
     const svg = await $typst.svg({mainFilePath: '/main.typ'});
-    if (!destroyed && previewElement.value) {
-      previewElement.value.innerHTML = svg ?? '';
+    if (!destroyed && previewContainer) {
+      previewContainer.innerHTML = svg ?? '';
     }
     compileFailed.value = false;
     compileError.value = '';
@@ -495,6 +496,21 @@ watch(
 onMounted(() => {
   configureTypst();
 
+  // The typst SVG output embeds global style rules (e.g. `svg { fill:
+  // none; }`) that would apply to the whole OpenCloud document as inline
+  // SVG - hiding every host icon, including the app's close button. A
+  // shadow root keeps those styles contained.
+  const host = previewElement.value!;
+  const shadow = host.shadowRoot ?? host.attachShadow({mode: 'open'});
+  shadow.innerHTML =
+    '<style>' +
+    ':host { display: block; }' +
+    '.typst-doc-host svg { display: block; width: 100%; height: auto;' +
+    ' background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }' +
+    '</style>' +
+    '<div class="typst-doc-host"></div>';
+  previewContainer = shadow.querySelector('.typst-doc-host') as HTMLDivElement;
+
   const initial = contentToString(props.currentContent);
   lastEmitted = initial;
   editorView = new EditorView({
@@ -524,6 +540,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   destroyed = true;
+  previewContainer = undefined;
   window.clearTimeout(emitTimer);
   window.clearTimeout(compileTimer);
   editorView?.destroy();
@@ -778,14 +795,6 @@ onBeforeUnmount(() => {
   min-width: 100%;
   padding: 0 16px 16px;
   box-sizing: border-box;
-}
-
-.typst-preview :deep(svg) {
-  display: block;
-  width: 100%;
-  height: auto;
-  background: #ffffff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .error-banner {
