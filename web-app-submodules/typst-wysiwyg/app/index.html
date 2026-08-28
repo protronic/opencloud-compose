@@ -3,7 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- OpenCloud vendor patch: marker so the wrapper's reachability probe
+         can tell this page apart from an SPA fallback response. -->
+    <meta name="typst-wysiwyg-embed" content="1" />
     <title>Typst WYSIWYG — phase 1 spike</title>
+    <!-- OpenCloud vendor patch: earliest possible life sign towards the
+         embedding wrapper, before any module loads - so the wrapper can
+         distinguish "page never arrived" from "app failed to boot". -->
+    <script>
+      if (new URLSearchParams(window.location.search).has('oc') && window.parent !== window) {
+        window.parent.postMessage({type: 'typwys:frame-loaded'}, window.origin);
+        window.addEventListener('error', function (event) {
+          var message = (event.error && event.error.message) || event.message || 'unknown error';
+          window.parent.postMessage({type: 'typwys:boot-error', message: String(message)}, window.origin);
+        });
+        window.addEventListener('unhandledrejection', function (event) {
+          window.parent.postMessage({type: 'typwys:boot-error', message: String(event.reason)}, window.origin);
+        });
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>

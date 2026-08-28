@@ -28,6 +28,7 @@
       <span v-else class="status-hint">Schreibgeschützt</span>
     </header>
     <iframe
+      v-if="frameSrc"
       ref="frameElement"
       class="editor-frame"
       :src="frameSrc"
@@ -65,26 +66,60 @@ const hasError = ref(false);
 const errorText = ref('');
 const savedFlash = ref(false);
 const sourceEditorAvailable = ref(false);
+const frameLoaded = ref(false);
 
 let lastEmitted: string | undefined;
 let savedFlashTimer = 0;
+let watchdogTimer = 0;
 // Set while waiting for the editor's content reply before switching to the
 // source editor, so unsent edits are flushed first.
 let pendingSourceSwitch = false;
 
 /**
  * The vendored editor app is built as static files into wysiwyg/ next to
- * the bundle. Resolved through a variable so Vite's static analysis does
- * not rewrite the `new URL(..., import.meta.url)` pattern into a
- * single-asset reference.
+ * the bundle. Candidate URLs are probed with a fetch (checking for the
+ * app's marker, so an SPA fallback response is not mistaken for the page).
+ * Resolved through a variable so Vite's static analysis does not rewrite
+ * the `new URL(..., import.meta.url)` pattern into a single-asset
+ * reference.
  */
-const frameSrc = (() => {
-  // Dev/harness: the vite dev server publishes the built app under
-  // /wysiwyg/ via publicDir (see vite.harness.config.ts).
-  if (import.meta.env.DEV) return '/wysiwyg/index.html?oc=1';
+const frameSrc = ref('');
+
+function frameCandidates(): string[] {
+  if (import.meta.env.DEV) return ['/wysiwyg/index.html'];
   const moduleUrl = import.meta.url;
-  return new URL('../wysiwyg/index.html', moduleUrl).href + '?oc=1';
-})();
+  return [
+    new URL('../wysiwyg/index.html', moduleUrl).href,
+    new URL('/assets/apps/typst-wysiwyg/wysiwyg/index.html', window.location.origin).href,
+  ];
+}
+
+async function probeCandidate(url: string): Promise<string> {
+  const response = await fetch(url, {cache: 'no-store'});
+  if (!response.ok) return `HTTP ${response.status}`;
+  const body = await response.text();
+  if (!body.includes('typst-wysiwyg-embed')) return 'liefert fremden Inhalt (SPA-Fallback?)';
+  return '';
+}
+
+async function resolveFrameSrc(): Promise<void> {
+  const failures: string[] = [];
+  for (const candidate of frameCandidates()) {
+    try {
+      const failure = await probeCandidate(candidate);
+      if (!failure) {
+        frameSrc.value = `${candidate}?oc=1`;
+        startWatchdog();
+        return;
+      }
+      failures.push(`${candidate}: ${failure}`);
+    } catch (err) {
+      failures.push(`${candidate}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  hasError.value = true;
+  errorText.value = `Editor-Dateien nicht erreichbar – ${failures.join(' | ')}`;
+}
 
 const statusText = computed(() => {
   if (hasError.value) return errorText.value;
@@ -104,6 +139,22 @@ function contentToString(value: ContentValue | undefined): string {
 
 function postToEditor(message: Record<string, unknown>): void {
   frameElement.value?.contentWindow?.postMessage(message, window.location.origin);
+}
+
+/**
+ * Turns a silent hang into a diagnosable status: the page posts
+ * typwys:frame-loaded from an inline script before any module loads, the
+ * bridge posts typwys:ready once the editor booted.
+ */
+function startWatchdog(): void {
+  window.clearTimeout(watchdogTimer);
+  watchdogTimer = window.setTimeout(() => {
+    if (editorReady.value || hasError.value) return;
+    hasError.value = true;
+    errorText.value = frameLoaded.value
+      ? 'Editor startet nicht (Seite geladen, Skripte melden sich nicht – Browser-Konsole prüfen)'
+      : `Editor-Seite wird nicht geladen (${frameSrc.value.split('?')[0]})`;
+  }, 20000);
 }
 
 function loadIntoEditor(): void {
@@ -148,8 +199,20 @@ function onMessage(event: MessageEvent): void {
   if (event.source !== frameElement.value?.contentWindow) return;
   const msg = event.data as {type?: string; text?: string; explicit?: boolean; message?: string} | null;
   if (!msg?.type) return;
+  if (msg.type === 'typwys:frame-loaded') {
+    frameLoaded.value = true;
+    return;
+  }
+  if (msg.type === 'typwys:boot-error') {
+    hasError.value = true;
+    errorText.value = `Editor-Start fehlgeschlagen: ${msg.message ?? 'unbekannter Fehler'}`;
+    return;
+  }
   if (msg.type === 'typwys:ready') {
     editorReady.value = true;
+    hasError.value = false;
+    errorText.value = '';
+    window.clearTimeout(watchdogTimer);
     loadIntoEditor();
     return;
   }
@@ -195,11 +258,13 @@ watch(
 onMounted(() => {
   sourceEditorAvailable.value = !!ocContext.openInSource;
   window.addEventListener('message', onMessage);
+  void resolveFrameSrc();
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('message', onMessage);
   window.clearTimeout(savedFlashTimer);
+  window.clearTimeout(watchdogTimer);
 });
 </script>
 
