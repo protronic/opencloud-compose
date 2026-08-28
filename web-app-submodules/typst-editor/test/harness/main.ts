@@ -11,6 +11,7 @@ type HarnessState = {
 declare global {
   interface Window {
     __harness: HarnessState;
+    __remount: () => void;
   }
 }
 
@@ -71,4 +72,13 @@ const Host = defineComponent({
   },
 });
 
-createApp(Host).mount('#host');
+let app = createApp(Host);
+app.mount('#host');
+
+// Simulates closing and re-opening the file in OpenCloud: the app is
+// unmounted and a fresh instance mounts against the shared typst singleton.
+window.__remount = () => {
+  app.unmount();
+  app = createApp(Host);
+  app.mount('#host');
+};

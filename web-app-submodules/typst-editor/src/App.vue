@@ -236,12 +236,36 @@ function contentToString(value: ContentValue | undefined): string {
   return '';
 }
 
-/** The typst.ts WASM pipeline is shared per page load. */
-let typstConfigured = false;
-
+/**
+ * The typst.ts pipeline is a shared singleton that survives component
+ * remounts and even re-evaluations of this module (Module Federation can
+ * load a fresh copy of the app chunk while the singleton lives on). The
+ * configured marker therefore sits on the instance itself, and the calls
+ * are guarded: use() throws "already prepare uses for instances" when a
+ * previous copy already configured it.
+ */
 function configureTypst(): void {
-  if (typstConfigured) return;
-  typstConfigured = true;
+  const instance = $typst as unknown as Record<string, unknown>;
+  if (instance.__typstEditorConfigured) return;
+  instance.__typstEditorConfigured = true;
+  try {
+    configureTypstOnce();
+  } catch (configError) {
+    console.warn('typst-editor: Typst-Singleton war bereits konfiguriert', configError);
+  }
+  // Idempotent and safe on an initialized compiler.
+  void $typst.addSource(
+    '/main.typ',
+    [
+      '#set text(font: ("DejaVu Serif", "DejaVu Sans"))',
+      '#show math.equation: set text(font: "DejaVu Math TeX Gyre")',
+      '#show raw: set text(font: "DejaVu Sans Mono")',
+      '#include "doc.typ"',
+    ].join('\n') + '\n',
+  );
+}
+
+function configureTypstOnce(): void {
   // All assets are bundled and served same-origin: the instance CSP has no
   // CDN hosts in connect-src, so default remote font assets must stay off.
   $typst.use(TypstSnippet.disableDefaultFontAssets(), {
@@ -269,21 +293,8 @@ function configureTypst(): void {
     ],
   });
   $typst.setCompilerInitOptions({getModule: () => compilerWasmUrl});
-  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__typst = $typst;
-  // The user document is compiled through a wrapper that maps typst's
-  // defaults (Libertinus/New Computer Modern, neither redistributable via
-  // npm) onto the bundled DejaVu families, so text, code and math work out
-  // of the box. Diagnostics keep pointing at the user file.
-  void $typst.addSource(
-    '/main.typ',
-    [
-      '#set text(font: ("DejaVu Serif", "DejaVu Sans"))',
-      '#show math.equation: set text(font: "DejaVu Math TeX Gyre")',
-      '#show raw: set text(font: "DejaVu Sans Mono")',
-      '#include "doc.typ"',
-    ].join('\n') + '\n',
-  );
   $typst.setRendererInitOptions({getModule: () => rendererWasmUrl});
+  if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__typst = $typst;
 }
 
 async function compileNow(): Promise<void> {

@@ -107,6 +107,11 @@ try {
     {timeout: 30000},
   );
 
+  // 7. Remounting (second open) must not throw on the shared singleton.
+  await page.evaluate(() => window.__remount());
+  await page.waitForSelector('.cm-content', {timeout: 20000});
+  await page.waitForSelector('.typst-preview svg', {timeout: 60000});
+
   const errors = await page.evaluate(() => window.__harness.errors);
   check(errors.length === 0, `page errors: ${errors.join(' | ')}`);
 } catch (error) {
@@ -117,7 +122,7 @@ if (problems.length) {
   console.error(`✗ typst-editor harness\n  ${problems.join('\n  ')}`);
   console.error(consoleLines.slice(-30).join('\n'));
 } else {
-  console.log('✓ typst-editor harness: render, compile, edit, format, zoom, pdf, emit, save, error-recovery');
+  console.log('✓ typst-editor harness: render, compile, edit, format, zoom, pdf, emit, save, error-recovery, remount');
 }
 
 await browser.close();
