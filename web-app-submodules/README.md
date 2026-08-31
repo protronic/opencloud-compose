@@ -105,7 +105,7 @@ Pin standalone submodules to **extension-sdk 7.1.2** (same as the `web-extension
 
 `comments`, `3dviewer`, `web-calendar`, `blockberry-editor`, `mdpresentation-viewer`, plus apps listed in `OC_WEB_APPS`
 
-Use `--all` to build every web-extensions app as well.
+Use `--all` to build every web-extensions app except `maps` (build `maps` separately when configured).
 
 For `external-sites` and `importer`, copy and customize the configuration first:
 

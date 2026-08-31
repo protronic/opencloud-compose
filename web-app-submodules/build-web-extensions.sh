@@ -26,6 +26,11 @@ MONOREPO_APP_NAMES=(
   unzip
 )
 
+# Monorepo apps omitted from --all (still buildable by name).
+MONOREPO_EXCLUDE_FROM_ALL=(
+  maps
+)
+
 # deploy_name|relative_dir[|dist_subdir]
 # dist_subdir defaults to "dist" when omitted
 STANDALONE_PNPM_SUBMODULES=(
@@ -101,7 +106,7 @@ Standalone submodule repos (aliases in parentheses):
   webapp-lsm6 (lsm6) — opt-in only, needs private pro-* npm packages
 
 Options:
-  -a, --all       Build every web-extensions app plus all standalone extensions
+  -a, --all       Build every web-extensions app plus all standalone extensions (maps excluded)
   -l, --list      List available app names and exit
   -h, --help      Show this help
 
@@ -140,6 +145,30 @@ is_monorepo_app() {
   done
 
   return 1
+}
+
+is_excluded_from_all() {
+  local app="$1"
+  local excluded
+
+  for excluded in "${MONOREPO_EXCLUDE_FROM_ALL[@]}"; do
+    if [[ "${excluded}" == "${app}" ]]; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+add_monorepo_apps_for_all() {
+  local app
+
+  for app in "${MONOREPO_APP_NAMES[@]}"; do
+    if is_excluded_from_all "${app}"; then
+      continue
+    fi
+    MONOREPO_APPS+=("${app}")
+  done
 }
 
 resolve_app_name() {
@@ -504,7 +533,7 @@ BUILD_PRESENTATION=false
 BUILD_LSM6=false
 
 if [[ "${BUILD_ALL}" == true ]]; then
-  MONOREPO_APPS=("${MONOREPO_APP_NAMES[@]}")
+  add_monorepo_apps_for_all
   for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
     STANDALONE_PNPM_APPS+=("${entry%%|*}")
   done
