@@ -12,6 +12,7 @@ LSM6_APP="webapp-lsm6"
 
 MONOREPO_APP_NAMES=(
   arcade
+  bpmn
   calculator
   cast
   draw-io

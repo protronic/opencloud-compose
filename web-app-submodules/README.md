@@ -99,7 +99,7 @@ Pin standalone submodules to **extension-sdk 7.1.2** (same as the `web-extension
 
 ## web-extensions apps
 
-`arcade`, `calculator`, `cast`, `draw-io`, `external-sites`, `importer`, `json-viewer`, `maps`, `notes`, `pastebin`, `progress-bars`, `unzip`
+`arcade`, `bpmn`, `calculator`, `cast`, `draw-io`, `external-sites`, `importer`, `json-viewer`, `maps`, `notes`, `pastebin`, `progress-bars`, `unzip`
 
 ## Default build (no arguments)
 
