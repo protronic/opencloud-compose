@@ -18,7 +18,11 @@ export type OcBridgeHooks = {
   flashSaved: () => void;
 };
 
-export const ocMode = new URLSearchParams(window.location.search).has('oc');
+// ?oc=1 for a direct-URL embed; the window name covers the srcdoc embed,
+// where the document has no query string of its own.
+export const ocMode =
+  new URLSearchParams(window.location.search).has('oc') ||
+  window.name === 'typst-wysiwyg-oc';
 
 let hooks: OcBridgeHooks | undefined;
 let notifyTimer: number | undefined;

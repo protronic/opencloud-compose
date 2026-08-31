@@ -11,7 +11,10 @@
          embedding wrapper, before any module loads - so the wrapper can
          distinguish "page never arrived" from "app failed to boot". -->
     <script>
-      if (new URLSearchParams(window.location.search).has('oc') && window.parent !== window) {
+      if (
+        (new URLSearchParams(window.location.search).has('oc') || window.name === 'typst-wysiwyg-oc') &&
+        window.parent !== window
+      ) {
         window.parent.postMessage({type: 'typwys:frame-loaded'}, window.origin);
         window.addEventListener('error', function (event) {
           var message = (event.error && event.error.message) || event.message || 'unknown error';

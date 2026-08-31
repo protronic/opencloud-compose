@@ -28,10 +28,11 @@
       <span v-else class="status-hint">Schreibgeschützt</span>
     </header>
     <iframe
-      v-if="frameSrc"
+      v-if="frameHtml"
       ref="frameElement"
       class="editor-frame"
-      :src="frameSrc"
+      name="typst-wysiwyg-oc"
+      :srcdoc="frameHtml"
       title="Typst WYSIWYG Editor"
     />
   </div>
@@ -79,40 +80,53 @@ let pendingSourceSwitch = false;
  * The vendored editor app is built as static files into wysiwyg/ next to
  * the bundle. Candidate URLs are probed with a fetch (checking for the
  * app's marker, so an SPA fallback response is not mistaken for the page).
- * Resolved through a variable so Vite's static analysis does not rewrite
- * the `new URL(..., import.meta.url)` pattern into a single-asset
- * reference.
+ * The page is then embedded via srcdoc with an explicit <base> pointing at
+ * the verified location: the OpenCloud asset server may serve the document
+ * under a different URL than its storage path, which would break the
+ * page's relative asset references (observed as ./assets/* resolving
+ * against the server root). Candidates are resolved through a variable so
+ * Vite's static analysis does not rewrite the
+ * `new URL(..., import.meta.url)` pattern into a single-asset reference.
  */
-const frameSrc = ref('');
+const frameHtml = ref('');
 
 function frameCandidates(): string[] {
   if (import.meta.env.DEV) return ['/wysiwyg/index.html'];
   const moduleUrl = import.meta.url;
-  return [
-    new URL('../wysiwyg/index.html', moduleUrl).href,
-    new URL('/assets/apps/typst-wysiwyg/wysiwyg/index.html', window.location.origin).href,
-  ];
-}
-
-async function probeCandidate(url: string): Promise<string> {
-  const response = await fetch(url, {cache: 'no-store'});
-  if (!response.ok) return `HTTP ${response.status}`;
-  const body = await response.text();
-  if (!body.includes('typst-wysiwyg-embed')) return 'liefert fremden Inhalt (SPA-Fallback?)';
-  return '';
+  const candidates: string[] = [];
+  try {
+    candidates.push(new URL('../wysiwyg/index.html', moduleUrl).href);
+  } catch {
+    // moduleUrl can be a non-hierarchical URL depending on how the host
+    // loaded the federated module; the fixed path below still works.
+  }
+  const fixed = new URL('/assets/apps/typst-wysiwyg/wysiwyg/index.html', window.location.origin)
+    .href;
+  if (!candidates.includes(fixed)) candidates.push(fixed);
+  return candidates;
 }
 
 async function resolveFrameSrc(): Promise<void> {
   const failures: string[] = [];
   for (const candidate of frameCandidates()) {
     try {
-      const failure = await probeCandidate(candidate);
-      if (!failure) {
-        frameSrc.value = `${candidate}?oc=1`;
-        startWatchdog();
-        return;
+      const response = await fetch(candidate, {cache: 'no-store'});
+      if (!response.ok) {
+        failures.push(`${candidate}: HTTP ${response.status}`);
+        continue;
       }
-      failures.push(`${candidate}: ${failure}`);
+      const body = await response.text();
+      if (!body.includes('typst-wysiwyg-embed')) {
+        failures.push(`${candidate}: liefert fremden Inhalt (SPA-Fallback?)`);
+        continue;
+      }
+      // Anchor all relative references at the verified location (after
+      // redirects). The assets live next to the page - they were deployed
+      // together.
+      const baseHref = new URL('.', response.url || candidate).href;
+      frameHtml.value = body.replace(/<head>/i, `<head><base href="${baseHref}">`);
+      startWatchdog();
+      return;
     } catch (err) {
       failures.push(`${candidate}: ${err instanceof Error ? err.message : String(err)}`);
     }
@@ -153,7 +167,7 @@ function startWatchdog(): void {
     hasError.value = true;
     errorText.value = frameLoaded.value
       ? 'Editor startet nicht (Seite geladen, Skripte melden sich nicht – Browser-Konsole prüfen)'
-      : `Editor-Seite wird nicht geladen (${frameSrc.value.split('?')[0]})`;
+      : 'Editor-Seite wird nicht geladen (Browser-Konsole prüfen)';
   }, 20000);
 }
 
