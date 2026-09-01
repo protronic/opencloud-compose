@@ -1,0 +1,15 @@
+/* Text-Glyphen für die reduzierte Palette (kein BPMN-Icon-Font nötig) */
+.djs-palette .entry[class*='fb-palette-'] {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 46px;
+  text-align: center;
+  color: #2f3b45;
+}
+.fb-palette-rail::before { content: '‖'; font-size: 18px; font-weight: 700; }
+.fb-palette-contact::before { content: '⊣⊢'; font-size: 15px; }
+.fb-palette-contact-neg::before { content: '⊣/⊢'; font-size: 13px; }
+.fb-palette-or::before { content: '●<'; font-size: 13px; }
+.fb-palette-ton::before { content: 'TON'; font-weight: 600; }
+.fb-palette-tof::before { content: 'TOF'; font-weight: 600; }
+.fb-palette-coil::before { content: '( )'; font-size: 14px; font-weight: 700; color: #4f7a5a; }

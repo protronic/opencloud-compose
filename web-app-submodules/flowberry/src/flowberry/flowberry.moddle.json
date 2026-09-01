@@ -1,0 +1,21 @@
+{
+  "name": "FlowBerry",
+  "prefix": "fb",
+  "uri": "http://protronic.de/schema/flowberry/1.0",
+  "xml": {
+    "tagAlias": "lowerCase"
+  },
+  "types": [
+    {
+      "name": "BerryBits",
+      "extends": ["bpmn:BaseElement"],
+      "properties": [
+        { "name": "kind", "isAttr": true, "type": "String" },
+        { "name": "negated", "isAttr": true, "type": "Boolean" },
+        { "name": "preset", "isAttr": true, "type": "Integer" }
+      ]
+    }
+  ],
+  "enumerations": [],
+  "associations": []
+}

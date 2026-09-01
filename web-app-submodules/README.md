@@ -13,6 +13,7 @@ blockberry-editor/dist/web               →   OC_APPS_DIR/blockberry-editor/
 pdf-annotator/dist/web                   →   OC_APPS_DIR/pdf-annotator/
 typst-editor/dist/web                    →   OC_APPS_DIR/typst-editor/
 typst-wysiwyg/dist/web                   →   OC_APPS_DIR/typst-wysiwyg/
+flowberry/dist/web                       →   OC_APPS_DIR/flowberry/
 webapp-lsm6/dist/web                     →   OC_APPS_DIR/webapp-lsm6/
 web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpresentation-viewer/
                                                               ↓
@@ -34,6 +35,10 @@ web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpr
   Word-style WYSIWYG editor for `.typ` files - in an iframe wired to the OpenCloud file
   interface via postMessage. Registered as an additional "Öffnen mit" entry for `.typ`
   (the typst-editor keeps priority); see `typst-wysiwyg/app/UPSTREAM.md` for the local patches
+- **`flowberry`** lives directly in this repository; a reduced bpmn-js-based logic editor for
+  relay/ladder-style Verknüpfungslogik (`.flowberry`, BPMN-2.0-XML with `fb:*` attributes) that
+  generates self-contained Berry scripts (`.be`) next to the diagram via WebDAV - see
+  `flowberry/README.md`
 - **`webapp-lsm6`** (`git@gitlab:prot-lsm6/webapp-lsm6-k.git`, branch `feature/opencloud-lsmprj`)
   opens and saves `.lsmprj` files via the Angular app's Projekt laden/speichern functions.
   Opt-in build only: `./web-app-submodules/build-web-extensions.sh webapp-lsm6`

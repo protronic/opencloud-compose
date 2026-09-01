@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:fb="http://protronic.de/schema/flowberry/1.0"
+                  id="Definitions_1"
+                  targetNamespace="http://protronic.de/flowberry">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="Rail_1" />
+    <bpmn:task id="C_Start" name="START" fb:kind="contact" fb:negated="false" />
+    <bpmn:task id="C_RunFb" name="RUN" fb:kind="contact" fb:negated="false" />
+    <bpmn:exclusiveGateway id="Or_1" />
+    <bpmn:task id="C_Stop" name="STOP" fb:kind="contact" fb:negated="true" />
+    <bpmn:task id="Coil_Run" name="RUN" fb:kind="coil" />
+    <bpmn:startEvent id="Rail_2" />
+    <bpmn:task id="C_Run2" name="RUN" fb:kind="contact" fb:negated="false" />
+    <bpmn:task id="T_Anlauf" name="anlauf" fb:kind="ton" fb:preset="200" />
+    <bpmn:task id="Coil_Motor" name="MOTOR" fb:kind="coil" />
+    <bpmn:sequenceFlow id="f1" sourceRef="Rail_1" targetRef="C_Start" />
+    <bpmn:sequenceFlow id="f2" sourceRef="Rail_1" targetRef="C_RunFb" />
+    <bpmn:sequenceFlow id="f3" sourceRef="C_Start" targetRef="Or_1" />
+    <bpmn:sequenceFlow id="f4" sourceRef="C_RunFb" targetRef="Or_1" />
+    <bpmn:sequenceFlow id="f5" sourceRef="Or_1" targetRef="C_Stop" />
+    <bpmn:sequenceFlow id="f6" sourceRef="C_Stop" targetRef="Coil_Run" />
+    <bpmn:sequenceFlow id="f7" sourceRef="Rail_2" targetRef="C_Run2" />
+    <bpmn:sequenceFlow id="f8" sourceRef="C_Run2" targetRef="T_Anlauf" />
+    <bpmn:sequenceFlow id="f9" sourceRef="T_Anlauf" targetRef="Coil_Motor" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="Rail_1_di" bpmnElement="Rail_1"><dc:Bounds x="100" y="142" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="C_Start_di" bpmnElement="C_Start"><dc:Bounds x="200" y="120" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="C_RunFb_di" bpmnElement="C_RunFb"><dc:Bounds x="200" y="230" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Or_1_di" bpmnElement="Or_1"><dc:Bounds x="350" y="135" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="C_Stop_di" bpmnElement="C_Stop"><dc:Bounds x="450" y="120" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Coil_Run_di" bpmnElement="Coil_Run"><dc:Bounds x="610" y="120" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Rail_2_di" bpmnElement="Rail_2"><dc:Bounds x="100" y="392" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="C_Run2_di" bpmnElement="C_Run2"><dc:Bounds x="200" y="370" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="T_Anlauf_di" bpmnElement="T_Anlauf"><dc:Bounds x="360" y="370" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Coil_Motor_di" bpmnElement="Coil_Motor"><dc:Bounds x="520" y="370" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="f1_di" bpmnElement="f1"><di:waypoint x="136" y="160" /><di:waypoint x="200" y="160" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f2_di" bpmnElement="f2"><di:waypoint x="136" y="160" /><di:waypoint x="160" y="270" /><di:waypoint x="200" y="270" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f3_di" bpmnElement="f3"><di:waypoint x="300" y="160" /><di:waypoint x="350" y="160" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f4_di" bpmnElement="f4"><di:waypoint x="300" y="270" /><di:waypoint x="375" y="270" /><di:waypoint x="375" y="185" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f5_di" bpmnElement="f5"><di:waypoint x="400" y="160" /><di:waypoint x="450" y="160" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f6_di" bpmnElement="f6"><di:waypoint x="550" y="160" /><di:waypoint x="610" y="160" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f7_di" bpmnElement="f7"><di:waypoint x="136" y="410" /><di:waypoint x="200" y="410" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f8_di" bpmnElement="f8"><di:waypoint x="300" y="410" /><di:waypoint x="360" y="410" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f9_di" bpmnElement="f9"><di:waypoint x="460" y="410" /><di:waypoint x="520" y="410" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

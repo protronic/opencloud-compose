@@ -41,6 +41,7 @@ STANDALONE_PNPM_SUBMODULES=(
   "pdf-annotator|pdf-annotator|dist/web"
   "typst-editor|typst-editor|dist/web"
   "typst-wysiwyg|typst-wysiwyg|dist/web"
+  "flowberry|flowberry|dist/web"
 )
 
 if [[ -f "${ROOT_DIR}/.env" ]]; then
@@ -102,6 +103,7 @@ Standalone submodule repos (aliases in parentheses):
   pdf-annotator
   typst-editor (in-tree, no submodule)
   typst-wysiwyg (in-tree, no submodule; vendored ortic/typst-wysiwyg)
+  flowberry (in-tree, no submodule)
   mdpresentation-viewer (presentation-viewer, web-app-presentation-viewer)
   webapp-lsm6 (lsm6) — opt-in only, needs private pro-* npm packages
 
