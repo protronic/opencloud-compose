@@ -86,9 +86,9 @@ Usage: $(basename "$0") [OPTIONS] [APP ...]
 
 Build OpenCloud web extensions and deploy them to OC_APPS_DIR (default: config/opencloud/apps).
 
-With no APP arguments, apps from web-extensions are taken from OC_WEB_APPS in .env and all
-standalone submodule extensions are built (comments, 3dviewer, web-calendar, blockberry-editor,
-pdf-annotator, presentation-viewer).
+With no APP arguments, exactly the apps listed in OC_WEB_APPS (.env) are built - nothing
+else. OC_WEB_APPS accepts every name/alias listed below, monorepo apps and standalone
+extensions alike (e.g. OC_WEB_APPS=calculator,pdf-annotator,typst-editor).
 
 With APP arguments, only the listed extensions are built and deployed.
 
@@ -113,7 +113,7 @@ Options:
   -h, --help      Show this help
 
 Examples:
-  $(basename "$0")                          # OC_WEB_APPS + all standalone extensions
+  $(basename "$0")                          # exactly the apps from OC_WEB_APPS
   $(basename "$0") comments                 # only comments
   $(basename "$0") calculator draw-io       # two monorepo apps only
   $(basename "$0") --all                    # everything
@@ -545,6 +545,9 @@ elif [[ ${#SELECTED_APPS[@]} -gt 0 ]]; then
     add_app_from_input "${raw_app}"
   done
 else
+  # No arguments: build exactly the apps listed in OC_WEB_APPS (.env).
+  # The list accepts every app name/alias that works as a CLI argument -
+  # monorepo apps and standalone extensions alike.
   if [[ -n "${OC_WEB_APPS:-}" ]]; then
     OC_WEB_APPS="${OC_WEB_APPS//,/ }"
     for app in ${OC_WEB_APPS}; do
@@ -552,11 +555,6 @@ else
       add_app_from_input "${app}"
     done
   fi
-
-  for entry in "${STANDALONE_PNPM_SUBMODULES[@]}"; do
-    add_resolved_app "${entry%%|*}"
-  done
-  BUILD_PRESENTATION=true
 fi
 
 DEPLOY_APPS=("${MONOREPO_APPS[@]}" "${STANDALONE_PNPM_APPS[@]}")

@@ -21,8 +21,10 @@ web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpr
                                         (/var/lib/opencloud/web/assets/apps)
 ```
 
-- **`OC_WEB_APPS`** selects apps from `web-extensions` when building without app arguments
-- **Standalone submodules** are built on every default run; pass app names to build only selected extensions
+- **`OC_WEB_APPS`** is the complete build list when the script runs without app arguments -
+  nothing outside it is built. It accepts every app name/alias the CLI accepts, monorepo
+  apps and standalone extensions alike
+- Pass app names as arguments to build a selection regardless of `OC_WEB_APPS`
 - **`pdf-annotator`** ([protronic/pdf-annotator](https://github.com/protronic/pdf-annotator))
   views PDFs with pdf.js, offers the pdf.js annotation tools (highlight, free text, ink, stamp)
   and saves the annotated PDF back to OpenCloud through the regular file interface instead of a
@@ -59,10 +61,11 @@ git submodule update --init --recursive
 
 Docker is required on the host. The build script runs `pnpm install` and `pnpm build` inside temporary containers and removes them when finished. Most apps use [pnpm](https://pnpm.io/docker) (`ghcr.io/pnpm/pnpm:11.9.0` by default, override with `PNPM_IMAGE`); the presentation viewer uses `node:20-bookworm` by default (`PRESENTATION_IMAGE`). Node.js is installed via `pnpm runtime set` where needed (default: Node 24, override with `NODE_VERSION`).
 
-Configure web-extensions apps in `.env` at the repository root:
+Configure the default build list in `.env` at the repository root - monorepo apps and
+standalone extensions can be mixed freely:
 
 ```
-OC_WEB_APPS=calculator,draw-io,json-viewer,notes,unzip
+OC_WEB_APPS=calculator,draw-io,json-viewer,notes,unzip,comments,pdf-annotator,typst-editor
 ```
 
 Optional apps directory (default: `./config/opencloud/apps`):
@@ -79,7 +82,7 @@ From the repository root:
 ./web-app-submodules/build-web-extensions.sh
 ```
 
-The script reads `OC_WEB_APPS` from `.env` for the web-extensions monorepo and builds all standalone submodules when no app names are passed.
+Without app arguments the script builds exactly the apps listed in `OC_WEB_APPS` (`.env`) - no implicit defaults. With an empty or missing `OC_WEB_APPS` it exits with a hint instead of building anything.
 
 Build only selected extensions (monorepo apps or standalone repos):
 
@@ -108,9 +111,9 @@ Pin standalone submodules to **extension-sdk 7.1.2** (same as the `web-extension
 
 ## Default build (no arguments)
 
-`comments`, `3dviewer`, `web-calendar`, `blockberry-editor`, `mdpresentation-viewer`, plus apps listed in `OC_WEB_APPS`
+Exactly the apps listed in `OC_WEB_APPS` - monorepo apps and standalone extensions alike.
 
-Use `--all` to build every web-extensions app except `maps` (build `maps` separately when configured).
+Use `--all` to build every web-extensions app plus all standalone extensions except `maps` (build `maps` separately when configured).
 
 For `external-sites` and `importer`, copy and customize the configuration first:
 
