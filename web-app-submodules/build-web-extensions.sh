@@ -42,6 +42,7 @@ STANDALONE_PNPM_SUBMODULES=(
   "typst-editor|typst-editor|dist/web"
   "typst-wysiwyg|typst-wysiwyg|dist/web"
   "flowberry|flowberry|dist/web"
+  "emlviewer|emlviewer|dist/web"
 )
 
 if [[ -f "${ROOT_DIR}/.env" ]]; then
@@ -78,6 +79,7 @@ resolve_git_commit() {
 PDFA_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/pdf-annotator" "${PDFA_GIT_COMMIT:-}")"
 BB_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/blockberry-editor" "${BB_GIT_COMMIT:-}")"
 TYPST_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/typst-editor" "${TYPST_GIT_COMMIT:-}")"
+EMLVIEWER_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/emlviewer" "${EMLVIEWER_GIT_COMMIT:-}")"
 LSM6_GIT_REF="${LSM6_GIT_REF:-$(git -C "${SUBMODULES_DIR}/${LSM6_APP}" describe --tags --always --dirty 2>/dev/null || true)}"
 
 usage() {
@@ -104,6 +106,7 @@ Standalone submodule repos (aliases in parentheses):
   typst-editor (in-tree, no submodule)
   typst-wysiwyg (in-tree, no submodule; vendored ortic/typst-wysiwyg)
   flowberry (in-tree, no submodule)
+  emlviewer (eml-viewer, eml) — .eml e-mail preview
   mdpresentation-viewer (presentation-viewer, web-app-presentation-viewer)
   webapp-lsm6 (lsm6) — opt-in only, needs private pro-* npm packages
 
@@ -199,6 +202,11 @@ resolve_app_name() {
     fi
 
     if [[ "${deploy_name}" == "blockberry-editor" && "${input}" == "blockberry" ]]; then
+      echo "${deploy_name}"
+      return 0
+    fi
+
+    if [[ "${deploy_name}" == "emlviewer" && ("${input}" == "eml-viewer" || "${input}" == "eml") ]]; then
       echo "${deploy_name}"
       return 0
     fi
@@ -314,6 +322,7 @@ run_pnpm_build() {
     -e PDFA_GIT_COMMIT="${PDFA_GIT_COMMIT}" \
     -e BB_GIT_COMMIT="${BB_GIT_COMMIT}" \
     -e TYPST_GIT_COMMIT="${TYPST_GIT_COMMIT}" \
+    -e EMLVIEWER_GIT_COMMIT="${EMLVIEWER_GIT_COMMIT}" \
     -v "${source_dir}:/work" \
     -w /work \
     "${PNPM_IMAGE}" \

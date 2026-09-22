@@ -24,3 +24,6 @@
 	path = web-app-submodules/webapp-lsm6
 	url = git@gitlab:prot-lsm6/webapp-lsm6-k.git
 	branch = feature/opencloud-lsmprj
+[submodule "web-app-submodules/emlviewer"]
+	path = web-app-submodules/emlviewer
+	url = git@github.com:protronic/emlviewer.git

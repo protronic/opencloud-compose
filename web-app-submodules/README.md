@@ -14,6 +14,7 @@ pdf-annotator/dist/web                   →   OC_APPS_DIR/pdf-annotator/
 typst-editor/dist/web                    →   OC_APPS_DIR/typst-editor/
 typst-wysiwyg/dist/web                   →   OC_APPS_DIR/typst-wysiwyg/
 flowberry/dist/web                       →   OC_APPS_DIR/flowberry/
+emlviewer/dist/web                       →   OC_APPS_DIR/emlviewer/
 webapp-lsm6/dist/web                     →   OC_APPS_DIR/webapp-lsm6/
 web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpresentation-viewer/
                                                               ↓
@@ -41,6 +42,11 @@ web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpr
   relay/ladder-style Verknüpfungslogik (`.flowberry`, BPMN-2.0-XML with `fb:*` attributes) that
   generates self-contained Berry scripts (`.be`) next to the diagram via WebDAV - see
   `flowberry/README.md`
+- **`emlviewer`** ([protronic/emlviewer](https://github.com/protronic/emlviewer)) previews `.eml`
+  e-mail files (`message/rfc822`): headers, sanitised HTML/text body in a sandboxed iframe with
+  inlined `cid:` images and blocked remote content, attachments (download or save next to the
+  `.eml`), print / PDF via the browser print dialog. OpenCloud port of the Nextcloud Eml Viewer by
+  newroco - everything runs client-side (postal-mime + DOMPurify), no server component needed
 - **`webapp-lsm6`** (`git@gitlab:prot-lsm6/webapp-lsm6-k.git`, branch `feature/opencloud-lsmprj`)
   opens and saves `.lsmprj` files via the Angular app's Projekt laden/speichern functions.
   Opt-in build only: `./web-app-submodules/build-web-extensions.sh webapp-lsm6`
@@ -65,7 +71,7 @@ Configure the default build list in `.env` at the repository root - monorepo app
 standalone extensions can be mixed freely:
 
 ```
-OC_WEB_APPS=calculator,draw-io,json-viewer,notes,unzip,comments,pdf-annotator,typst-editor
+OC_WEB_APPS=calculator,draw-io,json-viewer,notes,unzip,comments,pdf-annotator,typst-editor,emlviewer
 ```
 
 Optional apps directory (default: `./config/opencloud/apps`):
@@ -88,12 +94,13 @@ Build only selected extensions (monorepo apps or standalone repos):
 
 ```bash
 ./web-app-submodules/build-web-extensions.sh comments
+./web-app-submodules/build-web-extensions.sh emlviewer
 ./web-app-submodules/build-web-extensions.sh calculator draw-io
 ./web-app-submodules/build-web-extensions.sh --all
 ./web-app-submodules/build-web-extensions.sh --list
 ```
 
-App names from web-extensions can use the short name (`calculator`) or `web-app-calculator`. Standalone repos accept deploy names or directory names (`comments`, `web-app-comments`, `calendar` for web-calendar, `blockberry` for blockberry-editor).
+App names from web-extensions can use the short name (`calculator`) or `web-app-calculator`. Standalone repos accept deploy names or directory names (`comments`, `web-app-comments`, `calendar` for web-calendar, `blockberry` for blockberry-editor, `eml` or `eml-viewer` for emlviewer).
 
 After building, restart the OpenCloud container to load new extensions.
 
