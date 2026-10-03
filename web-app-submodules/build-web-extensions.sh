@@ -113,6 +113,8 @@ Standalone submodule repos (aliases in parentheses):
 Options:
   -a, --all       Build every web-extensions app plus all standalone extensions (maps excluded)
   -l, --list      List available app names and exit
+  -r, --resolve   Print the deploy names for the given APP arguments (one per line) and exit;
+                  used by deploy-built-apps.sh to map OC_WEB_APPS entries to OC_APPS_DIR folders
   -h, --help      Show this help
 
 Examples:
@@ -122,11 +124,6 @@ Examples:
   $(basename "$0") --all                    # everything
 EOF
 }
-
-if ! command -v docker >/dev/null 2>&1; then
-  echo "Docker is required to build web extensions in a pnpm container." >&2
-  exit 1
-fi
 
 normalize_monorepo_app() {
   local app="$1"
@@ -506,6 +503,7 @@ cleanup_presentation_build_dir() {
 
 SELECTED_APPS=()
 BUILD_ALL=false
+RESOLVE_ONLY=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -516,6 +514,10 @@ while [[ $# -gt 0 ]]; do
     -l | --list)
       list_available_apps
       exit 0
+      ;;
+    -r | --resolve)
+      RESOLVE_ONLY=true
+      shift
       ;;
     -a | --all)
       BUILD_ALL=true
@@ -542,6 +544,20 @@ MONOREPO_APPS=()
 STANDALONE_PNPM_APPS=()
 BUILD_PRESENTATION=false
 BUILD_LSM6=false
+
+if [[ "${RESOLVE_ONLY}" == true ]]; then
+  if [[ ${#SELECTED_APPS[@]} -eq 0 ]]; then
+    echo "--resolve needs at least one app name." >&2
+    exit 1
+  fi
+  for raw_app in "${SELECTED_APPS[@]}"; do
+    add_app_from_input "${raw_app}"
+  done
+  printf '%s\n' "${MONOREPO_APPS[@]}" "${STANDALONE_PNPM_APPS[@]}"
+  [[ "${BUILD_PRESENTATION}" == true ]] && echo "${PRESENTATION_VIEWER_APP}"
+  [[ "${BUILD_LSM6}" == true ]] && echo "${LSM6_APP}"
+  exit 0
+fi
 
 if [[ "${BUILD_ALL}" == true ]]; then
   add_monorepo_apps_for_all
@@ -577,6 +593,11 @@ fi
 if [[ ${#DEPLOY_APPS[@]} -eq 0 ]]; then
   echo "No apps selected to build." >&2
   echo "Set OC_WEB_APPS in .env, pass app names, or use --all." >&2
+  exit 1
+fi
+
+if ! command -v docker >/dev/null 2>&1; then
+  echo "Docker is required to build web extensions in a pnpm container." >&2
   exit 1
 fi
 
