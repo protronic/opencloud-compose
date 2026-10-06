@@ -104,6 +104,33 @@ App names from web-extensions can use the short name (`calculator`) or `web-app-
 
 After building, restart the OpenCloud container to load new extensions.
 
+## Deploy built apps to a server
+
+`deploy-built-apps.sh` uploads apps that were already built by `build-web-extensions.sh`
+(the contents of the local `OC_APPS_DIR`) to an OpenCloud server over ssh/scp. The server's
+own `.env` decides what and where:
+
+1. reads `REMOTE_DIR/.env` on the server: `OC_WEB_APPS` is the app list, `OC_APPS_DIR` the
+   destination (default `config/opencloud/apps` below `REMOTE_DIR`; `~` and relative paths work)
+2. maps the entries to deploy names (`build-web-extensions.sh --resolve`, same aliases as the build)
+3. refuses to start when one of the apps is not built locally
+4. uploads each app into a staging folder next to the apps and swaps it in (old files are removed)
+5. verifies the `manifest.json` on the server and restarts OpenCloud on request
+
+```bash
+./web-app-submodules/build-web-extensions.sh                       # build what the local .env lists
+./web-app-submodules/deploy-built-apps.sh -n admin@oc.example.com  # dry run: show the plan
+./web-app-submodules/deploy-built-apps.sh admin@oc.example.com /opt/opencloud-compose --restart
+```
+
+`REMOTE_DIR` defaults to `/opt/opencloud-compose` (`OC_DEPLOY_DIR`). `--apps a,b` overrides the
+server's `OC_WEB_APPS`, `--source DIR` the local build output. ssh options go into a `Host` entry
+in `~/.ssh/config` or `OC_SSH_OPTS` / `OC_SCP_OPTS`. The uploaded files must be readable by the
+OpenCloud container user (`OC_CONTAINER_UID_GID`, default 1000:1000).
+
+`deploy-standalone-apps.sh` is the older build-and-rsync script for the four original standalone
+apps; `verify-production-apps.sh` checks the Module Federation manifests of a running server.
+
 ## Module Federation compatibility (OpenCloud 7.2.x)
 
 External apps built with `@opencloud-eu/extension-sdk` 7.0.x can pull in Module Federation runtime **2.4.x**, which breaks other apps on OpenCloud **7.2.0** (host runtime **2.3.1**) with errors like:
