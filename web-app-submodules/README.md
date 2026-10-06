@@ -17,6 +17,7 @@ flowberry/dist/web                       →   OC_APPS_DIR/flowberry/
 emlviewer/dist/web                       →   OC_APPS_DIR/emlviewer/
 webapp-lsm6/dist/web                     →   OC_APPS_DIR/webapp-lsm6/
 web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpresentation-viewer/
+external, prebuilt (e.g. from a CI runner)                 →   OC_APPS_DIR/<name>/  (deploy-built-apps.sh)
                                                               ↓
                                                    OpenCloud container
                                         (/var/lib/opencloud/web/assets/apps)
@@ -110,10 +111,11 @@ After building, restart the OpenCloud container to load new extensions.
 (the contents of the local `OC_APPS_DIR`) to an OpenCloud server over ssh/scp. The server's
 own `.env` decides what and where:
 
-1. reads `REMOTE_DIR/.env` on the server: `OC_WEB_APPS` is the app list, `OC_APPS_DIR` the
-   destination (default `config/opencloud/apps` below `REMOTE_DIR`; `~` and relative paths work)
+1. reads `REMOTE_DIR/.env` on the server: `OC_WEB_APPS` is the app list, `OC_EXTERNAL_WEB_APPS`
+   the prebuilt apps (see below), `OC_APPS_DIR` the destination (default `config/opencloud/apps`
+   below `REMOTE_DIR`; `~` and relative paths work)
 2. maps the entries to deploy names (`build-web-extensions.sh --resolve`, same aliases as the build)
-3. refuses to start when one of the apps is not built locally
+3. refuses to start when one of the apps is not built locally; fetches and checks the external apps
 4. uploads each app into a staging folder next to the apps and swaps it in (old files are removed)
 5. verifies the `manifest.json` on the server and restarts OpenCloud on request
 
@@ -127,6 +129,36 @@ own `.env` decides what and where:
 server's `OC_WEB_APPS`, `--source DIR` the local build output. ssh options go into a `Host` entry
 in `~/.ssh/config` or `OC_SSH_OPTS` / `OC_SCP_OPTS`. The uploaded files must be readable by the
 OpenCloud container user (`OC_CONTAINER_UID_GID`, default 1000:1000).
+
+### External (prebuilt) apps
+
+Apps that are built elsewhere - e.g. in their own repository on a Forgejo runner - are not part
+of `build-web-extensions.sh`. They are declared as `name=source` pairs, comma-separated, in the
+server's `.env`:
+
+```
+OC_EXTERNAL_WEB_APPS=my-app=https://forgejo.example.com/api/packages/<owner>/generic/my-app/1.0.0/my-app-1.0.0.tar.gz
+```
+
+or per call with `--external name=source` (repeatable, overrides the `.env` entry of the same
+name). `source` is a local directory, a `.zip` / `.tar.gz` / `.tar` archive or an http(s) URL of
+such an archive; `manifest.json` has to be at the top level or inside a single top-level folder.
+Downloads happen on the deploying machine (the server needs no access to Forgejo); a token for
+private packages goes into `OC_EXTERNAL_TOKEN` (sent as `Authorization: token ...`), further curl
+options into `OC_EXTERNAL_CURL_OPTS`. Before the upload the script checks `manifest.json`, the
+entrypoint and the Module Federation runtime (see below).
+
+Without `--apps` every external app is deployed together with `OC_WEB_APPS`; `--apps` may name
+external apps as well:
+
+```bash
+./web-app-submodules/deploy-built-apps.sh admin@oc.example.com                    # OC_WEB_APPS + OC_EXTERNAL_WEB_APPS
+./web-app-submodules/deploy-built-apps.sh --apps my-app admin@oc.example.com      # only the external app
+./web-app-submodules/deploy-built-apps.sh --apps my-app \
+  --external my-app=../my-app/dist/my-app-1.0.0.tar.gz admin@oc.example.com
+```
+
+Do not list external apps in `OC_WEB_APPS` - `build-web-extensions.sh` does not know them.
 
 `deploy-standalone-apps.sh` is the older build-and-rsync script for the four original standalone
 apps; `verify-production-apps.sh` checks the Module Federation manifests of a running server.
