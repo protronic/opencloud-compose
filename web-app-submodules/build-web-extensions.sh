@@ -19,6 +19,7 @@ MONOREPO_APP_NAMES=(
   calculator
   cast
   draw-io
+  excalidraw
   external-sites
   importer
   json-viewer

@@ -193,11 +193,14 @@ External apps built with `@opencloud-eu/extension-sdk` 7.0.x can pull in Module 
 
 `Shared module '@opencloud-eu/web-client' must be provided by host`
 
-Pin standalone submodules to **extension-sdk 7.1.2** (same as the `web-extensions` lockfile). The build script rejects `remoteEntry*.mjs` files that use the 2.4.x `__mf_module_cache__` pattern.
+Pin standalone submodules to an extension-sdk that keeps the host runtime 2.3.1 - **7.1.2** or
+**8.1.0** (the `web-extensions` lockfile, for OpenCloud 8.x; it still ships Module Federation
+runtime 2.3.1). The build script rejects `remoteEntry*.mjs` files that use the 2.4.x
+`__mf_module_cache__` pattern.
 
 ## web-extensions apps
 
-`arcade`, `bpmn`, `calculator`, `cast`, `draw-io`, `external-sites`, `importer`, `json-viewer`, `maps`, `notes`, `pastebin`, `progress-bars`, `unzip`
+`arcade`, `bpmn`, `calculator`, `cast`, `draw-io`, `excalidraw`, `external-sites`, `importer`, `json-viewer`, `maps`, `notes`, `pastebin`, `progress-bars`, `unzip`
 
 ## Default build (no arguments)
 
