@@ -108,26 +108,33 @@ After building, restart the OpenCloud container to load new extensions.
 Without Docker - e.g. inside a CI job container - pass `--native` (or set `OC_BUILD_NATIVE=true`):
 the same build commands then run directly on the machine, which needs node, pnpm, git, jq and rsync.
 
-### Build on a Forgejo runner
+### Build and deploy on a Forgejo runner
 
-`.forgejo/workflows/web-extensions.yml` runs `build-web-extensions.sh --all` natively on a Forgejo
-runner (label `linux-amd64`, job container `node:24-bookworm`) - meant for a Forgejo mirror of this
-repository, where a mirror sync triggers the push event (Actions have to be enabled in the mirror).
-The protronic GitHub submodules are fetched over HTTPS.
+`.forgejo/workflows/web-extensions.yml` builds and deploys from a Forgejo runner (label
+`linux-amd64`, job container `node:24-bookworm`) - meant for a Forgejo mirror of this repository,
+where a mirror sync triggers the push event (Actions have to be enabled in the mirror):
 
-The built apps are attached to the run as artifact and - with the repository secret `PACKAGES_TOKEN`
-(Forgejo token with `write:package`; the automatic token cannot write packages) - published as the
-generic package `opencloud-web-apps`, linked to the repository and replaced on every build.
-`webapp-lsm6` (private repository on the same Forgejo) is built too when the runner can fetch it:
-secret `REPO_READ_TOKEN` (token with `read:repository`) or a `PACKAGES_TOKEN` that also has
-`read:repository`; otherwise it is skipped.
+1. reads `OC_WEB_APPS` from the server's `.env` over ssh (`deploy-built-apps.sh --list`)
+2. builds exactly these apps from the checkout (`build-web-extensions.sh --native`); the protronic
+   GitHub submodules are fetched over HTTPS, `webapp-lsm6` (private, same Forgejo) only when listed
+3. runs `deploy-built-apps.sh --restart`: uploads them plus the server's `OC_EXTERNAL_WEB_APPS`,
+   swaps them into `OC_APPS_DIR` and restarts OpenCloud
 
-```
-<forgejo>/api/packages/<owner>/generic/opencloud-web-apps/latest/<app>.tar.gz   # main
-<forgejo>/api/packages/<owner>/generic/opencloud-web-apps/latest/build-info.txt # commit, app list
-```
+Repository settings (Settings -> Actions):
 
-Branches other than `main` use the branch name as channel instead of `latest`.
+| Kind | Name | Value |
+|---|---|---|
+| variable | `OC_DEPLOY_HOST` | ssh target, e.g. `deploy@oc.example.com` |
+| variable | `OC_DEPLOY_KNOWN_HOSTS` | output of `ssh-keyscan -t ed25519 <server>` (host key check) |
+| variable | `OC_DEPLOY_DIR` | compose checkout on the server, default `/opt/opencloud-compose` |
+| variable | `OC_DEPLOY_PORT` | ssh port, default `22` |
+| secret | `DEPLOY_SSH_KEY` | private key of a key pair made for the runner |
+| secret | `PACKAGES_TOKEN` | Forgejo token: `read:package` for external app downloads, `read:repository` for `webapp-lsm6` (or a separate `REPO_READ_TOKEN`) |
+
+On the server the public key goes into `~/.ssh/authorized_keys` of the user that owns the compose
+checkout and may run `docker compose` (the deploy uses ssh/scp with `cat`, `mkdir`, `mv`, `rm` and
+`docker compose restart opencloud`). Restricting the key with `from="<runner address>"` and
+`no-port-forwarding,no-agent-forwarding,no-X11-forwarding` is recommended.
 
 ## Deploy built apps to a server
 
@@ -181,6 +188,11 @@ external apps as well:
 ./web-app-submodules/deploy-built-apps.sh --apps my-app \
   --external my-app=../my-app/dist/my-app-1.0.0.tar.gz admin@oc.example.com
 ```
+
+An entry without source (`OC_EXTERNAL_WEB_APPS=rz25-webapp`) marks an app that its own pipeline
+deploys - e.g. the RZ25-WebApp runner, which checks the list with `deploy-built-apps.sh
+--list-external` and then deploys with `--apps rz25-webapp --external rz25-webapp=<dir>`. The
+deploy of this repository skips such entries, so it never overwrites them.
 
 Do not list external apps in `OC_WEB_APPS` - `build-web-extensions.sh` does not know them.
 

@@ -1,17 +1,19 @@
-# Builds all web extensions (web-app-submodules/build-web-extensions.sh --all) on a
-# Forgejo runner and offers them as one generic package in this repository. Meant for
-# the Forgejo mirror of this repository: a mirror sync triggers the push event.
+# Builds the web extensions an OpenCloud server wants and deploys them there. Meant for the
+# Forgejo mirror of this repository: a mirror sync triggers the push event.
 #
-#   <server>/api/packages/<owner>/generic/opencloud-web-apps/<channel>/<app>.tar.gz
-#   <server>/api/packages/<owner>/generic/opencloud-web-apps/<channel>/build-info.txt
-#   channel: main -> latest, other branches -> branch name (/ -> -)
+#   1. read OC_WEB_APPS from the server's .env over ssh (deploy-built-apps.sh --list)
+#   2. build exactly these apps from this checkout (build-web-extensions.sh, natively)
+#   3. deploy-built-apps.sh --restart: upload them plus OC_EXTERNAL_WEB_APPS of the
+#      server, swap them into OC_APPS_DIR and restart OpenCloud
 #
-# The channel is replaced on every build. Needs the secret PACKAGES_TOKEN (Forgejo token
-# with write:package; the automatic token cannot write packages); without it the apps
-# are only attached to the run as artifact.
-#
-# webapp-lsm6 is a private repository on this Forgejo: built when REPO_READ_TOKEN (or
-# PACKAGES_TOKEN) has read:repository, otherwise skipped.
+# Repository settings (Actions):
+#   variables  OC_DEPLOY_HOST         ssh target, e.g. deploy@oc.example.com
+#              OC_DEPLOY_KNOWN_HOSTS  host key line(s): ssh-keyscan -t ed25519 <server>
+#              OC_DEPLOY_DIR          compose checkout on the server (default /opt/opencloud-compose)
+#              OC_DEPLOY_PORT         ssh port (default 22)
+#   secrets    DEPLOY_SSH_KEY         private key whose public key is in the server's authorized_keys
+#              PACKAGES_TOKEN         Forgejo token: read:package for OC_EXTERNAL_WEB_APPS downloads,
+#                                     read:repository for the private webapp-lsm6 (or REPO_READ_TOKEN)
 
 name: Web extensions
 
@@ -21,7 +23,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  deploy:
     runs-on: linux-amd64
     container:
       # Fully qualified: Podman does not resolve short names to docker.io everywhere.
@@ -32,8 +34,52 @@ jobs:
     env:
       # No Docker inside the job container - build directly in it.
       OC_BUILD_NATIVE: "true"
+      OC_DEPLOY_HOST: ${{ vars.OC_DEPLOY_HOST }}
+      OC_DEPLOY_DIR: ${{ vars.OC_DEPLOY_DIR || '/opt/opencloud-compose' }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq jq rsync openssh-client
+          npm install -g --no-audit --no-fund pnpm@11.9.0
+          node --version && pnpm --version
+
+      - name: Set up ssh
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ vars.OC_DEPLOY_KNOWN_HOSTS }}
+          PORT: ${{ vars.OC_DEPLOY_PORT || '22' }}
+        run: |
+          missing=""
+          [ -n "${OC_DEPLOY_HOST}" ] || missing+=" variable OC_DEPLOY_HOST"
+          [ -n "${KNOWN_HOSTS}" ] || missing+=" variable OC_DEPLOY_KNOWN_HOSTS"
+          [ -n "${DEPLOY_SSH_KEY}" ] || missing+=" secret DEPLOY_SSH_KEY"
+          if [ -n "${missing}" ]; then
+            echo "Missing repository settings:${missing}" >&2
+            exit 1
+          fi
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "${DEPLOY_SSH_KEY}" > ~/.ssh/deploy_key
+          printf '%s\n' "${KNOWN_HOSTS}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy_key ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host *
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            Port ${PORT}
+            BatchMode yes
+            StrictHostKeyChecking yes
+          EOF
+          ssh "${OC_DEPLOY_HOST}" true
+          echo "ssh to ${OC_DEPLOY_HOST} works."
+
+      - name: Read app list from the server
+        run: |
+          apps="$(web-app-submodules/deploy-built-apps.sh --list "${OC_DEPLOY_HOST}" | paste -sd, -)"
+          echo "Apps to build for ${OC_DEPLOY_HOST}: ${apps:-(none, only external apps)}"
+          echo "BUILD_APPS=${apps}" >> "${GITHUB_ENV}"
 
       - name: Fetch submodules
         env:
@@ -48,100 +94,36 @@ jobs:
           git submodule update --init --recursive -- "${paths[@]}"
 
           # webapp-lsm6: private repository on this Forgejo (ssh://git@forgejo/... in
-          # .gitmodules), fetched over HTTPS with the token; skipped if that fails.
-          if [ -n "${REPO_TOKEN}" ]; then
+          # .gitmodules), only fetched when the server wants it.
+          if [[ ",${BUILD_APPS}," == *",webapp-lsm6,"* ]]; then
+            if [ -z "${REPO_TOKEN}" ]; then
+              echo "The server wants webapp-lsm6 but there is no token with read:repository." >&2
+              exit 1
+            fi
             git config --global \
               url."${GITHUB_SERVER_URL/:\/\//://oauth2:${REPO_TOKEN}@}/".insteadOf "ssh://git@forgejo/"
-            if git submodule update --init -- "${lsm6}"; then
-              echo "BUILD_LSM6=true" >> "${GITHUB_ENV}"
-            else
-              echo "webapp-lsm6 could not be fetched - skipped (token needs read:repository)."
-            fi
-          else
-            echo "No token for the private webapp-lsm6 repository - skipped."
+            git submodule update --init -- "${lsm6}"
           fi
           git submodule status
-
-      - name: Install build tools
-        run: |
-          apt-get update -qq
-          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq jq rsync
-          npm install -g --no-audit --no-fund pnpm@11.9.0
-          node --version && pnpm --version
 
       - name: Build
         run: |
           export OC_APPS_DIR="${PWD}/dist-apps"
-          web-app-submodules/build-web-extensions.sh --all
-          # --all leaves out webapp-lsm6; a second run only replaces its own folder.
-          if [ "${BUILD_LSM6:-false}" = true ]; then
-            web-app-submodules/build-web-extensions.sh webapp-lsm6
+          mkdir -p "${OC_APPS_DIR}"
+          if [ -n "${BUILD_APPS}" ]; then
+            # shellcheck disable=SC2086
+            web-app-submodules/build-web-extensions.sh ${BUILD_APPS//,/ }
           fi
-          {
-            echo "commit:  ${GITHUB_SHA}"
-            echo "ref:     ${GITHUB_REF_NAME}"
-            echo "built:   $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            echo "apps:    $(cd dist-apps && find . -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort | tr '\n' ' ')"
-            echo
-            git submodule status
-          } > build-info.txt
-          cat build-info.txt
 
       - uses: actions/upload-artifact@v3
         with:
-          name: opencloud-web-apps
+          name: web-apps
           path: dist-apps/
 
-      - name: Publish package
+      - name: Deploy and restart OpenCloud
         env:
-          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+          # Downloads of OC_EXTERNAL_WEB_APPS (e.g. rz25-webapp from the package registry).
+          OC_EXTERNAL_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
         run: |
-          if [ -z "${PACKAGES_TOKEN}" ]; then
-            echo "Secret PACKAGES_TOKEN missing - no package published."
-            exit 0
-          fi
-          if [ "${GITHUB_REF_NAME}" = "main" ]; then
-            channel="latest"
-          else
-            channel="$(printf '%s' "${GITHUB_REF_NAME}" | tr -c 'A-Za-z0-9._-' '-')"
-          fi
-          package="opencloud-web-apps"
-          base="${GITHUB_SERVER_URL}/api/packages/${GITHUB_REPOSITORY_OWNER}/generic/${package}/${channel}"
-          auth=(-H "Authorization: token ${PACKAGES_TOKEN}")
-
-          # Package versions are immutable: drop the channel and upload it again.
-          code="$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE "${auth[@]}" "${base}")"
-          case "${code}" in
-            204 | 404) ;;
-            *) echo "Deleting ${base} failed (HTTP ${code})" >&2; exit 1 ;;
-          esac
-
-          staging="${RUNNER_TEMP:-/tmp}/packages"
-          rm -rf "${staging}" && mkdir -p "${staging}"
-          for dir in dist-apps/*/; do
-            app="$(basename "${dir}")"
-            tar -C dist-apps -czf "${staging}/${app}.tar.gz" "${app}"
-            curl --fail-with-body -sS -X PUT "${auth[@]}" \
-              --upload-file "${staging}/${app}.tar.gz" "${base}/${app}.tar.gz"
-            echo "  ${base}/${app}.tar.gz"
-          done
-          curl --fail-with-body -sS -X PUT "${auth[@]}" \
-            --upload-file build-info.txt "${base}/build-info.txt"
-
-          # Generic packages are not linked to the repository automatically.
-          # 201 = linked, 400 = already linked.
-          repo="${GITHUB_REPOSITORY#*/}"
-          link="${GITHUB_SERVER_URL}/api/v1/packages/${GITHUB_REPOSITORY_OWNER}/generic/${package}/-/link/${repo}"
-          code="$(curl -sS -o "${staging}/link-response.txt" -w '%{http_code}' -X POST "${auth[@]}" "${link}")"
-          case "${code}" in
-            201) echo "Package linked to ${GITHUB_REPOSITORY}." ;;
-            400) echo "Package was already linked to a repository." ;;
-            403)
-              echo "Linking refused (HTTP 403): the owner of PACKAGES_TOKEN needs write access to packages of ${GITHUB_REPOSITORY}." >&2
-              exit 1
-              ;;
-            *)
-              echo "Linking failed (HTTP ${code}): $(cat "${staging}/link-response.txt")" >&2
-              exit 1
-              ;;
-          esac
+          export OC_APPS_DIR="${PWD}/dist-apps"
+          web-app-submodules/deploy-built-apps.sh --restart "${OC_DEPLOY_HOST}"

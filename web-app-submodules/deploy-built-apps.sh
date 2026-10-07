@@ -10,7 +10,8 @@ set -euo pipefail
 #
 # External apps are built elsewhere (e.g. by a Forgejo runner) and come as a
 # directory, an archive or an archive URL: OC_EXTERNAL_WEB_APPS in the
-# target's .env (name=source,...) or --external name=source.
+# target's .env (name=source,...) or --external name=source. An entry without
+# source (just the name) marks an app that its own pipeline deploys: skipped here.
 
 SUBMODULES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SUBMODULES_DIR}/.." && pwd)"
@@ -56,7 +57,14 @@ Options:
                      an OC_EXTERNAL_WEB_APPS entry of the same name. SOURCE is a local
                      directory, a .zip / .tar.gz / .tar archive or an http(s) URL of
                      such an archive. manifest.json has to be at the top level or
-                     inside a single top-level folder.
+                     inside a single top-level folder. A server entry without source
+                     (OC_EXTERNAL_WEB_APPS=rz25-webapp) is deployed by its own pipeline
+                     and skipped unless --external gives a source.
+  -l, --list         only print the apps to build for this server (deploy names from
+                     OC_WEB_APPS, one per line; external apps excluded) and exit
+  -L, --list-external
+                     only print the names in the server's OC_EXTERNAL_WEB_APPS and exit
+                     (lets an app's own pipeline check that the server wants it)
   -n, --dry-run      show what would be deployed, upload nothing
   -r, --restart      run "docker compose restart opencloud" in REMOTE_DIR afterwards
                      (override the command with OC_DEPLOY_RESTART_CMD)
@@ -91,6 +99,8 @@ REMOTE_DIR=""
 APPS_OVERRIDE=""
 EXTERNAL_ARGS=()
 DRY_RUN=false
+LIST_ONLY=false
+LIST_EXTERNAL=false
 RESTART=false
 
 while [[ $# -gt 0 ]]; do
@@ -113,6 +123,14 @@ while [[ $# -gt 0 ]]; do
       [[ $# -ge 2 ]] || die "--external needs NAME=SOURCE"
       EXTERNAL_ARGS+=("$2")
       shift 2
+      ;;
+    -l | --list)
+      LIST_ONLY=true
+      shift
+      ;;
+    -L | --list-external)
+      LIST_EXTERNAL=true
+      shift
       ;;
     -n | --dry-run)
       DRY_RUN=true
@@ -175,7 +193,7 @@ rq() {
 
 # --- 1. read the server's .env ------------------------------------------------
 
-echo "Reading ${HOST}:${REMOTE_DIR}/.env ..."
+echo "Reading ${HOST}:${REMOTE_DIR}/.env ..." >&2
 remote_env="$(remote_sh "cat $(rq "${REMOTE_DIR}/.env")")" \
   || die "Could not read ${REMOTE_DIR}/.env on ${HOST}"
 
@@ -197,23 +215,37 @@ trim() {
 declare -A EXTERNAL_SOURCES=()
 EXTERNAL_NAMES=()
 
+# add_external SPEC [server]: NAME=SOURCE; from the server's .env also just NAME
+# (deployed by its own pipeline, empty source).
 add_external() {
   local spec name source
   spec="$(trim "$1")"
   [[ -n "${spec}" ]] || return 0
-  [[ "${spec}" == *=* ]] || die "External app needs NAME=SOURCE: ${spec}"
-  name="$(trim "${spec%%=*}")"
-  source="$(trim "${spec#*=}")"
+  if [[ "${spec}" == *=* ]]; then
+    name="$(trim "${spec%%=*}")"
+    source="$(trim "${spec#*=}")"
+    [[ -n "${source}" ]] || die "External app ${name} has no source"
+  elif [[ "${2:-}" == server ]]; then
+    name="${spec}"
+    source=""
+  else
+    die "External app needs NAME=SOURCE: ${spec}"
+  fi
   [[ "${name}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || die "Invalid external app name: ${name}"
-  [[ -n "${source}" ]] || die "External app ${name} has no source"
   [[ -v "EXTERNAL_SOURCES[${name}]" ]] || EXTERNAL_NAMES+=("${name}")
   EXTERNAL_SOURCES["${name}"]="${source}"
 }
 
 IFS=',' read -r -a server_external_specs <<<"$(env_value OC_EXTERNAL_WEB_APPS)"
 for spec in "${server_external_specs[@]}"; do
-  add_external "${spec}"
+  add_external "${spec}" server
 done
+
+if [[ "${LIST_EXTERNAL}" == true ]]; then
+  [[ ${#EXTERNAL_NAMES[@]} -eq 0 ]] || printf '%s\n' "${EXTERNAL_NAMES[@]}"
+  exit 0
+fi
+
 for spec in "${EXTERNAL_ARGS[@]}"; do
   add_external "${spec}"
 done
@@ -282,7 +314,33 @@ if [[ ${#build_names[@]} -gt 0 ]]; then
     fi
   done
 fi
-[[ ${#DEPLOY_APPS[@]} -gt 0 || ${#EXTERNAL_APPS[@]} -gt 0 ]] || die "No apps resolved from: ${app_list}"
+
+# External apps without source are deployed by their own pipeline.
+SKIPPED_EXTERNAL=()
+with_source=()
+for app in "${EXTERNAL_APPS[@]}"; do
+  if [[ -n "${EXTERNAL_SOURCES[${app}]}" ]]; then
+    with_source+=("${app}")
+  else
+    SKIPPED_EXTERNAL+=("${app}")
+  fi
+done
+EXTERNAL_APPS=("${with_source[@]}")
+
+if [[ ${#DEPLOY_APPS[@]} -eq 0 && ${#EXTERNAL_APPS[@]} -eq 0 ]]; then
+  if [[ ${#SKIPPED_EXTERNAL[@]} -gt 0 && "${LIST_ONLY}" == false ]]; then
+    echo "Nothing to deploy here - ${SKIPPED_EXTERNAL[*]}: deployed by its own pipeline."
+    exit 0
+  fi
+  [[ "${LIST_ONLY}" == true && ${#SKIPPED_EXTERNAL[@]} -gt 0 ]] && exit 0
+  die "No apps resolved from: ${app_list}"
+fi
+
+# For CI: build exactly what this server wants (build-web-extensions.sh $(... --list)).
+if [[ "${LIST_ONLY}" == true ]]; then
+  [[ ${#DEPLOY_APPS[@]} -eq 0 ]] || printf '%s\n' "${DEPLOY_APPS[@]}"
+  exit 0
+fi
 
 # --- 3. check the local build output, fetch external apps -----------------------
 
@@ -414,6 +472,9 @@ echo "Source:      ${SOURCE_DIR}"
 echo "Apps:        ${DEPLOY_APPS[*]:-(none)}"
 for app in "${EXTERNAL_APPS[@]}"; do
   echo "External:    ${app} <- ${EXTERNAL_SOURCES[${app}]}"
+done
+for app in "${SKIPPED_EXTERNAL[@]}"; do
+  echo "Skipped:     ${app} (no source - deployed by its own pipeline)"
 done
 echo
 
