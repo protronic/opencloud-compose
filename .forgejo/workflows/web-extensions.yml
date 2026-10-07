@@ -61,9 +61,15 @@ jobs:
             exit 1
           fi
           install -d -m 700 ~/.ssh
-          printf '%s\n' "${DEPLOY_SSH_KEY}" > ~/.ssh/deploy_key
-          printf '%s\n' "${KNOWN_HOSTS}" > ~/.ssh/known_hosts
+          # Strip Windows line endings from pasted secrets.
+          printf '%s\n' "${DEPLOY_SSH_KEY}" | tr -d '\r' > ~/.ssh/deploy_key
+          printf '%s\n' "${KNOWN_HOSTS}" | tr -d '\r' > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/deploy_key ~/.ssh/known_hosts
+          if ! ssh-keygen -y -P "" -f ~/.ssh/deploy_key > ~/.ssh/deploy_key.pub 2>/dev/null; then
+            echo "Secret DEPLOY_SSH_KEY is not a usable private key without passphrase: paste the whole private key file (-----BEGIN ... to -----END ... lines), not the .pub file." >&2
+            exit 1
+          fi
+          echo "Deploy key: $(ssh-keygen -lf ~/.ssh/deploy_key.pub)"
           cat > ~/.ssh/config <<EOF
           Host *
             IdentityFile ~/.ssh/deploy_key
