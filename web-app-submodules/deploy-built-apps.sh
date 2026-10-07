@@ -382,7 +382,7 @@ prepare_external() {
   # Same check as build-web-extensions.sh: Module Federation runtime 2.4.x breaks other apps.
   incompatible="$(find "${root}" -name 'remoteEntry*.mjs' -exec grep -l '__mf_module_cache__' {} + 2>/dev/null || true)"
   [[ -z "${incompatible}" ]] \
-    || die "External app ${app} uses Module Federation runtime 2.4.x (${incompatible}) - rebuild it with extension-sdk 7.1.2."
+    || die "External app ${app} uses Module Federation runtime 2.4.x (${incompatible}) - rebuild it with extension-sdk 8.1.0."
   if [[ "${unpack}" != "${source}" ]]; then
     chmod -R u+rwX,go+rX "${unpack}"
   fi

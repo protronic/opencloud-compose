@@ -356,7 +356,7 @@ verify_mf_remote_entry() {
 
   if grep -q '__mf_module_cache__' "${remote_entry}"; then
     echo "Incompatible Module Federation build for ${deploy_name}: ${remote_entry} uses runtime 2.4.x." >&2
-    echo "Pin @opencloud-eu/extension-sdk to 7.1.2 (same as web-extensions) and rebuild." >&2
+    echo "Use @opencloud-eu/extension-sdk 8.1.0 (same as web-extensions, runtime 2.3.1) and rebuild." >&2
     exit 1
   fi
 }
@@ -454,7 +454,10 @@ build_presentation_viewer() {
   local prepare_script="
       set -euo pipefail
       jq -s '.[0] * .[1]' package-common.json package-opencloud.json \
-        | jq '.devDependencies.vite = \"^8.0.0\" | .devDependencies.vitest = \"^4.0.0\" | .devDependencies[\"@opencloud-eu/extension-sdk\"] = \"7.1.2\"' \
+        | jq '.devDependencies.vite = \"^8.0.0\" | .devDependencies.vitest = \"^4.0.0\"
+          | .devDependencies[\"@opencloud-eu/extension-sdk\"] = \"8.1.0\"
+          | .peerDependencies[\"@opencloud-eu/web-client\"] = \"^8.1.0\"
+          | .peerDependencies[\"@opencloud-eu/web-pkg\"] = \"^8.1.0\"' \
         > package.json
       jq '.id = \"mdpresentation-viewer\"' public/manifest.json > public/manifest.json.tmp \
         && mv public/manifest.json.tmp public/manifest.json
