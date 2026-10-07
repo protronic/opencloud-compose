@@ -94,7 +94,8 @@ Build OpenCloud web extensions and deploy them to OC_APPS_DIR (default: config/o
 
 With no APP arguments, exactly the apps listed in OC_WEB_APPS (.env) are built - nothing
 else. OC_WEB_APPS accepts every name/alias listed below, monorepo apps and standalone
-extensions alike (e.g. OC_WEB_APPS=calculator,pdf-annotator,typst-editor).
+extensions alike (e.g. OC_WEB_APPS=calculator,pdf-annotator,typst-editor). Names this
+script does not know (apps of other pipelines, e.g. rz25-webapp) are skipped there.
 
 With APP arguments, only the listed extensions are built and deployed.
 
@@ -302,11 +303,19 @@ add_resolved_app() {
   fi
 }
 
+# Apps from OC_WEB_APPS that this script does not know belong to other pipelines.
+IGNORE_UNKNOWN=false
+SKIPPED_APPS=()
+
 add_app_from_input() {
   local raw_app="$1"
   local resolved_app=""
 
   if ! resolved_app="$(resolve_app_name "${raw_app}")"; then
+    if [[ "${IGNORE_UNKNOWN}" == true ]]; then
+      SKIPPED_APPS+=("${raw_app}")
+      return 0
+    fi
     echo "Unknown app: ${raw_app}" >&2
     echo >&2
     list_available_apps >&2
@@ -654,11 +663,15 @@ else
   # The list accepts every app name/alias that works as a CLI argument -
   # monorepo apps and standalone extensions alike.
   if [[ -n "${OC_WEB_APPS:-}" ]]; then
+    IGNORE_UNKNOWN=true
     OC_WEB_APPS="${OC_WEB_APPS//,/ }"
     for app in ${OC_WEB_APPS}; do
       [[ -n "${app}" ]] || continue
       add_app_from_input "${app}"
     done
+    if [[ ${#SKIPPED_APPS[@]} -gt 0 ]]; then
+      echo "Not built here (other pipelines): ${SKIPPED_APPS[*]}"
+    fi
   fi
 fi
 
@@ -671,6 +684,10 @@ if [[ "${BUILD_LSM6}" == true ]]; then
 fi
 
 if [[ ${#DEPLOY_APPS[@]} -eq 0 ]]; then
+  if [[ ${#SKIPPED_APPS[@]} -gt 0 ]]; then
+    echo "OC_WEB_APPS only lists apps of other pipelines - nothing to build here."
+    exit 0
+  fi
   echo "No apps selected to build." >&2
   echo "Set OC_WEB_APPS in .env, pass app names, or use --all." >&2
   exit 1

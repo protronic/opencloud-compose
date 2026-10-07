@@ -10,8 +10,10 @@ set -euo pipefail
 #
 # External apps are built elsewhere (e.g. by a Forgejo runner) and come as a
 # directory, an archive or an archive URL: OC_EXTERNAL_WEB_APPS in the
-# target's .env (name=source,...) or --external name=source. An entry without
-# source (just the name) marks an app that its own pipeline deploys: skipped here.
+# target's .env (name=source,...) or --external name=source.
+#
+# OC_WEB_APPS may also list apps of other pipelines (e.g. rz25-webapp, deployed by
+# its own runner): names build-web-extensions.sh does not know are skipped here.
 
 SUBMODULES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SUBMODULES_DIR}/.." && pwd)"
@@ -57,14 +59,12 @@ Options:
                      an OC_EXTERNAL_WEB_APPS entry of the same name. SOURCE is a local
                      directory, a .zip / .tar.gz / .tar archive or an http(s) URL of
                      such an archive. manifest.json has to be at the top level or
-                     inside a single top-level folder. A server entry without source
-                     (OC_EXTERNAL_WEB_APPS=rz25-webapp) is deployed by its own pipeline
-                     and skipped unless --external gives a source.
-  -l, --list         only print the apps to build for this server (deploy names from
-                     OC_WEB_APPS, one per line; external apps excluded) and exit
-  -L, --list-external
-                     only print the names in the server's OC_EXTERNAL_WEB_APPS and exit
-                     (lets an app's own pipeline check that the server wants it)
+                     inside a single top-level folder.
+  -l, --list         only print the apps of this repository the server wants (deploy
+                     names from OC_WEB_APPS, one per line) and exit - what CI has to build
+  -w, --list-wanted  only print every app name the server wants (OC_WEB_APPS and
+                     OC_EXTERNAL_WEB_APPS as written, one per line) and exit - lets
+                     another pipeline check whether its app is wanted
   -n, --dry-run      show what would be deployed, upload nothing
   -r, --restart      run "docker compose restart opencloud" in REMOTE_DIR afterwards
                      (override the command with OC_DEPLOY_RESTART_CMD)
@@ -100,7 +100,7 @@ APPS_OVERRIDE=""
 EXTERNAL_ARGS=()
 DRY_RUN=false
 LIST_ONLY=false
-LIST_EXTERNAL=false
+LIST_WANTED=false
 RESTART=false
 
 while [[ $# -gt 0 ]]; do
@@ -128,8 +128,8 @@ while [[ $# -gt 0 ]]; do
       LIST_ONLY=true
       shift
       ;;
-    -L | --list-external)
-      LIST_EXTERNAL=true
+    -w | --list-wanted)
+      LIST_WANTED=true
       shift
       ;;
     -n | --dry-run)
@@ -216,7 +216,7 @@ declare -A EXTERNAL_SOURCES=()
 EXTERNAL_NAMES=()
 
 # add_external SPEC [server]: NAME=SOURCE; from the server's .env also just NAME
-# (deployed by its own pipeline, empty source).
+# (wanted, but provided by another pipeline: empty source, skipped here).
 add_external() {
   local spec name source
   spec="$(trim "$1")"
@@ -241,8 +241,12 @@ for spec in "${server_external_specs[@]}"; do
   add_external "${spec}" server
 done
 
-if [[ "${LIST_EXTERNAL}" == true ]]; then
-  [[ ${#EXTERNAL_NAMES[@]} -eq 0 ]] || printf '%s\n' "${EXTERNAL_NAMES[@]}"
+if [[ "${LIST_WANTED}" == true ]]; then
+  wanted="$(env_value OC_WEB_APPS)"
+  # shellcheck disable=SC2086
+  for app in ${wanted//,/ } "${EXTERNAL_NAMES[@]}"; do
+    [[ -z "${app}" ]] || printf '%s\n' "${app}"
+  done | awk '!seen[$0]++'
   exit 0
 fi
 
@@ -299,10 +303,22 @@ if [[ "${all_externals}" == true ]]; then
   done
 fi
 
+# Names from the server's OC_WEB_APPS that this repository cannot build belong to other
+# pipelines (e.g. rz25-webapp). With --apps every name has to be known.
+OTHER_APPS=()
+known_names=()
+for app in "${build_names[@]}"; do
+  if [[ "${all_externals}" == false ]] || "${BUILD_SCRIPT}" --resolve "${app}" >/dev/null 2>&1; then
+    known_names+=("${app}")
+  else
+    OTHER_APPS+=("${app}")
+  fi
+done
+
 DEPLOY_APPS=()
-if [[ ${#build_names[@]} -gt 0 ]]; then
-  resolved="$("${BUILD_SCRIPT}" --resolve "${build_names[@]}")" \
-    || die "Could not map the app list to deploy names: ${build_names[*]}"
+if [[ ${#known_names[@]} -gt 0 ]]; then
+  resolved="$("${BUILD_SCRIPT}" --resolve "${known_names[@]}")" \
+    || die "Could not map the app list to deploy names: ${known_names[*]}"
   mapfile -t resolved_apps <<<"${resolved}"
   for app in "${resolved_apps[@]}"; do
     [[ -n "${app}" ]] || continue
@@ -315,24 +331,22 @@ if [[ ${#build_names[@]} -gt 0 ]]; then
   done
 fi
 
-# External apps without source are deployed by their own pipeline.
-SKIPPED_EXTERNAL=()
+# External apps without source are provided by another pipeline as well.
 with_source=()
 for app in "${EXTERNAL_APPS[@]}"; do
   if [[ -n "${EXTERNAL_SOURCES[${app}]}" ]]; then
     with_source+=("${app}")
   else
-    SKIPPED_EXTERNAL+=("${app}")
+    OTHER_APPS+=("${app}")
   fi
 done
 EXTERNAL_APPS=("${with_source[@]}")
 
 if [[ ${#DEPLOY_APPS[@]} -eq 0 && ${#EXTERNAL_APPS[@]} -eq 0 ]]; then
-  if [[ ${#SKIPPED_EXTERNAL[@]} -gt 0 && "${LIST_ONLY}" == false ]]; then
-    echo "Nothing to deploy here - ${SKIPPED_EXTERNAL[*]}: deployed by its own pipeline."
+  if [[ ${#OTHER_APPS[@]} -gt 0 ]]; then
+    [[ "${LIST_ONLY}" == true ]] || echo "Nothing to deploy here - ${OTHER_APPS[*]}: provided by other pipelines."
     exit 0
   fi
-  [[ "${LIST_ONLY}" == true && ${#SKIPPED_EXTERNAL[@]} -gt 0 ]] && exit 0
   die "No apps resolved from: ${app_list}"
 fi
 
@@ -473,8 +487,8 @@ echo "Apps:        ${DEPLOY_APPS[*]:-(none)}"
 for app in "${EXTERNAL_APPS[@]}"; do
   echo "External:    ${app} <- ${EXTERNAL_SOURCES[${app}]}"
 done
-for app in "${SKIPPED_EXTERNAL[@]}"; do
-  echo "Skipped:     ${app} (no source - deployed by its own pipeline)"
+for app in "${OTHER_APPS[@]}"; do
+  echo "Other:       ${app} (not built here - provided by another pipeline)"
 done
 echo
 
