@@ -48,7 +48,7 @@ external, prebuilt (e.g. from a CI runner)                 →   OC_APPS_DIR/<na
   inlined `cid:` images and blocked remote content, attachments (download or save next to the
   `.eml`), print / PDF via the browser print dialog. OpenCloud port of the Nextcloud Eml Viewer by
   newroco - everything runs client-side (postal-mime + DOMPurify), no server component needed
-- **`webapp-lsm6`** (`git@gitlab:prot-lsm6/webapp-lsm6-k.git`, branch `feature/opencloud-lsmprj`)
+- **`webapp-lsm6`** (`ssh://git@forgejo/Protronic/WebApp-LSM6.git`, private, branch `feature/opencloud-lsmprj`)
   opens and saves `.lsmprj` files via the Angular app's Projekt laden/speichern functions.
   Opt-in build only: `./web-app-submodules/build-web-extensions.sh webapp-lsm6`
 - **Build output** stays in each submodule's `dist/` directory (`dist/web` for blockberry-editor)
@@ -104,6 +104,30 @@ Build only selected extensions (monorepo apps or standalone repos):
 App names from web-extensions can use the short name (`calculator`) or `web-app-calculator`. Standalone repos accept deploy names or directory names (`comments`, `web-app-comments`, `calendar` for web-calendar, `blockberry` for blockberry-editor, `eml` or `eml-viewer` for emlviewer).
 
 After building, restart the OpenCloud container to load new extensions.
+
+Without Docker - e.g. inside a CI job container - pass `--native` (or set `OC_BUILD_NATIVE=true`):
+the same build commands then run directly on the machine, which needs node, pnpm, git, jq and rsync.
+
+### Build on a Forgejo runner
+
+`.forgejo/workflows/web-extensions.yml` runs `build-web-extensions.sh --all` natively on a Forgejo
+runner (label `linux-amd64`, job container `node:24-bookworm`) - meant for a Forgejo mirror of this
+repository, where a mirror sync triggers the push event (Actions have to be enabled in the mirror).
+The protronic GitHub submodules are fetched over HTTPS.
+
+The built apps are attached to the run as artifact and - with the repository secret `PACKAGES_TOKEN`
+(Forgejo token with `write:package`; the automatic token cannot write packages) - published as the
+generic package `opencloud-web-apps`, linked to the repository and replaced on every build.
+`webapp-lsm6` (private repository on the same Forgejo) is built too when the runner can fetch it:
+secret `REPO_READ_TOKEN` (token with `read:repository`) or a `PACKAGES_TOKEN` that also has
+`read:repository`; otherwise it is skipped.
+
+```
+<forgejo>/api/packages/<owner>/generic/opencloud-web-apps/latest/<app>.tar.gz   # main
+<forgejo>/api/packages/<owner>/generic/opencloud-web-apps/latest/build-info.txt # commit, app list
+```
+
+Branches other than `main` use the branch name as channel instead of `latest`.
 
 ## Deploy built apps to a server
 

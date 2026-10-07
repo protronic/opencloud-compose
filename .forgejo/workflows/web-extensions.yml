@@ -1,0 +1,147 @@
+# Builds all web extensions (web-app-submodules/build-web-extensions.sh --all) on a
+# Forgejo runner and offers them as one generic package in this repository. Meant for
+# the Forgejo mirror of this repository: a mirror sync triggers the push event.
+#
+#   <server>/api/packages/<owner>/generic/opencloud-web-apps/<channel>/<app>.tar.gz
+#   <server>/api/packages/<owner>/generic/opencloud-web-apps/<channel>/build-info.txt
+#   channel: main -> latest, other branches -> branch name (/ -> -)
+#
+# The channel is replaced on every build. Needs the secret PACKAGES_TOKEN (Forgejo token
+# with write:package; the automatic token cannot write packages); without it the apps
+# are only attached to the run as artifact.
+#
+# webapp-lsm6 is a private repository on this Forgejo: built when REPO_READ_TOKEN (or
+# PACKAGES_TOKEN) has read:repository, otherwise skipped.
+
+name: Web extensions
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: linux-amd64
+    container:
+      # Fully qualified: Podman does not resolve short names to docker.io everywhere.
+      image: docker.io/library/node:24-bookworm
+    defaults:
+      run:
+        shell: bash
+    env:
+      # No Docker inside the job container - build directly in it.
+      OC_BUILD_NATIVE: "true"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch submodules
+        env:
+          REPO_TOKEN: ${{ secrets.REPO_READ_TOKEN || secrets.PACKAGES_TOKEN }}
+        run: |
+          export GIT_TERMINAL_PROMPT=0
+          lsm6="web-app-submodules/webapp-lsm6"
+          # The protronic GitHub submodules use SSH URLs; they are public over HTTPS.
+          git config --global url."https://github.com/".insteadOf "git@github.com:"
+          mapfile -t paths < <(git config -f .gitmodules --get-regexp '\.path$' \
+            | awk '{print $2}' | grep -vx "${lsm6}")
+          git submodule update --init --recursive -- "${paths[@]}"
+
+          # webapp-lsm6: private repository on this Forgejo (ssh://git@forgejo/... in
+          # .gitmodules), fetched over HTTPS with the token; skipped if that fails.
+          if [ -n "${REPO_TOKEN}" ]; then
+            git config --global \
+              url."${GITHUB_SERVER_URL/:\/\//://oauth2:${REPO_TOKEN}@}/".insteadOf "ssh://git@forgejo/"
+            if git submodule update --init -- "${lsm6}"; then
+              echo "BUILD_LSM6=true" >> "${GITHUB_ENV}"
+            else
+              echo "webapp-lsm6 could not be fetched - skipped (token needs read:repository)."
+            fi
+          else
+            echo "No token for the private webapp-lsm6 repository - skipped."
+          fi
+          git submodule status
+
+      - name: Install build tools
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y -qq jq rsync
+          npm install -g --no-audit --no-fund pnpm@11.9.0
+          node --version && pnpm --version
+
+      - name: Build
+        run: |
+          export OC_APPS_DIR="${PWD}/dist-apps"
+          web-app-submodules/build-web-extensions.sh --all
+          # --all leaves out webapp-lsm6; a second run only replaces its own folder.
+          if [ "${BUILD_LSM6:-false}" = true ]; then
+            web-app-submodules/build-web-extensions.sh webapp-lsm6
+          fi
+          {
+            echo "commit:  ${GITHUB_SHA}"
+            echo "ref:     ${GITHUB_REF_NAME}"
+            echo "built:   $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "apps:    $(cd dist-apps && find . -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | sort | tr '\n' ' ')"
+            echo
+            git submodule status
+          } > build-info.txt
+          cat build-info.txt
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: opencloud-web-apps
+          path: dist-apps/
+
+      - name: Publish package
+        env:
+          PACKAGES_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
+        run: |
+          if [ -z "${PACKAGES_TOKEN}" ]; then
+            echo "Secret PACKAGES_TOKEN missing - no package published."
+            exit 0
+          fi
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            channel="latest"
+          else
+            channel="$(printf '%s' "${GITHUB_REF_NAME}" | tr -c 'A-Za-z0-9._-' '-')"
+          fi
+          package="opencloud-web-apps"
+          base="${GITHUB_SERVER_URL}/api/packages/${GITHUB_REPOSITORY_OWNER}/generic/${package}/${channel}"
+          auth=(-H "Authorization: token ${PACKAGES_TOKEN}")
+
+          # Package versions are immutable: drop the channel and upload it again.
+          code="$(curl -sS -o /dev/null -w '%{http_code}' -X DELETE "${auth[@]}" "${base}")"
+          case "${code}" in
+            204 | 404) ;;
+            *) echo "Deleting ${base} failed (HTTP ${code})" >&2; exit 1 ;;
+          esac
+
+          staging="${RUNNER_TEMP:-/tmp}/packages"
+          rm -rf "${staging}" && mkdir -p "${staging}"
+          for dir in dist-apps/*/; do
+            app="$(basename "${dir}")"
+            tar -C dist-apps -czf "${staging}/${app}.tar.gz" "${app}"
+            curl --fail-with-body -sS -X PUT "${auth[@]}" \
+              --upload-file "${staging}/${app}.tar.gz" "${base}/${app}.tar.gz"
+            echo "  ${base}/${app}.tar.gz"
+          done
+          curl --fail-with-body -sS -X PUT "${auth[@]}" \
+            --upload-file build-info.txt "${base}/build-info.txt"
+
+          # Generic packages are not linked to the repository automatically.
+          # 201 = linked, 400 = already linked.
+          repo="${GITHUB_REPOSITORY#*/}"
+          link="${GITHUB_SERVER_URL}/api/v1/packages/${GITHUB_REPOSITORY_OWNER}/generic/${package}/-/link/${repo}"
+          code="$(curl -sS -o "${staging}/link-response.txt" -w '%{http_code}' -X POST "${auth[@]}" "${link}")"
+          case "${code}" in
+            201) echo "Package linked to ${GITHUB_REPOSITORY}." ;;
+            400) echo "Package was already linked to a repository." ;;
+            403)
+              echo "Linking refused (HTTP 403): the owner of PACKAGES_TOKEN needs write access to packages of ${GITHUB_REPOSITORY}." >&2
+              exit 1
+              ;;
+            *)
+              echo "Linking failed (HTTP ${code}): $(cat "${staging}/link-response.txt")" >&2
+              exit 1
+              ;;
+          esac

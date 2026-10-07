@@ -22,7 +22,7 @@
 	url = git@github.com:protronic/pdf-annotator.git
 [submodule "web-app-submodules/webapp-lsm6"]
 	path = web-app-submodules/webapp-lsm6
-	url = git@gitlab:prot-lsm6/webapp-lsm6-k.git
+	url = ssh://git@forgejo/Protronic/WebApp-LSM6.git
 	branch = feature/opencloud-lsmprj
 [submodule "web-app-submodules/emlviewer"]
 	path = web-app-submodules/emlviewer

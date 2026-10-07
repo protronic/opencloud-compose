@@ -9,6 +9,9 @@ PRESENTATION_IMAGE="${PRESENTATION_IMAGE:-node:20-bookworm}"
 NODE_VERSION="${NODE_VERSION:-24}"
 PRESENTATION_VIEWER_APP="mdpresentation-viewer"
 LSM6_APP="webapp-lsm6"
+# true: run the build commands directly instead of in temporary containers, e.g.
+# inside a CI job container without Docker (needs node, pnpm, git, jq, rsync).
+NATIVE="${OC_BUILD_NATIVE:-false}"
 
 MONOREPO_APP_NAMES=(
   arcade
@@ -108,10 +111,13 @@ Standalone submodule repos (aliases in parentheses):
   flowberry (in-tree, no submodule)
   emlviewer (eml-viewer, eml) — .eml e-mail preview
   mdpresentation-viewer (presentation-viewer, web-app-presentation-viewer)
-  webapp-lsm6 (lsm6) — opt-in only, needs private pro-* npm packages
+  webapp-lsm6 (lsm6) — opt-in only, private submodule on Forgejo
 
 Options:
   -a, --all       Build every web-extensions app plus all standalone extensions (maps excluded)
+  -N, --native    Run the builds directly on this machine instead of in Docker containers
+                  (same as OC_BUILD_NATIVE=true; for CI jobs without Docker; needs node,
+                  pnpm, git, jq and rsync)
   -l, --list      List available app names and exit
   -r, --resolve   Print the deploy names for the given APP arguments (one per line) and exit;
                   used by deploy-built-apps.sh to map OC_WEB_APPS entries to OC_APPS_DIR folders
@@ -312,6 +318,17 @@ run_pnpm_build() {
   local source_dir="$1"
   local install_flags="${2:---frozen-lockfile}"
 
+  if [[ "${NATIVE}" == true ]]; then
+    (
+      cd "${source_dir}"
+      export CI=true PDFA_GIT_COMMIT BB_GIT_COMMIT TYPST_GIT_COMMIT EMLVIEWER_GIT_COMMIT
+      # shellcheck disable=SC2086
+      pnpm install ${install_flags}
+      pnpm build
+    )
+    return
+  fi
+
   docker run --rm \
     -u "$(id -u):$(id -g)" \
     -e CI=true \
@@ -387,6 +404,14 @@ build_monorepo_apps() {
     build_script+=" && ${build_commands[i]}"
   done
 
+  if [[ "${NATIVE}" == true ]]; then
+    # Without the container the runtime comes from the machine, not from pnpm.
+    build_script="${build_script#"${build_commands[0]} && "}"
+    echo "Building web-extensions apps (${#MONOREPO_APPS[@]}) natively..."
+    (cd "${WEB_EXTENSIONS_DIR}" && CI=true bash -c "${build_script}")
+    return
+  fi
+
   echo "Building web-extensions apps (${#MONOREPO_APPS[@]}) in ${PNPM_IMAGE} container..."
   docker run --rm \
     -u "$(id -u):$(id -g)" \
@@ -406,7 +431,11 @@ build_standalone_pnpm_app() {
   source_dir="${SUBMODULES_DIR}/${relative_dir}"
   dist_dir="$(standalone_dist_dir "${deploy_name}")"
 
-  echo "Building standalone extension ${deploy_name} in ${PNPM_IMAGE} container..."
+  if [[ "${NATIVE}" == true ]]; then
+    echo "Building standalone extension ${deploy_name} natively..."
+  else
+    echo "Building standalone extension ${deploy_name} in ${PNPM_IMAGE} container..."
+  fi
   run_pnpm_build "${source_dir}"
   verify_mf_remote_entry "${deploy_name}" "${dist_dir}"
 }
@@ -419,28 +448,47 @@ build_presentation_viewer() {
 
   rsync -a --exclude=.git "${PRESENTATION_VIEWER_DIR}/" "${presentation_build_dir}/"
 
-  echo "Building standalone extension ${PRESENTATION_VIEWER_APP} in ${PRESENTATION_IMAGE} container..."
-  docker run --rm \
-    -e CI=true \
-    -e HOME=/work \
-    -v "${presentation_build_dir}:/work" \
-    -w /work \
-    "${PRESENTATION_IMAGE}" \
-    bash -c "
+  # Merges the package manifests and renames ownclouders -> opencloud-eu; runs in
+  # the build directory. The pnpm command differs between container and native.
+  local prepare_script="
       set -euo pipefail
-      apt-get update -qq
-      DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git jq
-      corepack enable
-      corepack prepare pnpm@8.15.1 --activate
       jq -s '.[0] * .[1]' package-common.json package-opencloud.json \
         | jq '.devDependencies.vite = \"^8.0.0\" | .devDependencies.vitest = \"^4.0.0\" | .devDependencies[\"@opencloud-eu/extension-sdk\"] = \"7.1.2\"' \
         > package.json
       jq '.id = \"mdpresentation-viewer\"' public/manifest.json > public/manifest.json.tmp \
         && mv public/manifest.json.tmp public/manifest.json
       find . -type f \\( -name '*.ts' -o -name '*.vue' -o -name '*.prettierrc' \\) -not \\( -path './node_modules/*' -o -path './dist/*' \\) -print0 | xargs -0 sed -i 's/ownclouders/opencloud-eu/g'
-      pnpm install
-      pnpm build
-    "
+  "
+
+  if [[ "${NATIVE}" == true ]]; then
+    echo "Building standalone extension ${PRESENTATION_VIEWER_APP} natively..."
+    (
+      cd "${presentation_build_dir}"
+      export CI=true
+      bash -c "${prepare_script}"
+      # pnpm 8 only for this build, without replacing the pnpm of the machine.
+      npx --yes pnpm@8.15.1 install
+      npx --yes pnpm@8.15.1 build
+    )
+  else
+    echo "Building standalone extension ${PRESENTATION_VIEWER_APP} in ${PRESENTATION_IMAGE} container..."
+    docker run --rm \
+      -e CI=true \
+      -e HOME=/work \
+      -v "${presentation_build_dir}:/work" \
+      -w /work \
+      "${PRESENTATION_IMAGE}" \
+      bash -c "
+        set -euo pipefail
+        apt-get update -qq
+        DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git jq
+        corepack enable
+        corepack prepare pnpm@8.15.1 --activate
+        ${prepare_script}
+        pnpm install
+        pnpm build
+      "
+  fi
 
   PRESENTATION_VIEWER_DIST="${presentation_build_dir}/dist/${PRESENTATION_VIEWER_APP}"
   verify_mf_remote_entry "${PRESENTATION_VIEWER_APP}" "${PRESENTATION_VIEWER_DIST}"
@@ -454,6 +502,37 @@ build_webapp_lsm6() {
   local source_dir="${SUBMODULES_DIR}/${LSM6_APP}"
   local angular_dist="${source_dir}/dist/webapp-lsm6"
   local web_dist="${source_dir}/dist/web"
+
+  if [[ "${NATIVE}" == true ]]; then
+    echo "Building Angular app and OpenCloud wrapper for ${LSM6_APP} natively..."
+    (
+      cd "${source_dir}"
+      export CI=true OC_LSM6_BASE_HREF="/assets/apps/${LSM6_APP}/app/" LSM6_GIT_REF
+      npm install
+      npx ng build --configuration production --base-href "${OC_LSM6_BASE_HREF}" --deploy-url "${OC_LSM6_BASE_HREF}"
+      python3 scripts/rewrite-oc-index.py dist/webapp-lsm6/index.html "${OC_LSM6_BASE_HREF}"
+      cd oc
+      pnpm install --frozen-lockfile
+      pnpm build
+    )
+  else
+    build_webapp_lsm6_in_containers "${source_dir}"
+  fi
+
+  if [[ ! -d "${angular_dist}" ]]; then
+    echo "Angular build output missing: ${angular_dist}" >&2
+    exit 1
+  fi
+
+  mkdir -p "${web_dist}/app"
+  cp -a "${angular_dist}/." "${web_dist}/app/"
+
+  LSM6_DIST="${web_dist}"
+  verify_mf_remote_entry "${LSM6_APP}" "${LSM6_DIST}"
+}
+
+build_webapp_lsm6_in_containers() {
+  local source_dir="$1"
 
   echo "Building Angular app for ${LSM6_APP} in ${PRESENTATION_IMAGE} container..."
   docker run --rm \
@@ -482,21 +561,14 @@ build_webapp_lsm6() {
     -w /work/oc \
     "${PNPM_IMAGE}" \
     bash -c "pnpm runtime set node ${NODE_VERSION} -g && pnpm install --frozen-lockfile && pnpm build"
-
-  if [[ ! -d "${angular_dist}" ]]; then
-    echo "Angular build output missing: ${angular_dist}" >&2
-    exit 1
-  fi
-
-  mkdir -p "${web_dist}/app"
-  cp -a "${angular_dist}/." "${web_dist}/app/"
-
-  LSM6_DIST="${web_dist}"
-  verify_mf_remote_entry "${LSM6_APP}" "${LSM6_DIST}"
 }
 
 cleanup_presentation_build_dir() {
   [[ -n "${presentation_build_dir}" && -d "${presentation_build_dir}" ]] || return 0
+  if [[ "${NATIVE}" == true ]]; then
+    rm -rf "${presentation_build_dir}"
+    return 0
+  fi
   docker run --rm -v "${presentation_build_dir}:/work" "${PNPM_IMAGE}" rm -rf /work >/dev/null 2>&1 || true
   rmdir "${presentation_build_dir}" 2>/dev/null || true
 }
@@ -521,6 +593,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -a | --all)
       BUILD_ALL=true
+      shift
+      ;;
+    -N | --native)
+      NATIVE=true
       shift
       ;;
     --)
@@ -596,8 +672,15 @@ if [[ ${#DEPLOY_APPS[@]} -eq 0 ]]; then
   exit 1
 fi
 
-if ! command -v docker >/dev/null 2>&1; then
-  echo "Docker is required to build web extensions in a pnpm container." >&2
+if [[ "${NATIVE}" == true ]]; then
+  for tool in node pnpm git jq rsync; do
+    if ! command -v "${tool}" >/dev/null 2>&1; then
+      echo "Native build (OC_BUILD_NATIVE / --native) needs ${tool} on this machine." >&2
+      exit 1
+    fi
+  done
+elif ! command -v docker >/dev/null 2>&1; then
+  echo "Docker is required to build web extensions in a pnpm container (or use --native)." >&2
   exit 1
 fi
 
