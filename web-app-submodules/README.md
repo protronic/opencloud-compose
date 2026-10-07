@@ -115,7 +115,7 @@ the same build commands then run directly on the machine, which needs node, pnpm
 where a mirror sync triggers the push event (Actions have to be enabled in the mirror):
 
 1. reads `OC_WEB_APPS` from the server's `.env` over ssh (`deploy-built-apps.sh --list`; names of
-   other pipelines such as `rz25-webapp` are skipped)
+   other pipelines are skipped)
 2. builds exactly these apps from the checkout (`build-web-extensions.sh --native`); the protronic
    GitHub submodules are fetched over HTTPS, `webapp-lsm6` (private, same Forgejo) only when listed
 3. runs `deploy-built-apps.sh --restart`: uploads them plus the server's `OC_EXTERNAL_WEB_APPS`,
@@ -190,11 +190,11 @@ external apps as well:
   --external my-app=../my-app/dist/my-app-1.0.0.tar.gz admin@oc.example.com
 ```
 
-`OC_WEB_APPS` may also list apps that other pipelines deploy, e.g. `rz25-webapp` from the
-RZ25-WebApp runner: `build-web-extensions.sh` and `deploy-built-apps.sh` skip names they do not
-know, so the runners do not get in each other's way. Another pipeline checks with
+`OC_WEB_APPS` may also list apps that other pipelines deploy, e.g. `my-app` from the runner of its
+own repository: `build-web-extensions.sh` and `deploy-built-apps.sh` skip names they do not know,
+so the runners do not get in each other's way. Another pipeline checks with
 `deploy-built-apps.sh --list-wanted` whether the server wants its app and then deploys it with
-`--apps rz25-webapp --external rz25-webapp=<dir>`.
+`--apps my-app --external my-app=<dir>`.
 
 Do not list external apps in `OC_WEB_APPS` - `build-web-extensions.sh` does not know them.
 

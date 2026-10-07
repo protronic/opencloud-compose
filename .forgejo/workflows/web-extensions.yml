@@ -122,7 +122,7 @@ jobs:
 
       - name: Deploy and restart OpenCloud
         env:
-          # Downloads of OC_EXTERNAL_WEB_APPS (e.g. rz25-webapp from the package registry).
+          # Downloads of OC_EXTERNAL_WEB_APPS (e.g. from the package registry).
           OC_EXTERNAL_TOKEN: ${{ secrets.PACKAGES_TOKEN }}
         run: |
           export OC_APPS_DIR="${PWD}/dist-apps"

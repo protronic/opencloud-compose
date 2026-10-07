@@ -95,7 +95,7 @@ Build OpenCloud web extensions and deploy them to OC_APPS_DIR (default: config/o
 With no APP arguments, exactly the apps listed in OC_WEB_APPS (.env) are built - nothing
 else. OC_WEB_APPS accepts every name/alias listed below, monorepo apps and standalone
 extensions alike (e.g. OC_WEB_APPS=calculator,pdf-annotator,typst-editor). Names this
-script does not know (apps of other pipelines, e.g. rz25-webapp) are skipped there.
+script does not know (apps of other pipelines) are skipped there.
 
 With APP arguments, only the listed extensions are built and deployed.
 

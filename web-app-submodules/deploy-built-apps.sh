@@ -12,8 +12,9 @@ set -euo pipefail
 # directory, an archive or an archive URL: OC_EXTERNAL_WEB_APPS in the
 # target's .env (name=source,...) or --external name=source.
 #
-# OC_WEB_APPS may also list apps of other pipelines (e.g. rz25-webapp, deployed by
-# its own runner): names build-web-extensions.sh does not know are skipped here.
+# OC_WEB_APPS may also list apps of other pipelines (e.g. an app deployed by the
+# runner of its own repository): names build-web-extensions.sh does not know are
+# skipped here.
 
 SUBMODULES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SUBMODULES_DIR}/.." && pwd)"
@@ -304,7 +305,7 @@ if [[ "${all_externals}" == true ]]; then
 fi
 
 # Names from the server's OC_WEB_APPS that this repository cannot build belong to other
-# pipelines (e.g. rz25-webapp). With --apps every name has to be known.
+# pipelines. With --apps every name has to be known.
 OTHER_APPS=()
 known_names=()
 for app in "${build_names[@]}"; do
