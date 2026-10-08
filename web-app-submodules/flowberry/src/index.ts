@@ -51,7 +51,7 @@ export default defineWebApplication({
           routeName,
           newFileMenu: {
             menuTitle() {
-              return $gettext('flowBerry-Logik');
+              return $gettext('flowBerry-Ablaufplan');
             },
           },
         },

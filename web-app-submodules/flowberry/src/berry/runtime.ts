@@ -1,59 +1,13 @@
 /**
- * Berry-Laufzeitbausteine, die jedem generierten Script vorangestellt werden.
- *
- * Die Timer zählen Scan-Zyklen statt einer Echtzeituhr: pro scan()-Aufruf
- * vergeht `period_ms`. Damit ist das Verhalten deterministisch und ohne
- * Plattform-Uhr lauffähig (Tasmota, eigene Firmware, Unit-Test am PC).
+ * Feste Bausteine des generierten Berry-Scripts: E/A-Anbindung und der
+ * Hinweis zum zyklischen Aufruf.
  */
-export const BERRY_RUNTIME = `# ---- FlowBerry-Laufzeit (nicht editieren) -----------------------------------
-class FB_TON
-  var pt, acc, q
-  def init(pt)
-    self.pt = pt
-    self.acc = 0
-    self.q = false
-  end
-  def update(inp, period_ms)
-    if inp
-      if !self.q
-        self.acc += period_ms
-        if self.acc >= self.pt
-          self.q = true
-        end
-      end
-    else
-      self.acc = 0
-      self.q = false
-    end
-    return self.q
-  end
-end
 
-class FB_TOF
-  var pt, acc, q
-  def init(pt)
-    self.pt = pt
-    self.acc = 0
-    self.q = false
-  end
-  def update(inp, period_ms)
-    if inp
-      self.q = true
-      self.acc = 0
-    elif self.q
-      self.acc += period_ms
-      if self.acc >= self.pt
-        self.q = false
-      end
-    end
-    return self.q
-  end
-end
-# -----------------------------------------------------------------------------
-`;
-
-export const BERRY_IO_STUBS = `# E/A-Anbindung: Standard ist eine einfache Map (gut zum Testen).
-# Für echte Hardware io_get/io_set ersetzen (GPIO, Register, tasmota.get_power() ...).
+export function berryIoStubs(): string {
+  return `# ---- E/A-Anbindung ----------------------------------------------------------
+# Standard ist eine einfache Map – zum Testen sofort lauffähig. Für echte
+# Hardware io_get/io_set ersetzen (gpio.digital_read, tasmota.get_power(),
+# tasmota.set_power(), Register ...). Werte: true/false, Zähler als Zahl.
 var FB_IO = {}
 
 def io_get(name)
@@ -61,12 +15,36 @@ def io_get(name)
 end
 
 def io_set(name, value)
-  FB_IO[name] = bool(value)
+  FB_IO[name] = value
 end
 `;
+}
 
-export const BERRY_TASMOTA_HINT = `# Unter Tasmota z. B. so einbinden:
+const TASMOTA_HOOKS: Record<number, string> = {
+  50: 'every_50ms',
+  100: 'every_100ms',
+  250: 'every_250ms',
+  1000: 'every_second',
+};
+
+export function berryUsageHint(scanMs: number): string {
+  const hook = TASMOTA_HOOKS[scanMs];
+  const tasmota = hook
+    ? `# Unter Tasmota als Driver einbinden (${hook} passt zu SCAN_MS = ${scanMs}):
+#   class FlowBerryDriver
+#     var logic
+#     def init() self.logic = FlowBerryLogic() end
+#     def ${hook}() self.logic.scan() end
+#   end
+#   tasmota.add_driver(FlowBerryDriver())`
+    : `# Unter Tasmota zyklisch alle ${scanMs} ms logic.scan() aufrufen, z. B. per tasmota.set_timer.`;
+  return `# ---- Aufruf -----------------------------------------------------------------
+${tasmota}
+#
+# Test am PC (Standard-Berry):
 #   var logic = FlowBerryLogic()
-#   tasmota.add_cron("*/1 * * * * *", def () logic.scan() end, "flowberry")
-# oder feiner über einen Driver mit every_50ms; SCAN_MS unten dann anpassen.
+#   FB_IO["START"] = true
+#   for i: 1 .. 10  logic.scan()  end
+#   print(FB_IO)
 `;
+}

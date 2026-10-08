@@ -1,0 +1,163 @@
+{
+  "flowberry": 2,
+  "settings": {
+    "scanMs": 50
+  },
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "position": {
+        "x": 340,
+        "y": 0
+      },
+      "data": {}
+    },
+    {
+      "id": "teil_da",
+      "type": "wait",
+      "position": {
+        "x": 310,
+        "y": 90
+      },
+      "data": {
+        "waitMode": "cond",
+        "cond": "SENSOR",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "teil_weg",
+      "type": "wait",
+      "position": {
+        "x": 310,
+        "y": 190
+      },
+      "data": {
+        "waitMode": "cond",
+        "cond": "!SENSOR",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "zaehlen",
+      "type": "action",
+      "position": {
+        "x": 310,
+        "y": 290
+      },
+      "data": {
+        "text": "N = N + 1"
+      }
+    },
+    {
+      "id": "voll",
+      "type": "decision",
+      "position": {
+        "x": 310,
+        "y": 390
+      },
+      "data": {
+        "cond": "N >= 5"
+      }
+    },
+    {
+      "id": "reset",
+      "type": "action",
+      "position": {
+        "x": 310,
+        "y": 550
+      },
+      "data": {
+        "text": "N = 0"
+      }
+    },
+    {
+      "id": "auswerfen",
+      "type": "pulse",
+      "position": {
+        "x": 310,
+        "y": 650
+      },
+      "data": {
+        "signal": "AUSWERFER",
+        "ms": 1000
+      }
+    },
+    {
+      "id": "ende",
+      "type": "end",
+      "position": {
+        "x": 340,
+        "y": 760
+      },
+      "data": {
+        "halt": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-start-teil_da",
+      "source": "start",
+      "sourceHandle": "b",
+      "target": "teil_da",
+      "targetHandle": "t"
+    },
+    {
+      "id": "e-teil_da-teil_weg",
+      "source": "teil_da",
+      "sourceHandle": "b",
+      "target": "teil_weg",
+      "targetHandle": "t"
+    },
+    {
+      "id": "e-teil_weg-zaehlen",
+      "source": "teil_weg",
+      "sourceHandle": "b",
+      "target": "zaehlen",
+      "targetHandle": "t"
+    },
+    {
+      "id": "e-zaehlen-voll",
+      "source": "zaehlen",
+      "sourceHandle": "b",
+      "target": "voll",
+      "targetHandle": "t"
+    },
+    {
+      "id": "e-voll-reset",
+      "source": "voll",
+      "sourceHandle": "b",
+      "target": "reset",
+      "targetHandle": "t",
+      "data": {
+        "branch": "1"
+      }
+    },
+    {
+      "id": "e-voll-ende",
+      "source": "voll",
+      "sourceHandle": "r",
+      "target": "ende",
+      "targetHandle": "r",
+      "data": {
+        "branch": "0"
+      }
+    },
+    {
+      "id": "e-reset-auswerfen",
+      "source": "reset",
+      "sourceHandle": "b",
+      "target": "auswerfen",
+      "targetHandle": "t"
+    },
+    {
+      "id": "e-auswerfen-ende",
+      "source": "auswerfen",
+      "sourceHandle": "b",
+      "target": "ende",
+      "targetHandle": "t"
+    }
+  ]
+}

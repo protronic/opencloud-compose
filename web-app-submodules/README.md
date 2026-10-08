@@ -39,9 +39,10 @@ external, prebuilt (e.g. from a CI runner)                 →   OC_APPS_DIR/<na
   Word-style WYSIWYG editor for `.typ` files - in an iframe wired to the OpenCloud file
   interface via postMessage. Registered as an additional "Öffnen mit" entry for `.typ`
   (the typst-editor keeps priority); see `typst-wysiwyg/app/UPSTREAM.md` for the local patches
-- **`flowberry`** lives directly in this repository; a reduced bpmn-js-based logic editor for
-  relay/ladder-style Verknüpfungslogik (`.flowberry`, BPMN-2.0-XML with `fb:*` attributes) that
-  generates self-contained Berry scripts (`.be`) next to the diagram via WebDAV - see
+- **`flowberry`** lives directly in this repository; a flowchart (PAP) editor for simple PLC
+  sequences built on [Vue Flow](https://vueflow.dev) (`.flowberry`, JSON). It shows the generated
+  Berry script live in a side panel (or a separate window), simulates the sequence in the browser
+  and saves a self-contained Berry script (`.be`) next to the diagram via WebDAV - see
   `flowberry/README.md`
 - **`emlviewer`** ([protronic/emlviewer](https://github.com/protronic/emlviewer)) previews `.eml`
   e-mail files (`message/rfc822`): headers, sanitised HTML/text body in a sandboxed iframe with
