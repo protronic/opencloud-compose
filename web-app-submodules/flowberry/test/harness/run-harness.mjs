@@ -40,6 +40,16 @@ try {
   check((await code()).includes('class FlowBerryLogic'), 'Code-Panel zeigt keine Klasse FlowBerryLogic');
   check((await code()).includes('self.get("MPS_IN")'), 'Code fragt MPS_IN nicht ab');
   check((await page.locator('.fb-status').innerText()).includes('10 Schritte'), 'Status sollte 10 Schritte melden');
+  const commit = (await page.locator('.fb-about-button span').innerText()).trim();
+  check(/^[0-9a-f]{7,}(-dirty)?$/.test(commit), `Git-Commit in der Werkzeugleiste erwartet, gefunden: "${commit}"`);
+  check(
+    (await code()).includes(`(${commit}) aus notstrom.flowberry`) && /flowBerry \d+\.\d+\.\d+ \(/.test(await code()),
+    'Berry-Kopf sollte Version und Commit nennen'
+  );
+  await page.click('.fb-about-button');
+  check((await page.locator('.fb-about-dialog').innerText()).includes(commit), 'Info-Dialog sollte den Commit zeigen');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.fb-about-dialog', {state: 'detached'});
 
   // 2. Auswahl: Eigenschaften und hervorgehobener Code-Abschnitt
   await node('sps_ein').click();

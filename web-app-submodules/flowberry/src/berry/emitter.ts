@@ -105,7 +105,14 @@ function comment(text: string): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
-export function emitBerry(program: Program, options: {fileName?: string} = {}): EmitResult {
+export function emitBerry(
+  program: Program,
+  options: {
+    fileName?: string;
+    /** Kennung des Erzeugers im Dateikopf, z. B. "flowBerry 0.2.0 (04022f5abc)" */
+    generator?: string;
+  } = {}
+): EmitResult {
   const lines: string[] = [];
   const lineRanges: Record<string, [number, number]> = {};
   const out = (line = '') => lines.push(line);
@@ -114,7 +121,7 @@ export function emitBerry(program: Program, options: {fileName?: string} = {}): 
   const goto = (next: Next) => `self.goto(${next ?? 0})`;
 
   out(
-    `# Generiert von flowBerry${options.fileName ? ` aus ${options.fileName}` : ''}` +
+    `# Generiert von ${options.generator ?? 'flowBerry'}${options.fileName ? ` aus ${options.fileName}` : ''}` +
       ' – Änderungen hier werden beim nächsten Export überschrieben.'
   );
   out('#');

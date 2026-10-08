@@ -61,7 +61,9 @@ APPS_DIR="${APPS_DIR/#\~/$HOME}"
 
 # Resolved on the host and handed into the containerised builds: the pnpm
 # container only mounts the app directory, so git metadata is unavailable
-# there (consumed by *-info.ts for about dialogs).
+# there (consumed by *-info.ts for about dialogs). The dirty check is limited
+# to the app directory, so in-tree apps (typst-editor, flowberry) stay clean
+# when something else in the repository changed, e.g. the runner's dist-apps/.
 resolve_git_commit() {
   local dir="$1"
   local current="${2:-}"
@@ -74,7 +76,7 @@ resolve_git_commit() {
   if [[ -z "${commit}" ]]; then
     return
   fi
-  if [[ "${commit}" != *-dirty ]] && [[ -n "$(git -C "${dir}" status --porcelain 2>/dev/null)" ]]; then
+  if [[ "${commit}" != *-dirty ]] && [[ -n "$(git -C "${dir}" status --porcelain -- . 2>/dev/null)" ]]; then
     commit="${commit}-dirty"
   fi
   printf '%s' "${commit}"
@@ -84,6 +86,7 @@ PDFA_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/pdf-annotator" "${PDFA_
 BB_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/blockberry-editor" "${BB_GIT_COMMIT:-}")"
 TYPST_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/typst-editor" "${TYPST_GIT_COMMIT:-}")"
 EMLVIEWER_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/emlviewer" "${EMLVIEWER_GIT_COMMIT:-}")"
+FLOWBERRY_GIT_COMMIT="$(resolve_git_commit "${SUBMODULES_DIR}/flowberry" "${FLOWBERRY_GIT_COMMIT:-}")"
 LSM6_GIT_REF="${LSM6_GIT_REF:-$(git -C "${SUBMODULES_DIR}/${LSM6_APP}" describe --tags --always --dirty 2>/dev/null || true)}"
 
 usage() {
@@ -331,7 +334,7 @@ run_pnpm_build() {
   if [[ "${NATIVE}" == true ]]; then
     (
       cd "${source_dir}"
-      export CI=true PDFA_GIT_COMMIT BB_GIT_COMMIT TYPST_GIT_COMMIT EMLVIEWER_GIT_COMMIT
+      export CI=true PDFA_GIT_COMMIT BB_GIT_COMMIT TYPST_GIT_COMMIT EMLVIEWER_GIT_COMMIT FLOWBERRY_GIT_COMMIT
       # shellcheck disable=SC2086
       pnpm install ${install_flags}
       pnpm build
@@ -347,6 +350,7 @@ run_pnpm_build() {
     -e BB_GIT_COMMIT="${BB_GIT_COMMIT}" \
     -e TYPST_GIT_COMMIT="${TYPST_GIT_COMMIT}" \
     -e EMLVIEWER_GIT_COMMIT="${EMLVIEWER_GIT_COMMIT}" \
+    -e FLOWBERRY_GIT_COMMIT="${FLOWBERRY_GIT_COMMIT}" \
     -v "${source_dir}:/work" \
     -w /work \
     "${PNPM_IMAGE}" \

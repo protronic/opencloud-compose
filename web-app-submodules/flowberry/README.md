@@ -23,6 +23,9 @@ Basis ist [Vue Flow](https://vueflow.dev) (MIT, Vue 3 – wie OpenCloud selbst).
 - **Doppelklick** auf ein Element springt in das Eigenschaften-Feld rechts.
 - **Entf** löscht, **Strg+Z / Strg+Y** macht rückgängig/wiederholt,
   **Strg+S** speichert.
+- Ganz rechts in der Werkzeugleiste steht der **Git-Commit** des laufenden
+  Builds; ein Klick zeigt Version, Commit und Build-Zeit. Version und Commit
+  stehen auch im Kopf jedes erzeugten Berry-Scripts.
 
 | Element | Symbol | Bedeutung |
 |---|---|---|
@@ -120,6 +123,12 @@ Browser-Test der Oberfläche (Chromium über playwright-core):
 pnpm harness                       # Vite-Server auf Port 5302
 node test/harness/run-harness.mjs
 ```
+
+Der Git-Commit wird beim Build eingesetzt (`build-info.ts`): aus
+`FLOWBERRY_GIT_COMMIT`, sonst per `git rev-parse` im Arbeitsverzeichnis, mit
+`-dirty`, wenn sich unter `flowberry/` etwas geändert hat. `build-web-extensions.sh`
+ermittelt ihn auf dem Host und reicht ihn in den Container bzw. den Runner-Build
+weiter.
 
 Deployment über das vorhandene Build-Script:
 

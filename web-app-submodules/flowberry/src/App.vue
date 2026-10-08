@@ -31,6 +31,14 @@
       >
         {{ $gettext('Seitenleiste') }}
       </button>
+      <button
+        class="fb-about-button"
+        :title="`flowBerry ${aboutInfo.version} · Git ${aboutInfo.commit} · Build ${aboutInfo.buildTime}`"
+        :aria-label="$gettext('Über flowBerry')"
+        @click="aboutOpen = true"
+      >
+        ⓘ <span>{{ aboutInfo.commit }}</span>
+      </button>
     </div>
 
     <div v-if="notice" class="fb-banner">{{ notice }}</div>
@@ -120,6 +128,23 @@
           </section>
         </aside>
       </template>
+    </div>
+
+    <div v-if="aboutOpen" class="fb-about-backdrop" @pointerdown.self="aboutOpen = false">
+      <div class="fb-about-dialog" role="dialog" :aria-label="$gettext('Über flowBerry')">
+        <h2>flowBerry</h2>
+        <dl>
+          <dt>{{ $gettext('Version') }}</dt>
+          <dd>{{ aboutInfo.version }}</dd>
+          <dt>{{ $gettext('Git-Commit') }}</dt>
+          <dd class="fb-about-dialog__mono">{{ aboutInfo.commit }}</dd>
+          <dt>{{ $gettext('Build') }}</dt>
+          <dd>{{ aboutInfo.buildTime }}</dd>
+        </dl>
+        <div class="fb-about-dialog__actions">
+          <button @click="aboutOpen = false">{{ $gettext('Schließen') }}</button>
+        </div>
+      </div>
     </div>
 
     <datalist id="fb-signal-list">
@@ -260,6 +285,14 @@ const sideOpen = ref(true);
 const tab = ref<'code' | 'sim' | 'issues'>('code');
 const sideWidth = ref(readStoredWidth());
 const exportStatus = ref('');
+const aboutOpen = ref(false);
+
+// Build-Infos, beim Build eingesetzt (build-info.ts)
+const aboutInfo = {
+  version: __APP_VERSION__,
+  commit: __APP_COMMIT__,
+  buildTime: new Date(__APP_BUILD_TIME__).toLocaleString('de-DE', {dateStyle: 'medium', timeStyle: 'short'}),
+};
 
 // ---- Modell ↔ Vue Flow -------------------------------------------------------
 
@@ -344,7 +377,12 @@ const logicDoc = computed<FbDoc>(() => ({
 }));
 
 const program = computed(() => compile(logicDoc.value));
-const emitted = computed(() => emitBerry(program.value, {fileName: props.resource?.name}));
+const emitted = computed(() =>
+  emitBerry(program.value, {
+    fileName: props.resource?.name,
+    generator: `flowBerry ${aboutInfo.version} (${aboutInfo.commit})`,
+  })
+);
 const allSignals = computed(() => [...new Set([...program.value.inputs, ...program.value.outputs])]);
 
 const issuesByNode = computed(() => {
@@ -861,6 +899,10 @@ function importContent(content: string) {
 }
 
 function handleKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && aboutOpen.value) {
+    aboutOpen.value = false;
+    return;
+  }
   const mod = event.ctrlKey || event.metaKey;
   if (!mod) {
     return;
@@ -904,6 +946,7 @@ watch(
 
 <style scoped>
 .fb-app {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -954,6 +997,73 @@ watch(
 .fb-status--error {
   color: #d0312d !important;
   font-weight: 600;
+}
+
+.fb-about-button {
+  border-color: transparent !important;
+  background: none !important;
+  color: var(--oc-role-on-surface-variant, #5b6670) !important;
+  font-size: 12px !important;
+  white-space: nowrap;
+}
+
+.fb-about-button span {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+}
+
+.fb-about-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: rgb(0 0 0 / 25%);
+}
+
+.fb-about-dialog {
+  width: min(360px, 90%);
+  margin-top: 12vh;
+  padding: 14px 16px;
+  border: 1px solid var(--oc-role-outline-variant, #d0d4d9);
+  border-radius: 8px;
+  background: var(--oc-role-surface-container, #f1f3f4);
+  color: var(--oc-role-on-surface, #1d232a);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 25%);
+  font-size: 13px;
+}
+
+.fb-about-dialog h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.fb-about-dialog dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 16px;
+  margin: 0;
+}
+
+.fb-about-dialog dt {
+  color: var(--oc-role-on-surface-variant, #5b6670);
+}
+
+.fb-about-dialog dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.fb-about-dialog__mono {
+  font-family: ui-monospace, monospace;
+  user-select: all;
+}
+
+.fb-about-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 
 .fb-banner {
