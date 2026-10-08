@@ -27,3 +27,7 @@
 [submodule "web-app-submodules/emlviewer"]
 	path = web-app-submodules/emlviewer
 	url = git@github.com:protronic/emlviewer.git
+[submodule "web-app-submodules/flowberry"]
+	path = web-app-submodules/flowberry
+	url = git@github.com:protronic/flowberry.git
+	branch = main

@@ -62,8 +62,8 @@ APPS_DIR="${APPS_DIR/#\~/$HOME}"
 # Resolved on the host and handed into the containerised builds: the pnpm
 # container only mounts the app directory, so git metadata is unavailable
 # there (consumed by *-info.ts for about dialogs). The dirty check is limited
-# to the app directory, so in-tree apps (typst-editor, flowberry) stay clean
-# when something else in the repository changed, e.g. the runner's dist-apps/.
+# to the app directory, so in-tree apps (typst-editor) stay clean when
+# something else in the repository changed, e.g. the runner's dist-apps/.
 resolve_git_commit() {
   local dir="$1"
   local current="${2:-}"
@@ -113,7 +113,7 @@ Standalone submodule repos (aliases in parentheses):
   pdf-annotator
   typst-editor (in-tree, no submodule)
   typst-wysiwyg (in-tree, no submodule; vendored ortic/typst-wysiwyg)
-  flowberry (in-tree, no submodule)
+  flowberry — private submodule (protronic/flowberry)
   emlviewer (eml-viewer, eml) — .eml e-mail preview
   mdpresentation-viewer (presentation-viewer, web-app-presentation-viewer)
   webapp-lsm6 (lsm6) — opt-in only, private submodule on Forgejo

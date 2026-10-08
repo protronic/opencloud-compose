@@ -90,14 +90,31 @@ jobs:
       - name: Fetch submodules
         env:
           REPO_TOKEN: ${{ secrets.REPO_READ_TOKEN || secrets.PACKAGES_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_READ_TOKEN }}
         run: |
           export GIT_TERMINAL_PROMPT=0
           lsm6="web-app-submodules/webapp-lsm6"
+          flowberry="web-app-submodules/flowberry"
           # The protronic GitHub submodules use SSH URLs; they are public over HTTPS.
           git config --global url."https://github.com/".insteadOf "git@github.com:"
           mapfile -t paths < <(git config -f .gitmodules --get-regexp '\.path$' \
-            | awk '{print $2}' | grep -vx "${lsm6}")
+            | awk '{print $2}' | grep -vx -e "${lsm6}" -e "${flowberry}")
           git submodule update --init --recursive -- "${paths[@]}"
+
+          # flowberry: private GitHub repository (protronic/flowberry), only fetched
+          # when the server wants it - with a GitHub token if GH_READ_TOKEN is set.
+          if [[ ",${BUILD_APPS}," == *",flowberry,"* ]]; then
+            if [ -n "${GH_TOKEN}" ]; then
+              git config --global \
+                url."https://x-access-token:${GH_TOKEN}@github.com/protronic/flowberry".insteadOf \
+                "git@github.com:protronic/flowberry"
+            fi
+            if ! git submodule update --init -- "${flowberry}"; then
+              echo "The server wants flowberry but github.com/protronic/flowberry could not be fetched:" \
+                "set the secret GH_READ_TOKEN (GitHub token with read access) or make the repository public." >&2
+              exit 1
+            fi
+          fi
 
           # webapp-lsm6: private repository on this Forgejo (ssh://git@forgejo/... in
           # .gitmodules), only fetched when the server wants it.
