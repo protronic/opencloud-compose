@@ -51,6 +51,24 @@ Sprung zwischen Quelltext und Vorschau – als zusätzliche „Öffnen mit“-Ap
   Die Vorschau kompiliert nach externen Änderungen erst beim nächsten
   Kompilieren (F9) neu.
 
+## Ausprobieren im Demo-Env
+
+`.env.demo-server.example` baut `typst-editor` und `texlyre` mit:
+
+```bash
+cp .env.demo-server.example .env
+# Zertifikat für test.oc und *.test.oc nach certs/ und config/traefik/dynamic/certs.yml
+# (Beispiel in der .env), z. B.:
+#   mkcert -cert-file certs/test.oc.crt -key-file certs/test.oc.key test.oc "*.test.oc"
+# test.oc auf 127.0.0.1 zeigen lassen (/etc/hosts)
+./web-app-submodules/build-web-extensions.sh   # baut OC_WEB_APPS (TeXlyre: einige Minuten)
+docker compose up -d
+```
+
+Dann `https://test.oc:9200`, Anmeldung z. B. als `alan` / `demo`, einen Ordner mit
+`.typ`-Dateien anlegen und auf einer `.typ`-Datei „Öffnen mit…“ → „Mit TeXlyre öffnen“.
+Nach einem neuen Build OpenCloud neu starten (`docker compose restart opencloud`).
+
 ## Build
 
 ```bash
@@ -78,10 +96,11 @@ node test/harness/run-harness.mjs
 ```
 
 Der Harness bindet `src/App.vue` wie der OpenCloud-AppWrapper ein (WebDAV im
-Speicher nachgebildet) und prüft: Projekt aus dem Ordner ohne Dialoge,
+Speicher nachgebildet, TeXlyre ausgeliefert wie von OpenCloud: mit dessen CSP
+und `<base href="/">`) und prüft: Projekt aus dem Ordner ohne Dialoge,
 Kompilieren der Vorschau, Zurückschreiben beim Tippen, Übernahme einer
-Änderung von außen, kein Zugriff außerhalb des Ordners, keine weiteren
-CSP-Blockaden.
+Änderung von außen, kein Zugriff außerhalb des Ordners, keine CSP-Blockaden,
+keine Verbindungen zu TeXlyre-Diensten, iframe-Adresse bleibt in der App.
 
 ## Lizenz
 

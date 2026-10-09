@@ -6,6 +6,9 @@ ROOT_DIR="$(cd "${SUBMODULES_DIR}/.." && pwd)"
 WEB_EXTENSIONS_DIR="${SUBMODULES_DIR}/web-extensions"
 PNPM_IMAGE="${PNPM_IMAGE:-ghcr.io/pnpm/pnpm:11.9.0}"
 PRESENTATION_IMAGE="${PRESENTATION_IMAGE:-node:20-bookworm}"
+# TeXlyre builds its upstream with npm, git and tar (texlyre/scripts/build-texlyre.mjs),
+# which the slim pnpm image lacks - same image as the Forgejo runner job.
+TEXLYRE_IMAGE="${TEXLYRE_IMAGE:-node:24-bookworm}"
 NODE_VERSION="${NODE_VERSION:-24}"
 PRESENTATION_VIEWER_APP="mdpresentation-viewer"
 LSM6_APP="webapp-lsm6"
@@ -449,11 +452,29 @@ build_standalone_pnpm_app() {
 
   if [[ "${NATIVE}" == true ]]; then
     echo "Building standalone extension ${deploy_name} natively..."
+    run_pnpm_build "${source_dir}"
+  elif [[ "${deploy_name}" == texlyre ]]; then
+    echo "Building standalone extension ${deploy_name} in ${TEXLYRE_IMAGE} container..."
+    run_texlyre_build "${source_dir}"
   else
     echo "Building standalone extension ${deploy_name} in ${PNPM_IMAGE} container..."
+    run_pnpm_build "${source_dir}"
   fi
-  run_pnpm_build "${source_dir}"
   verify_mf_remote_entry "${deploy_name}" "${dist_dir}"
+}
+
+run_texlyre_build() {
+  local source_dir="$1"
+
+  # pnpm via npx: the image's global npm prefix is not writable for -u
+  docker run --rm \
+    -u "$(id -u):$(id -g)" \
+    -e CI=true \
+    -e HOME=/tmp \
+    -v "${source_dir}:/work" \
+    -w /work \
+    "${TEXLYRE_IMAGE}" \
+    bash -c "npx --yes pnpm@11.9.0 install --frozen-lockfile && npx --yes pnpm@11.9.0 build"
 }
 
 build_presentation_viewer() {

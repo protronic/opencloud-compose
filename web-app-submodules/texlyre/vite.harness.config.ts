@@ -5,8 +5,9 @@ import {defineConfig, type Plugin} from 'vite';
 
 // Dev-only config for test/harness: mounts src/App.vue like the OpenCloud
 // AppWrapper and serves the built TeXlyre (dist/web/app) at its OpenCloud path
-// /assets/apps/texlyre/app/ - with the CSP of config/opencloud/csp.yaml, so
-// requests OpenCloud would block fail here too.
+// /assets/apps/texlyre/app/ - like OpenCloud: with the CSP of
+// config/opencloud/csp.yaml (requests OpenCloud would block fail here too) and
+// with <base href="/"> injected into every HTML file.
 const appDir = join(import.meta.dirname, 'dist/web/app');
 const PREFIX = '/assets/apps/texlyre/app/';
 const CSP = [
@@ -38,6 +39,10 @@ function serveTexlyre(): Plugin {
           return;
         }
         res.setHeader('content-type', TYPES[extname(file)] ?? 'application/octet-stream');
+        if (extname(file) === '.html') {
+          res.end(readFileSync(file, 'utf8').replace(/<head>/i, '<head><base href="/"/>'));
+          return;
+        }
         res.end(readFileSync(file));
       });
     },

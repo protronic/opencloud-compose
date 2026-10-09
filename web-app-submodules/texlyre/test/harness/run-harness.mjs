@@ -24,7 +24,7 @@ page.on('console', (msg) => {
   const text = msg.text();
   // only the upstream status page is still requested (and blocked by the CSP);
   // collaboration and peer file transfer must not connect at all
-  if (/Refused to connect/.test(text) && !/upptime/.test(text)) blocked.push(text.slice(0, 200));
+  if (/Refused to/.test(text) && !/upptime/.test(text)) blocked.push(text.slice(0, 200));
 });
 const external = [];
 page.on('request', (request) => {
@@ -54,8 +54,8 @@ try {
 
   // 1. ready: overlay gone, TeXlyre shows the project of the folder
   await page.waitForSelector('.texlyre-overlay', {state: 'detached', timeout: 60000});
-  const frame = page.frames().find((f) => f.url().includes('/assets/apps/texlyre/app/'));
-  check(!!frame, 'TeXlyre iframe missing');
+  const frame = await (await page.$('iframe[src*="/assets/apps/texlyre/app/"]'))?.contentFrame();
+  if (!frame) throw new Error('TeXlyre iframe missing');
   await frame.waitForSelector('.cm-content', {timeout: 30000});
   const body = await frame.evaluate(() => document.body.innerText);
   check(body.includes('Bericht'), 'project should be named after the folder');
@@ -101,6 +101,13 @@ try {
   );
 
   if (process.env.HARNESS_SHOT) await page.screenshot({path: process.env.HARNESS_SHOT});
+
+  // the iframe stays at its own address despite OpenCloud's <base href="/">
+  const frameUrl = new URL(frame.url());
+  check(
+    frameUrl.pathname.startsWith('/assets/apps/texlyre/app/') && frameUrl.hash.startsWith('#yjs:'),
+    `iframe address left the app: ${frame.url()}`,
+  );
 
   const calls = await page.evaluate(() => window.__harness.calls);
   check(

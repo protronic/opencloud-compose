@@ -112,6 +112,20 @@ cpSync(built, outDir, {
     return !EXCLUDED_CORE.some((name) => rel === `core/${name}` || rel.startsWith(`core/${name}/`));
   },
 });
+// OpenCloud serves every .html file with <base href="/"> (for its own SPA). TeXlyre
+// resolves relative URLs - and its #hash routes - against the document base, so the
+// iframe address would jump to "/" and a reload would load OpenCloud into it.
+// A classic script in <head> runs after the injected <base> and before the app.
+writeFileSync(
+  join(outDir, 'oc-base.js'),
+  `document.querySelector('base')?.setAttribute('href', ${JSON.stringify(BASE)});\n`,
+);
+const indexHtml = join(outDir, 'index.html');
+const html = readFileSync(indexHtml, 'utf8');
+const withBase = html.replace(/<meta charset="UTF-8"\s*\/?>/i, (meta) => `${meta}\n  <script src="${BASE}oc-base.js"></script>`);
+if (withBase === html) throw new Error('index.html: <meta charset> not found, cannot add oc-base.js');
+writeFileSync(indexHtml, withBase);
+
 writeFileSync(
   join(outDir, 'TEXLYRE-UPSTREAM.txt'),
   `TeXlyre ${upstream.version} (${upstream.repository}, commit ${upstream.commit})\n` +

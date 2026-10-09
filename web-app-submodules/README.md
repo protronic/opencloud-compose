@@ -76,7 +76,7 @@ From the repository root:
 git submodule update --init --recursive
 ```
 
-Docker is required on the host. The build script runs `pnpm install` and `pnpm build` inside temporary containers and removes them when finished. Most apps use [pnpm](https://pnpm.io/docker) (`ghcr.io/pnpm/pnpm:11.9.0` by default, override with `PNPM_IMAGE`); the presentation viewer uses `node:20-bookworm` by default (`PRESENTATION_IMAGE`). Node.js is installed via `pnpm runtime set` where needed (default: Node 24, override with `NODE_VERSION`).
+Docker is required on the host. The build script runs `pnpm install` and `pnpm build` inside temporary containers and removes them when finished. Most apps use [pnpm](https://pnpm.io/docker) (`ghcr.io/pnpm/pnpm:11.9.0` by default, override with `PNPM_IMAGE`); the presentation viewer uses `node:20-bookworm` by default (`PRESENTATION_IMAGE`), texlyre `node:24-bookworm` (`TEXLYRE_IMAGE`; its upstream build needs npm and git). Node.js is installed via `pnpm runtime set` where needed (default: Node 24, override with `NODE_VERSION`).
 
 Configure the default build list in `.env` at the repository root - monorepo apps and
 standalone extensions can be mixed freely:
