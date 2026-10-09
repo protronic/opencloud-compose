@@ -106,6 +106,29 @@ index 454d268..87b4586 100644
  		return <LoadingScreen />;
  	}
  
+diff --git a/src/contexts/PeerFileSyncContext.tsx b/src/contexts/PeerFileSyncContext.tsx
+index e0f7444..f699a63 100644
+--- a/src/contexts/PeerFileSyncContext.tsx
++++ b/src/contexts/PeerFileSyncContext.tsx
+@@ -29,6 +29,7 @@ import type {
+ 	FileSyncVerification,
+ } from '../types/fileSync';
+ import type { YjsDocUrl } from '../types/yjs';
++import { isOcMode } from '../opencloud/ocMode';
+ 
+ const moduleLog = createNamedLogger('PeerFileSyncContext');
+ 
+@@ -77,8 +78,9 @@ export const FileSyncProvider: React.FC<FileSyncProviderProps> = ({
+ 	const awarenessCleanupRef = useRef<(() => void) | null>(null);
+ 	const enableSyncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+ 
++	// OpenCloud mode: the files come from the OpenCloud folder, no peer transfer
+ 	const isFileSyncEnabled =
+-		(getSetting('file-sync-enable')?.value as boolean) ?? false;
++		!isOcMode() && ((getSetting('file-sync-enable')?.value as boolean) ?? false);
+ 	const autoSyncIntervalSeconds =
+ 		(getSetting('file-sync-auto-interval')?.value as number) ?? 10;
+ 	const holdTimeoutSeconds =
 diff --git a/src/extensions/typst.ts/typst-worker.ts b/src/extensions/typst.ts/typst-worker.ts
 index c21f96a..09e33a2 100644
 --- a/src/extensions/typst.ts/typst-worker.ts
@@ -185,10 +208,10 @@ index 14103c4..ed259d3 100644
  ) {
 diff --git a/src/opencloud/ocMode.ts b/src/opencloud/ocMode.ts
 new file mode 100644
-index 0000000..71ce2e8
+index 0000000..1927331
 --- /dev/null
 +++ b/src/opencloud/ocMode.ts
-@@ -0,0 +1,390 @@
+@@ -0,0 +1,402 @@
 +// src/opencloud/ocMode.ts
 +//
 +// OpenCloud mode: TeXlyre runs in a same-origin iframe of the OpenCloud web
@@ -483,6 +506,18 @@ index 0000000..71ce2e8
 +	return stored as T | null;
 +}
 +
++// ---- collaboration ----------------------------------------------------------
++
++/**
++ * WebRTC options in OpenCloud mode: no signaling servers at all. The documents
++ * live in OpenCloud; TeXlyre's peer-to-peer collaboration (signaling on
++ * texlyre.org) has no shared document state there and the OpenCloud CSP blocks
++ * it anyway. null outside OpenCloud mode.
++ */
++export function ocWebrtcOptions(): { signaling: string[] } | null {
++	return getOcBridge() ? { signaling: [] } : null;
++}
++
 +// ---- account and project ----------------------------------------------------
 +
 +const ACCOUNTS_KEY = 'texlyre-oc-accounts';
@@ -579,6 +614,30 @@ index 0000000..71ce2e8
 +	const file = `/${bridge.openFile.replace(/^\/+/, '')}`;
 +	return `${project.docUrl}&file:${encodeURIComponent(file)}&compile:${bridge.projectType}`;
 +}
+diff --git a/src/services/CollabService.ts b/src/services/CollabService.ts
+index ef31635..bf2ed75 100644
+--- a/src/services/CollabService.ts
++++ b/src/services/CollabService.ts
+@@ -16,6 +16,7 @@ import type {
+ import type { YjsDocUrl } from '../types/yjs';
+ import { parseUrlFragments } from '../utils/urlUtils';
+ import { offlineService } from './OfflineService';
++import { ocWebrtcOptions } from '../opencloud/ocMode';
+ 
+ const moduleLog = createNamedLogger('CollabService');
+ 
+@@ -236,6 +237,11 @@ class CollabService {
+ 			);
+ 		}
+ 
++		const oc = ocWebrtcOptions();
++		if (oc) {
++			return collabWebrtc.getProvider(roomName, doc, { signaling: oc.signaling });
++		}
++
+ 		return collabWebrtc.getProvider(roomName, doc, {
+ 			signaling:
+ 				finalSignalingServers.length > 0 ? finalSignalingServers : undefined,
 diff --git a/src/services/DiskHandleStore.ts b/src/services/DiskHandleStore.ts
 index 71b33e1..2b4b52d 100644
 --- a/src/services/DiskHandleStore.ts

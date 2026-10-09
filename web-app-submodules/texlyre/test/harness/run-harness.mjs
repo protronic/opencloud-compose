@@ -22,9 +22,18 @@ const check = (condition, message) => {
 const blocked = [];
 page.on('console', (msg) => {
   const text = msg.text();
-  // collaboration (WebRTC signaling) and the upstream status page are
-  // external services the OpenCloud CSP blocks on purpose
-  if (/Refused to connect/.test(text) && !/ywebrtc\.texlyre\.org|upptime/.test(text)) blocked.push(text.slice(0, 200));
+  // only the upstream status page is still requested (and blocked by the CSP);
+  // collaboration and peer file transfer must not connect at all
+  if (/Refused to connect/.test(text) && !/upptime/.test(text)) blocked.push(text.slice(0, 200));
+});
+const external = [];
+page.on('request', (request) => {
+  if (/texlyre\.org|filepizza|peerjs/.test(request.url())) external.push(request.url().slice(0, 120));
+});
+page.on('websocket', (ws) => {
+  // the harness' own Vite HMR socket is not part of the app
+  if (/^ws:\/\/localhost:\d+\/\?token=/.test(ws.url())) return;
+  external.push(`websocket ${ws.url().slice(0, 120)}`);
 });
 page.on('pageerror', (err) => problems.push(`pageerror: ${err.message}`));
 
@@ -99,6 +108,7 @@ try {
     `WebDAV access outside the folder: ${JSON.stringify(calls.filter(([, p]) => !p.startsWith('/Dokumente/Bericht')))}`,
   );
   check(blocked.length === 0, `CSP blocked requests: ${blocked.join(' | ')}`);
+  check(external.length === 0, `connections to TeXlyre services: ${external.join(' | ')}`);
 } catch (err) {
   problems.push(`aborted: ${err.stack ?? err}`);
 }

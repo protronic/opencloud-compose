@@ -18,6 +18,8 @@ lives in the new file `src/opencloud/ocMode.ts`:
 | `src/services/DiskHandleStore.ts` | OpenCloud handles are stored as descriptors (functions cannot be cloned into IndexedDB) |
 | `src/hooks/useDiskFiles.ts` | in OpenCloud mode the folder is re-read every 10 s (other clients change it) |
 | `src/main.tsx` | no service worker in OpenCloud mode |
+| `src/services/CollabService.ts` | no WebRTC signaling servers in OpenCloud mode - no connections to texlyre.org (see README: collaboration) |
+| `src/contexts/PeerFileSyncContext.tsx` | no peer file transfer (FilePizza/PeerJS) in OpenCloud mode - the files come from the OpenCloud folder |
 | `src/extensions/typst.ts/typst-worker.ts` | `disableDefaultFontAssets()`: the fonts are bundled; without it typst.ts also fetches fonts from cdn.jsdelivr.net, which fails offline/under the OpenCloud CSP and aborts every compile (worth upstreaming) |
 | `scripts/setup-assets.cjs` | exit explicitly - keep-alive sockets of the asset downloads kept the process alive |
 | `vite.config.ts` | base path from `TEXLYRE_BASE` |

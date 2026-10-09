@@ -30,10 +30,16 @@ Sprung zwischen Quelltext und Vorschau – als zusätzliche „Öffnen mit“-Ap
 - **Nur Typst.** Die LaTeX-Engines (~690 MB), der LaTeX-Formatierer sowie der
   draw.io- und TikZ-Editor werden nicht ausgeliefert. Für LaTeX bräuchte es
   zusätzlich die TeX-Live-Dienste von TeXlyre (bzw. eigene) in der CSP.
-- **Externe Dienste aus:** Zusammenarbeit (WebRTC-Signaling auf texlyre.org),
-  Datei-Austausch (FilePizza) und Statusseite sind von der OpenCloud-CSP
-  blockiert. TeXlyre läuft trotzdem; Kollaboration ginge mit einem eigenen
-  y-webrtc-Signalserver plus CSP-Eintrag.
+- **Keine Zusammenarbeit (noch):** Im OpenCloud-Modus baut TeXlyre keine
+  Verbindungen zu seinen Diensten auf (WebRTC-Signaling auf texlyre.org,
+  FilePizza/PeerJS). Der WebRTC-Weg aus
+  [texlyre-infrastructure](https://github.com/TeXlyre/texlyre-infrastructure)
+  wurde getestet und verworfen: ohne zentralen Dokumentstand legen zwei
+  Nutzer denselben Dateiinhalt unabhängig an, und mit TeXlyres lokalem
+  Zwischenspeicher droht doppelter Text in den OpenCloud-Dateien. Der
+  passende Weg ist OpenCloud's eigener yjs-Server (`yjs/yjs.yml`, Hocuspocus,
+  Anmeldung über OpenCloud, ein Live-Raum pro Datei) - dafür braucht TeXlyre
+  einen Hocuspocus-Provider für seine Dokumente.
 - **Typst-Pakete** (`#import "@preview/…"`) brauchen `https://packages.typst.org`
   in `connect-src` der CSP.
 - **Größe:** ~170 MB (Compiler, Schriften, Symbolerkennung) – geladen wird nur,
