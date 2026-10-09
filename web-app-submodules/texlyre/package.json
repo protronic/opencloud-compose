@@ -1,0 +1,38 @@
+{
+  "name": "@protronic/texlyre-opencloud",
+  "version": "0.1.0",
+  "description": "OpenCloud web extension: TeXlyre (Typst editor) on OpenCloud folders",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "vite build && node scripts/build-texlyre.mjs",
+    "build:wrapper": "vite build",
+    "build:texlyre": "node scripts/build-texlyre.mjs",
+    "check:types": "vue-tsc --noEmit -p tsconfig.app.json",
+    "harness": "vite --config vite.harness.config.ts"
+  },
+  "keywords": [
+    "opencloud",
+    "texlyre",
+    "typst",
+    "editor"
+  ],
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@opencloud-eu/extension-sdk": "8.1.0",
+    "@opencloud-eu/tsconfig": "^7.0.0",
+    "@opencloud-eu/web-client": "8.1.0",
+    "@opencloud-eu/web-pkg": "8.1.0",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "playwright-core": "^1.64.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.4",
+    "vue-router": "^5.0.0",
+    "vue-tsc": "^3.0.0",
+    "vue3-gettext": "^4.0.0-beta.1"
+  },
+  "packageManager": "pnpm@10.33.3"
+}

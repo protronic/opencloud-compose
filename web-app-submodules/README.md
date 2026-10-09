@@ -14,6 +14,7 @@ pdf-annotator/dist/web                   →   OC_APPS_DIR/pdf-annotator/
 typst-editor/dist/web                    →   OC_APPS_DIR/typst-editor/
 typst-wysiwyg/dist/web                   →   OC_APPS_DIR/typst-wysiwyg/
 flowberry/dist/web                       →   OC_APPS_DIR/flowberry/
+texlyre/dist/web                         →   OC_APPS_DIR/texlyre/
 emlviewer/dist/web                       →   OC_APPS_DIR/emlviewer/
 webapp-lsm6/dist/web                     →   OC_APPS_DIR/webapp-lsm6/
 web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpresentation-viewer/
@@ -45,6 +46,13 @@ external, prebuilt (e.g. from a CI runner)                 →   OC_APPS_DIR/<na
   window), simulates the sequence in the browser and saves a self-contained Berry script (`.be`)
   next to the diagram via WebDAV - see `flowberry/README.md`. Fetching the submodule needs read
   access to the repository (SSH key locally, `GH_READ_TOKEN` on the runner)
+- **`texlyre`** lives directly in this repository (trial): an additional "Öffnen mit" entry for
+  `.typ` that opens the file's whole folder as a [TeXlyre](https://github.com/TeXlyre/texlyre)
+  project (AGPL-3.0) - Typst editor with project tree, preview, formatter and outline; changes go
+  back to the folder via WebDAV. The build downloads TeXlyre at a pinned commit, applies the
+  patches in `texlyre/upstream/patches` and ships the Typst part only (~170 MB, no LaTeX
+  engines). Needs node >= 24.13.1 and network access to GitHub while building - see
+  `texlyre/README.md`
 - **`emlviewer`** ([protronic/emlviewer](https://github.com/protronic/emlviewer)) previews `.eml`
   e-mail files (`message/rfc822`): headers, sanitised HTML/text body in a sandboxed iframe with
   inlined `cid:` images and blocked remote content, attachments (download or save next to the

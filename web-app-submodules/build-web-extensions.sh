@@ -46,6 +46,7 @@ STANDALONE_PNPM_SUBMODULES=(
   "typst-editor|typst-editor|dist/web"
   "typst-wysiwyg|typst-wysiwyg|dist/web"
   "flowberry|flowberry|dist/web"
+  "texlyre|texlyre|dist/web"
   "emlviewer|emlviewer|dist/web"
 )
 
@@ -114,6 +115,7 @@ Standalone submodule repos (aliases in parentheses):
   typst-editor (in-tree, no submodule)
   typst-wysiwyg (in-tree, no submodule; vendored ortic/typst-wysiwyg)
   flowberry — private submodule (protronic/flowberry)
+  texlyre (in-tree wrapper; builds TeXlyre from a pinned upstream commit, needs node >= 24.13.1)
   emlviewer (eml-viewer, eml) — .eml e-mail preview
   mdpresentation-viewer (presentation-viewer, web-app-presentation-viewer)
   webapp-lsm6 (lsm6) — opt-in only, private submodule on Forgejo

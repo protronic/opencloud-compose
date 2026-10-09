@@ -1,0 +1,623 @@
+diff --git a/scripts/setup-assets.cjs b/scripts/setup-assets.cjs
+index b73f93d..d22a45e 100644
+--- a/scripts/setup-assets.cjs
++++ b/scripts/setup-assets.cjs
+@@ -51,4 +51,6 @@ async function setupAssets() {
+ 	}
+ }
+ 
+-setupAssets();
++// Exit explicitly: open keep-alive sockets of the downloads otherwise keep
++// the process alive long after the setup finished.
++setupAssets().then(() => process.exit(0));
+diff --git a/src/components/app/AppRouter.tsx b/src/components/app/AppRouter.tsx
+index 454d268..87b4586 100644
+--- a/src/components/app/AppRouter.tsx
++++ b/src/components/app/AppRouter.tsx
+@@ -33,6 +33,8 @@ import LoadingScreen from './LoadingScreen';
+ import ProjectApp from './ProjectApp';
+ import PrivacyModal from '../common/PrivacyModal';
+ import ShareTargetModal from '../project/ShareTargetModal';
++import { workspaceService } from '../../services/WorkspaceService';
++import { getOcBridge, isOcMode, ocOpenProject, ocSignIn } from '../../opencloud/ocMode';
+ 
+ const moduleLog = createNamedLogger('AppRouter');
+ 
+@@ -115,8 +117,14 @@ const AppRouter: React.FC = () => {
+ 		logout,
+ 		createProject,
+ 		getProjects,
++		login,
++		register,
+ 	} = useAuth();
+ 
++	// OpenCloud mode: sign in and open the project of the OpenCloud folder
++	const [ocBooting, setOcBooting] = useState(isOcMode());
++	const [ocError, setOcError] = useState<string | null>(null);
++
+ 	const [currentView, setCurrentView] = useState<
+ 		'auth' | 'projects' | 'editor'
+ 	>('auth');
+@@ -301,6 +309,49 @@ const AppRouter: React.FC = () => {
+ 		createProjectFromUrl,
+ 	]);
+ 
++	useEffect(() => {
++		if (!ocBooting || isInitializing) return;
++		let cancelled = false;
++		(async () => {
++			try {
++				if (!isAuthenticated) {
++					await ocSignIn({ login, register });
++					return;
++				}
++				const hash = await ocOpenProject({
++					getProjects,
++					createProject,
++					link: (projectId, handle) =>
++						workspaceService.link(
++							projectId,
++							handle as unknown as FileSystemDirectoryHandle,
++						),
++				});
++				if (cancelled) return;
++				replaceHash(hash);
++				resolveViewFromHash(hash);
++				setOcBooting(false);
++				getOcBridge()?.ready?.();
++			} catch (error) {
++				moduleLog.error('OpenCloud start failed:', error);
++				setOcError(error instanceof Error ? error.message : String(error));
++				setOcBooting(false);
++			}
++		})();
++		return () => {
++			cancelled = true;
++		};
++	}, [
++		ocBooting,
++		isAuthenticated,
++		isInitializing,
++		login,
++		register,
++		getProjects,
++		createProject,
++		resolveViewFromHash,
++	]);
++
+ 	useEffect(() => {
+ 		const handlePopState = () => {
+ 			resolveViewFromHash(window.location.hash.substring(1));
+@@ -487,7 +538,16 @@ const AppRouter: React.FC = () => {
+ 
+ 	const incomingFiles = pendingShare?.files ?? launchedFiles;
+ 
+-	if (isInitializing || isCreatingProject) {
++	if (ocError) {
++		return (
++			<main className="container" style={{ padding: '2rem' }}>
++				<h3>TeXlyre in OpenCloud</h3>
++				<p>{ocError}</p>
++			</main>
++		);
++	}
++
++	if (isInitializing || isCreatingProject || ocBooting) {
+ 		return <LoadingScreen />;
+ 	}
+ 
+diff --git a/src/extensions/typst.ts/typst-worker.ts b/src/extensions/typst.ts/typst-worker.ts
+index c21f96a..09e33a2 100644
+--- a/src/extensions/typst.ts/typst-worker.ts
++++ b/src/extensions/typst.ts/typst-worker.ts
+@@ -1,4 +1,5 @@
+ import { createTypstCompiler } from '@myriaddreamin/typst.ts/compiler';
++import { disableDefaultFontAssets } from '@myriaddreamin/typst.ts/options.init';
+ 
+ import type { TypstOutputFormat } from '../../types/typst';
+ import { sanitizeSvg } from '../../utils/svgSanitizer';
+@@ -80,6 +81,10 @@ async function ensureCompiler(): Promise<void> {
+ 			getModule: () =>
+ 				`${BASE_PATH}/core/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm`,
+ 			beforeBuild: [
++				// All fonts are bundled (assets/fonts); without this typst.ts also
++				// fetches its default fonts from cdn.jsdelivr.net, which fails
++				// offline and under a strict CSP (OpenCloud) and aborts the init.
++				disableDefaultFontAssets(),
+ 				...packageRegistry.provides,
+ 				async (_: unknown, { builder }: any) => {
+ 					for (const font of fonts) await builder.add_raw_font(font);
+diff --git a/src/hooks/useDiskFiles.ts b/src/hooks/useDiskFiles.ts
+index 8fa4a1a..267669a 100644
+--- a/src/hooks/useDiskFiles.ts
++++ b/src/hooks/useDiskFiles.ts
+@@ -12,6 +12,7 @@ import { useRecords } from './useRecords';
+ import { workspaceActivityService } from '../services/WorkspaceActivityService';
+ import type { FileNode } from '../types/files';
+ import { workspaceService } from '../services/WorkspaceService';
++import { isOcMode } from '../opencloud/ocMode';
+ 
+ const moduleLog = createNamedLogger('useDiskFiles');
+ 
+@@ -33,6 +34,7 @@ const applyToProject = async (
+ 	);
+ };
+ const SYNC_COOLDOWN_MS = 2000;
++const OC_POLL_MS = 10000;
+ 
+ export const useDiskFiles = (docUrl: string | null) => {
+ 	const [launchedFiles, setLaunchedFiles] = useState<PendingShareFile[]>([]);
+@@ -212,9 +214,14 @@ export const useDiskFiles = (docUrl: string | null) => {
+ 		void initialize();
+ 		window.addEventListener('focus', syncFromDisk);
+ 		document.addEventListener('visibilitychange', syncFromDisk);
++		// OpenCloud mode: other clients change the folder too - look regularly
++		const pollTimer = isOcMode()
++			? window.setInterval(syncFromDisk, OC_POLL_MS)
++			: undefined;
+ 
+ 		return () => {
+ 			isCancelled = true;
++			window.clearInterval(pollTimer);
+ 			workspaceService.deactivate();
+ 			window.removeEventListener('focus', syncFromDisk);
+ 			document.removeEventListener('visibilitychange', syncFromDisk);
+diff --git a/src/main.tsx b/src/main.tsx
+index 14103c4..ed259d3 100644
+--- a/src/main.tsx
++++ b/src/main.tsx
+@@ -28,6 +28,7 @@ import { authService } from './services/AuthService';
+ import { isMobileUserAgent } from './utils/browserUtils';
+ import { FORCED_DEFAULTS_KEY } from './utils/userDataUtils';
+ import { applyStoredViewport } from './utils/viewportUtils';
++import { isOcMode } from './opencloud/ocMode';
+ 
+ const moduleLog = createNamedLogger('main');
+ 
+@@ -94,6 +95,8 @@ const clearServiceWorkerOnLoad = false; // Set to true to clear existing SWs on
+ 
+ if (
+ 	'serviceWorker' in navigator &&
++	// OpenCloud mode: the app is served by OpenCloud, no offline worker
++	!isOcMode() &&
+ 	((isHttpsMode && enableServiceWorkerForHttps) ||
+ 		(!isHttpsMode && enableServiceWorkerForHttp))
+ ) {
+diff --git a/src/opencloud/ocMode.ts b/src/opencloud/ocMode.ts
+new file mode 100644
+index 0000000..71ce2e8
+--- /dev/null
++++ b/src/opencloud/ocMode.ts
+@@ -0,0 +1,390 @@
++// src/opencloud/ocMode.ts
++//
++// OpenCloud mode: TeXlyre runs in a same-origin iframe of the OpenCloud web
++// extension "texlyre". The parent window provides `__texlyreOpenCloud`, a
++// small file bridge onto the OpenCloud folder of the opened document
++// (WebDAV on the OpenCloud side).
++//
++// TeXlyre's workspace mode ("link a project to a local folder") talks to the
++// folder only through FileSystemDirectoryHandle. OcDirectoryHandle implements
++// the part of that interface TeXlyre uses on top of the bridge, so the
++// project is imported from, written back to and reconciled with the
++// OpenCloud folder by TeXlyre's own workspace logic.
++
++export interface OcBridgeEntry {
++	name: string;
++	isDirectory: boolean;
++	size: number;
++	lastModified: number;
++	/** Changes with every write (WebDAV ETag); mtimes only have seconds */
++	etag?: string;
++}
++
++export interface OcBridge {
++	version: 1;
++	/** Stable key of the OpenCloud folder (space + path) */
++	folderKey: string;
++	/** Display name of the folder, used as project name */
++	folderName: string;
++	/** Path of the opened document relative to the folder, e.g. "main.typ" */
++	openFile: string;
++	projectType: 'typst' | 'latex';
++	readOnly: boolean;
++	/** OpenCloud user id, keeps TeXlyre accounts apart in a shared browser */
++	userId: string;
++	userName: string;
++	list(path: string): Promise<OcBridgeEntry[]>;
++	read(path: string): Promise<ArrayBuffer>;
++	write(path: string, data: ArrayBuffer): Promise<void>;
++	mkdir(path: string): Promise<void>;
++	remove(path: string): Promise<void>;
++	/** Called once the editor shows the document */
++	ready?(): void;
++}
++
++declare global {
++	interface Window {
++		__texlyreOpenCloud?: OcBridge;
++	}
++}
++
++let cachedBridge: OcBridge | null | undefined;
++
++export function getOcBridge(): OcBridge | null {
++	if (cachedBridge !== undefined) return cachedBridge;
++	cachedBridge = null;
++	try {
++		if (window.parent !== window && window.parent.__texlyreOpenCloud?.version === 1) {
++			cachedBridge = window.parent.__texlyreOpenCloud;
++		}
++	} catch {
++		// cross-origin parent: not OpenCloud
++	}
++	return cachedBridge;
++}
++
++export function isOcMode(): boolean {
++	return getOcBridge() !== null;
++}
++
++const join = (dir: string, name: string) => (dir ? `${dir}/${name}` : name);
++
++const notFound = (path: string) =>
++	new DOMException(`${path} not found`, 'NotFoundError');
++
++// Always granted: TeXlyre refuses to link or restore a folder without write
++// permission, read-only OpenCloud folders are still opened - writes fail.
++const permission = (_bridge: OcBridge, _mode?: string): PermissionState => 'granted';
++
++/**
++ * Directory listings are reused for a moment: TeXlyre stats every file
++ * through getFileHandle()/getFile(), one PROPFIND per directory is enough.
++ */
++const LIST_TTL_MS = 1500;
++const listings = new Map<string, { at: number; entries: Promise<OcBridgeEntry[]> }>();
++/** File contents by path, valid while size and mtime match the listing */
++const contents = new Map<string, { version: string; data: ArrayBuffer }>();
++
++const versionOf = (entry: OcBridgeEntry) =>
++	`${entry.etag ?? ''}|${entry.size}|${entry.lastModified}`;
++
++function list(bridge: OcBridge, path: string): Promise<OcBridgeEntry[]> {
++	const cached = listings.get(path);
++	if (cached && Date.now() - cached.at < LIST_TTL_MS) return cached.entries;
++	const entries = bridge.list(path);
++	listings.set(path, { at: Date.now(), entries });
++	entries.catch(() => listings.delete(path));
++	return entries;
++}
++
++function invalidate(path: string): void {
++	const dir = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : '';
++	listings.delete(dir);
++	listings.delete(path);
++}
++
++async function entryOf(bridge: OcBridge, dir: string, name: string): Promise<OcBridgeEntry | undefined> {
++	return (await list(bridge, dir)).find((entry) => entry.name === name);
++}
++
++class OcWritable {
++	private chunks: BlobPart[] = [];
++
++	constructor(
++		private readonly bridge: OcBridge,
++		private readonly path: string,
++	) {}
++
++	async write(data: BufferSource | Blob | string | { type: string; data?: unknown }): Promise<void> {
++		if (data && typeof data === 'object' && 'type' in data && !(data instanceof Blob)) {
++			if (data.type === 'write' && data.data !== undefined) {
++				this.chunks.push(data.data as BlobPart);
++			}
++			return;
++		}
++		this.chunks.push(data as BlobPart);
++	}
++
++	async close(): Promise<void> {
++		const buffer = await new Blob(this.chunks).arrayBuffer();
++		await this.bridge.write(this.path, buffer);
++		contents.delete(this.path);
++		invalidate(this.path);
++	}
++
++	async abort(): Promise<void> {
++		this.chunks = [];
++	}
++}
++
++export class OcFileHandle {
++	readonly kind = 'file' as const;
++
++	constructor(
++		private readonly bridge: OcBridge,
++		readonly path: string,
++		readonly name: string,
++	) {}
++
++	async getFile(): Promise<File> {
++		const dir = this.path.includes('/') ? this.path.slice(0, this.path.lastIndexOf('/')) : '';
++		const entry = await entryOf(this.bridge, dir, this.name);
++		if (!entry || entry.isDirectory) throw notFound(this.path);
++		const cached = contents.get(this.path);
++		let data: ArrayBuffer;
++		if (cached && cached.version === versionOf(entry)) {
++			data = cached.data;
++		} else {
++			data = await this.bridge.read(this.path);
++			contents.set(this.path, { version: versionOf(entry), data });
++		}
++		return new File([data], this.name, { lastModified: entry.lastModified });
++	}
++
++	async createWritable(): Promise<OcWritable> {
++		if (this.bridge.readOnly) {
++			throw new DOMException('read-only', 'NotAllowedError');
++		}
++		return new OcWritable(this.bridge, this.path);
++	}
++
++	async queryPermission(options?: { mode?: string }): Promise<PermissionState> {
++		return permission(this.bridge, options?.mode);
++	}
++
++	async requestPermission(options?: { mode?: string }): Promise<PermissionState> {
++		return permission(this.bridge, options?.mode);
++	}
++
++	async isSameEntry(other: { path?: string; kind?: string }): Promise<boolean> {
++		return other?.kind === this.kind && other.path === this.path;
++	}
++}
++
++export class OcDirectoryHandle {
++	readonly kind = 'directory' as const;
++	/** Marker for DiskHandleStore: stored as a plain descriptor, not cloned */
++	readonly __ocHandle = true;
++
++	constructor(
++		private readonly bridge: OcBridge,
++		readonly path: string,
++		readonly name: string = bridge.folderName,
++	) {}
++
++	async getFileHandle(name: string, options?: { create?: boolean }): Promise<OcFileHandle> {
++		const path = join(this.path, name);
++		const entry = await entryOf(this.bridge, this.path, name);
++		if (entry?.isDirectory) {
++			throw new DOMException(`${path} is a directory`, 'TypeMismatchError');
++		}
++		if (!entry) {
++			if (!options?.create) throw notFound(path);
++			await this.bridge.write(path, new ArrayBuffer(0));
++			invalidate(path);
++		}
++		return new OcFileHandle(this.bridge, path, name);
++	}
++
++	async getDirectoryHandle(name: string, options?: { create?: boolean }): Promise<OcDirectoryHandle> {
++		const path = join(this.path, name);
++		const entry = await entryOf(this.bridge, this.path, name);
++		if (entry && !entry.isDirectory) {
++			throw new DOMException(`${path} is a file`, 'TypeMismatchError');
++		}
++		if (!entry) {
++			if (!options?.create) throw notFound(path);
++			await this.bridge.mkdir(path);
++			invalidate(path);
++		}
++		return new OcDirectoryHandle(this.bridge, path, name);
++	}
++
++	async removeEntry(name: string): Promise<void> {
++		const path = join(this.path, name);
++		await this.bridge.remove(path);
++		contents.delete(path);
++		invalidate(path);
++	}
++
++	async *entries(): AsyncGenerator<[string, OcFileHandle | OcDirectoryHandle]> {
++		for (const entry of await list(this.bridge, this.path)) {
++			const path = join(this.path, entry.name);
++			yield [
++				entry.name,
++				entry.isDirectory
++					? new OcDirectoryHandle(this.bridge, path, entry.name)
++					: new OcFileHandle(this.bridge, path, entry.name),
++			];
++		}
++	}
++
++	async *values(): AsyncGenerator<OcFileHandle | OcDirectoryHandle> {
++		for await (const [, handle] of this.entries()) yield handle;
++	}
++
++	async *keys(): AsyncGenerator<string> {
++		for await (const [name] of this.entries()) yield name;
++	}
++
++	[Symbol.asyncIterator]() {
++		return this.entries();
++	}
++
++	async queryPermission(options?: { mode?: string }): Promise<PermissionState> {
++		return permission(this.bridge, options?.mode);
++	}
++
++	async requestPermission(options?: { mode?: string }): Promise<PermissionState> {
++		return permission(this.bridge, options?.mode);
++	}
++
++	async isSameEntry(other: { path?: string; kind?: string }): Promise<boolean> {
++		return other?.kind === this.kind && other.path === this.path;
++	}
++
++	async resolve(): Promise<string[] | null> {
++		return null;
++	}
++}
++
++/** DiskHandleStore: OpenCloud handles are persisted as descriptors. */
++export interface OcHandleDescriptor {
++	__ocFolderKey: string;
++	path: string;
++}
++
++export function toStoredHandle<T>(handle: T): T | OcHandleDescriptor {
++	const bridge = getOcBridge();
++	if (bridge && handle && (handle as { __ocHandle?: boolean }).__ocHandle) {
++		return { __ocFolderKey: bridge.folderKey, path: (handle as unknown as OcDirectoryHandle).path };
++	}
++	return handle;
++}
++
++export function fromStoredHandle<T>(stored: T | OcHandleDescriptor | null): T | null {
++	if (stored && typeof stored === 'object' && '__ocFolderKey' in stored) {
++		const bridge = getOcBridge();
++		// a descriptor of another OpenCloud folder is not usable here
++		if (!bridge || bridge.folderKey !== stored.__ocFolderKey) return null;
++		return new OcDirectoryHandle(bridge, stored.path) as unknown as T;
++	}
++	return stored as T | null;
++}
++
++// ---- account and project ----------------------------------------------------
++
++const ACCOUNTS_KEY = 'texlyre-oc-accounts';
++const PROJECTS_KEY = 'texlyre-oc-projects';
++
++function readJson<T>(key: string): T {
++	try {
++		return JSON.parse(localStorage.getItem(key) ?? '{}') as T;
++	} catch {
++		return {} as T;
++	}
++}
++
++function randomSecret(): string {
++	const bytes = crypto.getRandomValues(new Uint8Array(24));
++	return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
++}
++
++interface AccountApi {
++	login(username: string, password: string): Promise<unknown>;
++	register(username: string, password: string): Promise<unknown>;
++}
++
++/**
++ * One local TeXlyre account per OpenCloud user, created and signed in
++ * automatically. The password never leaves this browser; the documents
++ * themselves live in OpenCloud.
++ */
++export async function ocSignIn(auth: AccountApi): Promise<void> {
++	const bridge = getOcBridge();
++	if (!bridge) return;
++	const accounts = readJson<Record<string, { username: string; password: string }>>(ACCOUNTS_KEY);
++	const known = accounts[bridge.userId];
++	if (known) {
++		try {
++			await auth.login(known.username, known.password);
++			return;
++		} catch {
++			// account was removed from TeXlyre's database - create a new one
++		}
++	}
++	const base = `opencloud-${(bridge.userName || bridge.userId).replace(/[^\w.-]/g, '_')}`;
++	const password = randomSecret();
++	let username = base;
++	for (let attempt = 1; ; attempt++) {
++		try {
++			await auth.register(username, password);
++			break;
++		} catch (error) {
++			if (attempt >= 5) throw error;
++			username = `${base}-${attempt}`;
++		}
++	}
++	accounts[bridge.userId] = { username, password };
++	localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
++}
++
++interface ProjectApi {
++	getProjects(): Promise<Array<{ id: string; docUrl: string }>>;
++	createProject(input: {
++		name: string;
++		description: string;
++		type: string;
++		tags: string[];
++		isFavorite: boolean;
++	}): Promise<{ id: string; docUrl: string }>;
++	link(projectId: string, handle: OcDirectoryHandle): Promise<void>;
++}
++
++/**
++ * Project of the OpenCloud folder: reused when it still exists, otherwise
++ * created and linked to the folder (TeXlyre imports it on open). Returns the
++ * location hash that opens the document and compiles it.
++ */
++export async function ocOpenProject(api: ProjectApi): Promise<string> {
++	const bridge = getOcBridge();
++	if (!bridge) throw new Error('not in OpenCloud mode');
++	const mapping = readJson<Record<string, string>>(PROJECTS_KEY);
++	const mappingKey = `${bridge.userId}|${bridge.folderKey}`;
++	const projects = await api.getProjects();
++	let project = projects.find((p) => p.docUrl === mapping[mappingKey]);
++	if (!project) {
++		project = await api.createProject({
++			name: bridge.folderName,
++			description: 'OpenCloud',
++			type: bridge.projectType,
++			tags: ['opencloud'],
++			isFavorite: false,
++		});
++		await api.link(project.id, new OcDirectoryHandle(bridge, ''));
++		mapping[mappingKey] = project.docUrl;
++		localStorage.setItem(PROJECTS_KEY, JSON.stringify(mapping));
++	}
++	const file = `/${bridge.openFile.replace(/^\/+/, '')}`;
++	return `${project.docUrl}&file:${encodeURIComponent(file)}&compile:${bridge.projectType}`;
++}
+diff --git a/src/services/DiskHandleStore.ts b/src/services/DiskHandleStore.ts
+index 71b33e1..2b4b52d 100644
+--- a/src/services/DiskHandleStore.ts
++++ b/src/services/DiskHandleStore.ts
+@@ -1,4 +1,6 @@
+ // src/services/DiskHandleStore.ts
++import { fromStoredHandle, toStoredHandle } from '../opencloud/ocMode';
++
+ const STORE_NAME = 'handles';
+ 
+ export class DiskHandleStore<T extends FileSystemHandle> {
+@@ -22,7 +24,7 @@ export class DiskHandleStore<T extends FileSystemHandle> {
+ 		const db = await this.getDb();
+ 		await new Promise<void>((resolve, reject) => {
+ 			const tx = db.transaction(STORE_NAME, 'readwrite');
+-			tx.objectStore(STORE_NAME).put(handle, scope);
++			tx.objectStore(STORE_NAME).put(toStoredHandle(handle), scope);
+ 			tx.oncomplete = () => resolve();
+ 			tx.onerror = () => reject(tx.error);
+ 		});
+@@ -35,7 +37,7 @@ export class DiskHandleStore<T extends FileSystemHandle> {
+ 				.transaction(STORE_NAME, 'readonly')
+ 				.objectStore(STORE_NAME)
+ 				.get(scope);
+-			request.onsuccess = () => resolve(request.result ?? null);
++			request.onsuccess = () => resolve(fromStoredHandle<T>(request.result ?? null));
+ 			request.onerror = () => reject(request.error);
+ 		});
+ 	}
+diff --git a/vite.config.ts b/vite.config.ts
+index a63b445..0e355df 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -6,7 +6,7 @@ import wasm from 'vite-plugin-wasm';
+ 
+ const useHttps = process.env.VITE_USE_HTTPS === 'true';
+ 
+-const basePath = '/texlyre/';
++const basePath = process.env.TEXLYRE_BASE || '/texlyre/';
+ const appVersion = process.env.npm_package_version || '1.0.0';
+ 
+ // @ts-expect-error
