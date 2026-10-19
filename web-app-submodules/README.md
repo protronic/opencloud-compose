@@ -33,7 +33,10 @@ external, prebuilt (e.g. from a CI runner)                 →   OC_APPS_DIR/<na
   browser download
 - **`typst-editor`** lives directly in this repository (no submodule); it edits Typst documents
   (`.typ`) with CodeMirror and an in-browser typst.ts WASM compiler for the live preview, bundles
-  the DejaVu fonts (no CDN access needed) and saves through the regular OpenCloud file interface
+  the DejaVu fonts (no CDN access needed) and saves through the regular OpenCloud file interface.
+  Typst highlighting and completion ([codemirror-lang-typst](https://github.com/kxxt/codemirror-lang-typst),
+  Lezer, no WASM), compiler errors marked in the source; files the document references
+  (`#import`, `#include`, images, data) are read from the same space on demand
 - **`typst-wysiwyg`** lives directly in this repository and embeds a vendored copy of
   [ortic/typst-wysiwyg](https://github.com/ortic/typst-wysiwyg) (MIT) - a block-based,
   Word-style WYSIWYG editor for `.typ` files - in an iframe wired to the OpenCloud file

@@ -27,6 +27,22 @@ export default defineWebApplication({
     }
 
     try {
+      // Files referenced by the document (#import, #include, images, data)
+      // are read from the same space on demand.
+      const clientService = useClientService();
+      ocContext.readFile = async (space, path) => {
+        const response = await clientService.webdav.getFileContents(
+          space,
+          {path},
+          {responseType: 'arraybuffer', noCache: true},
+        );
+        return response.body as ArrayBuffer;
+      };
+    } catch {
+      ocContext.readFile = undefined;
+    }
+
+    try {
       // Wiki navigation: open another .typ file of the same space. The route
       // is built the same way the host builds file routes - via the space's
       // drive alias plus the target's fileId - instead of string surgery on

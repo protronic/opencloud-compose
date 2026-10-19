@@ -9,6 +9,7 @@ type HarnessState = {
   pdfSaves: Array<{path: string; size: number; head: number[]}>;
   wikiNav: Array<{space: string | null; to: string}>;
   wysiwygSwitches: number;
+  reads: string[];
   errors: string[];
 };
 
@@ -16,6 +17,7 @@ declare global {
   interface Window {
     __harness: HarnessState;
     __remount: () => void;
+    __files: Map<string, string>;
   }
 }
 
@@ -25,7 +27,25 @@ window.__harness = {
   pdfSaves: [],
   wikiNav: [],
   wysiwygSwitches: 0,
+  reads: [],
   errors: [],
+};
+
+// Mocks the other files of the space: #import/#include/#image targets are
+// read through this bridge on demand.
+window.__files = new Map([
+  ['/kapitel.typ', '#let gruss = [Gruß aus dem Kapitel.]\n'],
+  [
+    '/bilder/logo.svg',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="20" cy="20" r="18" fill="teal"/></svg>',
+  ],
+  ['/unbenutzt.typ', 'Diese Datei wird nicht verwendet.\n'],
+]);
+ocContext.readFile = async (_space, path) => {
+  window.__harness.reads.push(path);
+  const text = window.__files.get(path);
+  if (text === undefined) throw new Error(`404 ${path}`);
+  return new TextEncoder().encode(text).buffer as ArrayBuffer;
 };
 
 // Mocks the OpenCloud WebDAV bridge: the PDF export must land here.
@@ -45,8 +65,13 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 const sampleTypst = `#set page(width: 10cm, height: auto, margin: 1cm)
+#import "kapitel.typ": gruss
 
 = Testdokument
+
+#gruss
+
+#image("bilder/logo.svg", width: 1cm)
 
 Dies ist ein *Typst*-Beispiel mit einer Formel:
 

@@ -189,10 +189,24 @@ import fontMonoBold from 'dejavu-fonts-ttf/ttf/DejaVuSansMono-Bold.ttf?url';
 import fontMath from 'dejavu-fonts-ttf/ttf/DejaVuMathTeXGyre.ttf?url';
 import {basicSetup} from 'codemirror';
 import {EditorView, keymap} from '@codemirror/view';
-import {EditorState} from '@codemirror/state';
+import {EditorState, StateEffect, StateField, type Text} from '@codemirror/state';
 import {indentWithTab, redo, undo} from '@codemirror/commands';
+import {LanguageSupport} from '@codemirror/language';
+import {type Diagnostic, linter, lintGutter} from '@codemirror/lint';
+import {typst_lezer, typstLezerLinter} from 'codemirror-lang-typst/lezer';
 import type {Resource, SpaceResource} from '@opencloud-eu/web-client';
 import {ocContext} from './ocContext';
+import {
+  type CompilerDiagnostic,
+  diagnosticPath,
+  documentPath,
+  parseRange,
+  ProjectFiles,
+  relativeTo,
+  RequestRecorder,
+  WRAPPER_PATH,
+  wrapperSource,
+} from './projectFiles';
 import {computed, onBeforeUnmount, onMounted, ref, watch} from 'vue';
 
 type ContentValue = string | ArrayBuffer | Uint8Array;
@@ -250,6 +264,12 @@ let compileRunning = false;
 let lastEmitted: string | undefined;
 let destroyed = false;
 let dividerPointer: number | null = null;
+let projectFiles: ProjectFiles | undefined;
+let filesDocPath = '';
+let lastFocusRefresh = 0;
+// Loading a referenced file can reveal further references (an included
+// chapter with its own images): bounded rounds per compile.
+const MAX_LOAD_ROUNDS = 8;
 
 const statusText = computed(() => {
   if (!ready.value) return 'Typst wird geladen …';
@@ -300,28 +320,24 @@ function contentToString(value: ContentValue | undefined): string {
  * are guarded: use() throws "already prepare uses for instances" when a
  * previous copy already configured it.
  */
-function configureTypst(): void {
+function configureTypst(): RequestRecorder {
   const instance = $typst as unknown as Record<string, unknown>;
-  if (instance.__typstEditorConfigured) return;
-  instance.__typstEditorConfigured = true;
-  try {
-    configureTypstOnce();
-  } catch (configError) {
-    console.warn('typst-editor: Typst-Singleton war bereits konfiguriert', configError);
+  if (!instance.__typstEditorConfigured) {
+    instance.__typstEditorConfigured = true;
+    const recorder = new RequestRecorder();
+    try {
+      configureTypstOnce(recorder);
+      instance.__typstEditorRecorder = recorder;
+    } catch (configError) {
+      console.warn('typst-editor: Typst-Singleton war bereits konfiguriert', configError);
+    }
   }
-  // Idempotent and safe on an initialized compiler.
-  void $typst.addSource(
-    '/main.typ',
-    [
-      '#set text(font: ("DejaVu Serif", "DejaVu Sans"))',
-      '#show math.equation: set text(font: "DejaVu Math TeX Gyre")',
-      '#show raw: set text(font: "DejaVu Sans Mono")',
-      '#include "doc.typ"',
-    ].join('\n') + '\n',
-  );
+  // Without a recorder (singleton configured by an older build in this page)
+  // referenced files are simply not loaded.
+  return (instance.__typstEditorRecorder as RequestRecorder | undefined) ?? new RequestRecorder();
 }
 
-function configureTypstOnce(): void {
+function configureTypstOnce(recorder: RequestRecorder): void {
   // All assets are bundled and served same-origin: the instance CSP has no
   // CDN hosts in connect-src, so default remote font assets must stay off.
   $typst.use(TypstSnippet.disableDefaultFontAssets(), {
@@ -348,6 +364,12 @@ function configureTypstOnce(): void {
       ),
     ],
   });
+  // Records which files the compiler asks for (see projectFiles.ts).
+  $typst.use(
+    TypstSnippet.withAccessModel(
+      recorder as unknown as Parameters<typeof TypstSnippet.withAccessModel>[0],
+    ),
+  );
   $typst.setCompilerInitOptions({getModule: () => compilerWasmUrl});
   $typst.setRendererInitOptions({getModule: () => rendererWasmUrl});
   if (import.meta.env.DEV) (window as unknown as Record<string, unknown>).__typst = $typst;
@@ -361,15 +383,12 @@ async function compileNow(): Promise<void> {
   }
   compileRunning = true;
   compiling.value = true;
-  const source = editorView.state.doc.toString();
   try {
-    await $typst.addSource('/doc.typ', source);
-    const svg = await $typst.svg({mainFilePath: '/main.typ'});
-    if (!destroyed && previewContainer) {
-      previewContainer.innerHTML = svg ?? '';
+    const vector = await compileDocument();
+    if (vector && !destroyed && previewContainer) {
+      const svg = await $typst.svg({vectorData: vector});
+      if (!destroyed && previewContainer) previewContainer.innerHTML = svg ?? '';
     }
-    compileFailed.value = false;
-    compileError.value = '';
     ready.value = true;
   } catch (err) {
     compileFailed.value = true;
@@ -383,6 +402,172 @@ async function compileNow(): Promise<void> {
       void compileNow();
     }
   }
+}
+
+/**
+ * Compiles the open document with diagnostics. Files the compiler asks for
+ * are loaded from OpenCloud and the compile repeats until nothing new
+ * arrives. Returns the vector artifact for the preview (undefined on errors).
+ */
+async function compileDocument(): Promise<Uint8Array | undefined> {
+  const source = editorView!.state.doc.toString();
+  const docPath = documentPath(props.resource?.path);
+  if (docPath !== filesDocPath) await resetProjectFiles(docPath);
+  await $typst.addSource(WRAPPER_PATH, wrapperSource(docPath));
+  await $typst.addSource(docPath, source);
+  const compiler = await $typst.getCompiler();
+  const readFile =
+    ocContext.readFile && props.space
+      ? (path: string) => ocContext.readFile!(props.space!, path)
+      : undefined;
+  let outcome: {result?: Uint8Array; diagnostics?: CompilerDiagnostic[]} = {};
+  for (let round = 0; round < MAX_LOAD_ROUNDS; round++) {
+    try {
+      outcome = (await compiler.compile({
+        mainFilePath: WRAPPER_PATH,
+        diagnostics: 'full',
+      })) as typeof outcome;
+    } catch (err) {
+      outcome = {diagnostics: Array.isArray(err) ? (err as CompilerDiagnostic[]) : [{message: formatCompileError(err)}]};
+    }
+    const more = await projectFiles!.loadRequested(readFile, new Set([docPath, WRAPPER_PATH]));
+    if (!more || destroyed) break;
+  }
+  showDiagnostics(outcome.diagnostics ?? [], docPath, source);
+  return outcome.diagnostics?.some(isError) ? undefined : outcome.result;
+}
+
+async function resetProjectFiles(docPath: string): Promise<void> {
+  projectFiles ??= new ProjectFiles(
+    configureTypst(),
+    (path, content) => $typst.mapShadow(path, content),
+    (path) => $typst.unmapShadow(path),
+  );
+  await projectFiles.clear();
+  if (filesDocPath) {
+    // Wiki navigation: drop the previous document of this instance.
+    await $typst.unmapShadow(filesDocPath).catch((): void => undefined);
+  } else {
+    // The shared singleton outlives editor instances: files loaded for an
+    // earlier document (maybe of another space) must not leak into this one.
+    await $typst.resetShadow();
+  }
+  filesDocPath = docPath;
+}
+
+function isError(diagnostic: CompilerDiagnostic): boolean {
+  return (diagnostic.severity ?? 'error').toLowerCase() === 'error';
+}
+
+function describeDiagnostic(diagnostic: CompilerDiagnostic, docPath: string): string {
+  const path = diagnosticPath(diagnostic);
+  const position = parseRange(diagnostic.range);
+  const file = path ? relativeTo(docPath, path) : (diagnostic.package ?? '');
+  const where = position ? `${file}:${position.startLine + 1}:${position.startColumn + 1}` : file;
+  return where ? `${where}: ${diagnostic.message ?? ''}` : (diagnostic.message ?? '');
+}
+
+/**
+ * Without a file system typst reports a missing file as "access denied" with
+ * hints about --root. For the open document the referenced path is the
+ * string at the diagnostic's range.
+ */
+function clarifyMissingFiles(
+  diagnostics: CompilerDiagnostic[],
+  docPath: string,
+  source: string,
+): CompilerDiagnostic[] {
+  const lines = source.split('\n');
+  return diagnostics.map((diagnostic) => {
+    if (!/failed to load file \(access denied\)/.test(diagnostic.message ?? '')) return diagnostic;
+    const position = parseRange(diagnostic.range);
+    const literal =
+      diagnosticPath(diagnostic) === docPath && position && position.startLine === position.endLine
+        ? (lines[position.startLine] ?? '').slice(position.startColumn, position.endColumn)
+        : '';
+    const target = /^"(.*)"$/.exec(literal)?.[1];
+    return {
+      ...diagnostic,
+      message: target
+        ? `Datei nicht gefunden: ${target}`
+        : 'Datei nicht gefunden oder nicht lesbar',
+    };
+  });
+}
+
+/** Error banner (all files) and inline markers (the open document). */
+function showDiagnostics(rawDiagnostics: CompilerDiagnostic[], docPath: string, source: string): void {
+  const diagnostics = clarifyMissingFiles(rawDiagnostics, docPath, source);
+  const errors = diagnostics.filter(isError);
+  compileFailed.value = errors.length > 0;
+  compileError.value = errors
+    .slice(0, 5)
+    .map((diagnostic) => describeDiagnostic(diagnostic, docPath))
+    .join('\n');
+  if (!editorView || destroyed) return;
+  // Positions refer to the compiled text; a newer edit compiles again anyway.
+  if (editorView.state.doc.toString() !== source) return;
+  const doc = editorView.state.doc;
+  const markers = diagnostics.flatMap((diagnostic): Diagnostic[] => {
+    if (diagnosticPath(diagnostic) !== docPath) return [];
+    const position = parseRange(diagnostic.range);
+    if (!position) return [];
+    const from = offsetAt(doc, position.startLine, position.startColumn);
+    const to = Math.max(from, offsetAt(doc, position.endLine, position.endColumn));
+    return [
+      {
+        from,
+        to,
+        severity: isError(diagnostic) ? 'error' : 'warning',
+        source: 'Typst',
+        message: diagnostic.message ?? '',
+      },
+    ];
+  });
+  editorView.dispatch({effects: setCompilerMarkers.of(markers)});
+}
+
+function offsetAt(doc: Text, line: number, column: number): number {
+  if (line >= doc.lines) return doc.length;
+  const docLine = doc.line(line + 1);
+  return Math.min(docLine.to, docLine.from + column);
+}
+
+// Compiler diagnostics of the open document, mapped through later edits and
+// handed to CodeMirror's lint display.
+const setCompilerMarkers = StateEffect.define<Diagnostic[]>();
+const compilerMarkers = StateField.define<Diagnostic[]>({
+  create: () => [],
+  update(markers, transaction) {
+    for (const effect of transaction.effects) {
+      if (effect.is(setCompilerMarkers)) return effect.value;
+    }
+    if (!transaction.docChanged || !markers.length) return markers;
+    return markers.map((marker) => ({
+      ...marker,
+      from: transaction.changes.mapPos(marker.from),
+      to: transaction.changes.mapPos(marker.to, 1),
+    }));
+  },
+});
+
+// Typst language support (highlighting, completion, folding, list keys)
+// without the package's experimental syntax linter: the compiler reports
+// syntax errors authoritatively.
+function typstLanguage(): LanguageSupport {
+  const support = typst_lezer();
+  const extensions = (support.support as unknown[]).filter((ext) => ext !== typstLezerLinter);
+  return new LanguageSupport(support.language, extensions as never);
+}
+
+/** Files changed elsewhere in OpenCloud while the user was away. */
+async function onWindowFocus(): Promise<void> {
+  if (destroyed || !projectFiles || !ocContext.readFile || !props.space) return;
+  const now = Date.now();
+  if (now - lastFocusRefresh < 3000) return;
+  lastFocusRefresh = now;
+  const space = props.space;
+  if (await projectFiles.refresh((path) => ocContext.readFile!(space, path))) scheduleCompile();
 }
 
 function formatCompileError(err: unknown): string {
@@ -444,8 +629,8 @@ async function exportPdf(): Promise<void> {
   if (!editorView || exporting.value) return;
   exporting.value = true;
   try {
-    await $typst.addSource('/doc.typ', editorView.state.doc.toString());
-    const bytes = await $typst.pdf({mainFilePath: '/main.typ'});
+    await $typst.addSource(documentPath(props.resource?.path), editorView.state.doc.toString());
+    const bytes = await $typst.pdf({mainFilePath: WRAPPER_PATH});
     if (!bytes) throw new Error('leere PDF-Ausgabe');
     // Exact-size ArrayBuffer: the WebDAV transport sends `view.buffer`.
     const content =
@@ -681,6 +866,7 @@ watch(
 onMounted(() => {
   wysiwygAvailable.value = !!ocContext.openInWysiwyg;
   configureTypst();
+  window.addEventListener('focus', onWindowFocus);
 
   // The typst SVG output embeds global style rules (e.g. `svg { fill:
   // none; }`) that would apply to the whole OpenCloud document as inline
@@ -709,6 +895,14 @@ onMounted(() => {
       extensions: [
         basicSetup,
         keymap.of([indentWithTab]),
+        typstLanguage(),
+        compilerMarkers,
+        linter((view) => view.state.field(compilerMarkers), {
+          delay: 0,
+          needsRefresh: (update) =>
+            update.transactions.some((tr) => tr.effects.some((e) => e.is(setCompilerMarkers))),
+        }),
+        lintGutter(),
         EditorState.readOnly.of(props.isReadOnly),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
@@ -729,6 +923,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   destroyed = true;
+  window.removeEventListener('focus', onWindowFocus);
   previewContainer?.removeEventListener('click', onPreviewClick);
   previewContainer = undefined;
   window.clearTimeout(emitTimer);

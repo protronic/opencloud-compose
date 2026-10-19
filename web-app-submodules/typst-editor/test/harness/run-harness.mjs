@@ -40,11 +40,34 @@ try {
     'preview should render the heading text',
   );
 
+  // 1b. Files the document references are read from the space on demand -
+  // only those (no folder listing).
+  check(
+    (previewText ?? '').replace(/\s+/g, ' ').includes('Gruß aus dem Kapitel'),
+    'imported kapitel.typ should be rendered',
+  );
+  const hasImage = await page.evaluate(
+    () => !!document.querySelector('.typst-preview')?.shadowRoot?.querySelector('image'),
+  );
+  check(hasImage, 'image from bilder/logo.svg should be rendered');
+  const reads = await page.evaluate(() => [...new Set(window.__harness.reads)].sort());
+  check(
+    JSON.stringify(reads) === JSON.stringify(['/bilder/logo.svg', '/kapitel.typ']),
+    `only referenced files should be read, got ${JSON.stringify(reads)}`,
+  );
+
   // 2. Switching to edit mode shows the CodeMirror source.
   await page.click('button:has-text("Bearbeiten")');
   await page.waitForSelector('.cm-content', {timeout: 20000});
   const source = await page.textContent('.cm-content');
   check(source?.includes('Testdokument'), 'editor should show the sample source');
+
+  // 2b. Typst syntax highlighting: heading, function call and string get
+  // their own styles.
+  const highlighted = await page.evaluate(
+    () => document.querySelectorAll('.cm-content .cm-line span[class]').length,
+  );
+  check(highlighted >= 5, `source should be syntax highlighted (${highlighted} styled spans)`);
 
   // 3. Editing emits updated content through the AppWrapper contract.
   await page.click('.cm-content');
@@ -115,6 +138,58 @@ try {
     {timeout: 30000},
   );
 
+  // 6a. A missing file is reported with its name and marked in the source;
+  // creating it elsewhere in OpenCloud and returning to the window fixes it.
+  await page.click('.cm-content');
+  await page.keyboard.press('Control+End');
+  await page.keyboard.type('\n#include "fehlt.typ"');
+  await page.waitForFunction(
+    () => document.querySelector('.error-banner')?.textContent?.includes('fehlt.typ'),
+    null,
+    {timeout: 30000},
+  );
+  await page.waitForSelector('.cm-lintRange-error', {timeout: 10000});
+  const banner = await page.textContent('.error-banner');
+  check(/:\d+:\d+:/.test(banner ?? ''), `error should name line and column, got "${banner}"`);
+  await page.evaluate(() => {
+    window.__files.set('/fehlt.typ', 'Jetzt angelegt.');
+    window.dispatchEvent(new Event('focus'));
+  });
+  await page.waitForFunction(
+    () =>
+      !document.querySelector('.error-banner') &&
+      document
+        .querySelector('.typst-preview')
+        ?.shadowRoot?.textContent?.replace(/\s+/g, ' ')
+        .includes('Jetzt angelegt'),
+    null,
+    {timeout: 30000},
+  );
+  check(
+    (await page.locator('.cm-lintRange-error').count()) === 0,
+    'error marker should disappear after the fix',
+  );
+
+  // 6a2. A changed imported file is picked up when returning to the window
+  // (focus refreshes are throttled to one per 3 s).
+  await page.waitForTimeout(3100);
+  await page.evaluate(() => {
+    window.__files.set('/kapitel.typ', '#let gruss = [Geändert in OpenCloud.]\n');
+    window.dispatchEvent(new Event('focus'));
+  });
+  await page.waitForFunction(
+    () =>
+      document
+        .querySelector('.typst-preview')
+        ?.shadowRoot?.textContent?.replace(/\s+/g, ' ')
+        .includes('Geändert in OpenCloud'),
+    null,
+    {timeout: 30000},
+  );
+  for (let i = 0; i < '\n#include "fehlt.typ"'.length; i++) {
+    await page.keyboard.press('Backspace');
+  }
+
   // 6b. The preview styles must not leak into the host document: an icon
   // svg outside the app keeps its fill (the reported disappearing close X).
   const iconVisible = await page.evaluate(() => {
@@ -183,9 +258,16 @@ try {
   await page.waitForFunction(() => window.__harness.wysiwygSwitches > 0, null, {timeout: 5000});
 
   // 7. Remounting (second open) must not throw on the shared singleton;
-  // the fresh instance starts in reading mode again.
+  // the fresh instance starts in reading mode again and must not reuse files
+  // loaded by the previous instance (they could belong to another space).
+  const readsBefore = await page.evaluate(() => window.__harness.reads.length);
   await page.evaluate(() => window.__remount());
   await page.waitForSelector('.typst-preview svg', {timeout: 60000});
+  await page.waitForFunction(
+    (before) => window.__harness.reads.slice(before).includes('/kapitel.typ'),
+    readsBefore,
+    {timeout: 30000},
+  );
   await page.click('button:has-text("Bearbeiten")');
   await page.waitForSelector('.cm-content', {timeout: 20000});
 
@@ -199,7 +281,7 @@ if (problems.length) {
   console.error(`✗ typst-editor harness\n  ${problems.join('\n  ')}`);
   console.error(consoleLines.slice(-30).join('\n'));
 } else {
-  console.log('✓ typst-editor harness: render, compile, view-toggle, edit, format, zoom, pdf, emit, save, error-recovery, wiki-link, wiki-new-page, wysiwyg-switch, remount');
+  console.log('✓ typst-editor harness: render, folder-files, highlighting, compile, view-toggle, edit, format, zoom, pdf, emit, save, error-recovery, missing-file, refresh, wiki-link, wiki-new-page, wysiwyg-switch, remount');
 }
 
 await browser.close();

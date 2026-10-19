@@ -15,9 +15,15 @@ type SavePdfFn = (space: SpaceResource, path: string, content: ArrayBuffer) => P
  */
 type OpenTypFn = (space: SpaceResource, targetResourcePath: string) => Promise<void>;
 type OpenInWysiwygFn = () => Promise<void>;
+/**
+ * readFile loads another file of the space (for #import, #include, images,
+ * data files) by its space path; rejects when it does not exist.
+ */
+type ReadFileFn = (space: SpaceResource, path: string) => Promise<ArrayBuffer>;
 
 export const ocContext: {
   savePdf?: SavePdfFn;
   openTyp?: OpenTypFn;
   openInWysiwyg?: OpenInWysiwygFn;
+  readFile?: ReadFileFn;
 } = {};
