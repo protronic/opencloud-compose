@@ -15,7 +15,6 @@ typst-editor/dist/web                    →   OC_APPS_DIR/typst-editor/
 typst-wysiwyg/dist/web                   →   OC_APPS_DIR/typst-wysiwyg/
 flowberry/dist/web                       →   OC_APPS_DIR/flowberry/
 emlviewer/dist/web                       →   OC_APPS_DIR/emlviewer/
-webapp-lsm6/dist/web                     →   OC_APPS_DIR/webapp-lsm6/
 web-app-presentation-viewer/dist/mdpresentation-viewer/   →   OC_APPS_DIR/mdpresentation-viewer/
 external, prebuilt (e.g. from a CI runner)                 →   OC_APPS_DIR/<name>/  (deploy-built-apps.sh)
                                                               ↓
@@ -53,9 +52,6 @@ external, prebuilt (e.g. from a CI runner)                 →   OC_APPS_DIR/<na
   inlined `cid:` images and blocked remote content, attachments (download or save next to the
   `.eml`), print / PDF via the browser print dialog. OpenCloud port of the Nextcloud Eml Viewer by
   newroco - everything runs client-side (postal-mime + DOMPurify), no server component needed
-- **`webapp-lsm6`** (`ssh://git@forgejo/Protronic/WebApp-LSM6.git`, private, branch `feature/opencloud-lsmprj`)
-  opens and saves `.lsmprj` files via the Angular app's Projekt laden/speichern functions.
-  Opt-in build only: `./web-app-submodules/build-web-extensions.sh webapp-lsm6`
 - **Build output** stays in each submodule's `dist/` directory (`dist/web` for blockberry-editor)
 - **`OC_APPS_DIR`** is the directory OpenCloud reads extensions from (default: `./config/opencloud/apps`)
 - The build script **cleans** `OC_APPS_DIR` (except `.gitkeep`) and **copies** each built app into it (no symlinks)
@@ -122,8 +118,8 @@ where a mirror sync triggers the push event (Actions have to be enabled in the m
 1. reads `OC_WEB_APPS` from the server's `.env` over ssh (`deploy-built-apps.sh --list`; names of
    other pipelines are skipped)
 2. builds exactly these apps from the checkout (`build-web-extensions.sh --native`); the protronic
-   GitHub submodules are fetched over HTTPS, `webapp-lsm6` (private, same Forgejo) and `flowberry`
-   (private GitHub repository) only when listed
+   GitHub submodules are fetched over HTTPS, `flowberry` (private GitHub repository) only when
+   listed
 3. runs `deploy-built-apps.sh --restart`: uploads them plus the server's `OC_EXTERNAL_WEB_APPS`,
    swaps them into `OC_APPS_DIR` and restarts OpenCloud
 
@@ -136,7 +132,7 @@ Repository settings (Settings -> Actions):
 | variable | `OC_DEPLOY_DIR` | compose checkout on the server, default `/opt/opencloud-compose` |
 | variable | `OC_DEPLOY_PORT` | ssh port, default `22` |
 | secret | `DEPLOY_SSH_KEY` | private key of a key pair made for the runner |
-| secret | `PACKAGES_TOKEN` | Forgejo token: `read:package` for external app downloads, `read:repository` for `webapp-lsm6` (or a separate `REPO_READ_TOKEN`) |
+| secret | `PACKAGES_TOKEN` | Forgejo token with `read:package`; only needed when `OC_EXTERNAL_WEB_APPS` on the server points to the Forgejo package registry |
 | secret | `GH_READ_TOKEN` | GitHub token with read access (Contents: read) to `protronic/flowberry`; only needed while that repository is private |
 
 On the server the public key goes into `~/.ssh/authorized_keys` of the user that owns the compose

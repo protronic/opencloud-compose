@@ -12,8 +12,11 @@
 #              OC_DEPLOY_DIR          compose checkout on the server (default /opt/opencloud-compose)
 #              OC_DEPLOY_PORT         ssh port (default 22)
 #   secrets    DEPLOY_SSH_KEY         private key whose public key is in the server's authorized_keys
-#              PACKAGES_TOKEN         Forgejo token: read:package for OC_EXTERNAL_WEB_APPS downloads,
-#                                     read:repository for the private webapp-lsm6 (or REPO_READ_TOKEN)
+#              PACKAGES_TOKEN         Forgejo token with read:package, only for OC_EXTERNAL_WEB_APPS
+#                                     downloads from the Forgejo package registry
+#              GH_READ_TOKEN          GitHub token for the private flowberry repository
+#
+# Apps with their own pipeline are not known here and skipped (see deploy-built-apps.sh).
 
 name: Web extensions
 
@@ -89,16 +92,14 @@ jobs:
 
       - name: Fetch submodules
         env:
-          REPO_TOKEN: ${{ secrets.REPO_READ_TOKEN || secrets.PACKAGES_TOKEN }}
           GH_TOKEN: ${{ secrets.GH_READ_TOKEN }}
         run: |
           export GIT_TERMINAL_PROMPT=0
-          lsm6="web-app-submodules/webapp-lsm6"
           flowberry="web-app-submodules/flowberry"
           # The protronic GitHub submodules use SSH URLs; they are public over HTTPS.
           git config --global url."https://github.com/".insteadOf "git@github.com:"
           mapfile -t paths < <(git config -f .gitmodules --get-regexp '\.path$' \
-            | awk '{print $2}' | grep -vx -e "${lsm6}" -e "${flowberry}")
+            | awk '{print $2}' | grep -vx -e "${flowberry}")
           git submodule update --init --recursive -- "${paths[@]}"
 
           # flowberry: private GitHub repository (protronic/flowberry), only fetched
@@ -116,17 +117,6 @@ jobs:
             fi
           fi
 
-          # webapp-lsm6: private repository on this Forgejo (ssh://git@forgejo/... in
-          # .gitmodules), only fetched when the server wants it.
-          if [[ ",${BUILD_APPS}," == *",webapp-lsm6,"* ]]; then
-            if [ -z "${REPO_TOKEN}" ]; then
-              echo "The server wants webapp-lsm6 but there is no token with read:repository." >&2
-              exit 1
-            fi
-            git config --global \
-              url."${GITHUB_SERVER_URL/:\/\//://oauth2:${REPO_TOKEN}@}/".insteadOf "ssh://git@forgejo/"
-            git submodule update --init -- "${lsm6}"
-          fi
           git submodule status
 
       - name: Build
